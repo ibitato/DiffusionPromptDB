@@ -1,0 +1,3 @@
+# Production dependencies
+# (None currently - SQLite is built into Python)
+# Add dependencies here as needed
