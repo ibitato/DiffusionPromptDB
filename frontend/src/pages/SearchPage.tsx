@@ -21,6 +21,7 @@ export const SearchPage = () => {
   const pageSize = 20;
 
   // Filters state
+  const [searchText, setSearchText] = useState('');
   const [nsfwLevel, setNsfwLevel] = useState('');
   const [artStyle, setArtStyle] = useState('');
   const [numberOfPeople, setNumberOfPeople] = useState('');
@@ -96,6 +97,7 @@ export const SearchPage = () => {
   };
 
   const clearFilters = () => {
+    setSearchText('');
     setNsfwLevel('');
     setArtStyle('');
     setNumberOfPeople('');
@@ -104,7 +106,7 @@ export const SearchPage = () => {
     setCurrentPage(1);
   };
 
-  const activeFiltersCount = [nsfwLevel, artStyle, numberOfPeople].filter(Boolean).length;
+  const activeFiltersCount = [searchText, nsfwLevel, artStyle, numberOfPeople].filter(Boolean).length;
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -119,6 +121,23 @@ export const SearchPage = () => {
 
         {/* Filters Section */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
+          {/* Text Search */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Buscar en Texto del Prompt
+            </label>
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Buscar palabras en el prompt..."
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Busca por cualquier palabra o frase en el texto del prompt
+            </p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* NSFW Level Filter */}
             <div>
@@ -212,6 +231,14 @@ export const SearchPage = () => {
           {/* Active Filters Chips */}
           {activeFiltersCount > 0 && (
             <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-700">
+              {searchText && (
+                <span className="px-3 py-1 bg-violet-600/20 text-violet-400 rounded-full text-sm flex items-center gap-2">
+                  Texto: "{searchText}"
+                  <button onClick={() => setSearchText('')} className="hover:text-violet-300">
+                    ×
+                  </button>
+                </span>
+              )}
               {nsfwLevel && (
                 <span className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded-full text-sm flex items-center gap-2">
                   NSFW: {nsfwLevel}
@@ -248,10 +275,15 @@ export const SearchPage = () => {
         ) : hasSearched ? (
           <>
             {/* Results Header */}
-            <div className="mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h3 className="text-xl font-semibold text-white">
-                {results.length > 0 ? `${results.length} Resultados` : 'Sin Resultados'}
+                {results.length > 0 ? `${results.length} Resultados (Página ${currentPage})` : 'Sin Resultados'}
               </h3>
+              {results.length > 0 && (
+                <span className="text-sm text-gray-400">
+                  Mostrando {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, ((currentPage - 1) * pageSize) + results.length)}
+                </span>
+              )}
             </div>
 
             {/* Results Grid */}
