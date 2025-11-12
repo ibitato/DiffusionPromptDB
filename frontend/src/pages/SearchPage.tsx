@@ -23,10 +23,11 @@ export const SearchPage = () => {
   const pageSize = 20;
 
   // Filters state
-  const [searchText, setSearchText] = useState('');
   const [nsfwLevel, setNsfwLevel] = useState('');
   const [artStyle, setArtStyle] = useState('');
   const [numberOfPeople, setNumberOfPeople] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [searchTag, setSearchTag] = useState('');
   
   // Detail modal
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
@@ -87,29 +88,44 @@ export const SearchPage = () => {
     setCurrentPage(page);
 
     try {
-      const params: any = {};
-
-      // Text search in prompt content
-      if (searchText) params.text = searchText;
-      
-      // Other filters
-      if (nsfwLevel) params.nsfw_level = nsfwLevel;
-      if (artStyle) params.art_style = artStyle;
-      if (numberOfPeople) params.number_of_people = parseInt(numberOfPeople);
-      
-      // Pagination
-      params.limit = pageSize;
-      params.offset = (page - 1) * pageSize;
-
-      const response = await searchService.complexSearch(params);
-      setResults(response.results);
-      setTotalResults(response.results.length);
-      setAllResultsCount(response.total); // Backend now returns total count
-
-      if (response.results.length === 0) {
-        toast.info('No se encontraron resultados');
+      // If searching by tag, use tag search instead
+      if (searchTag && !searchText && !nsfwLevel && !artStyle && !numberOfPeople) {
+        const results = await searchService.searchByTag(searchTag, 100);
+        setResults(results);
+        setTotalResults(results.length);
+        setAllResultsCount(results.length);
+        
+        if (results.length === 0) {
+          toast.info(`No se encontraron prompts con el tag "${searchTag}"`);
+        } else {
+          toast.success(`Encontrados ${results.length} prompts con el tag "${searchTag}"`);
+        }
       } else {
-        toast.success(`Encontrados ${response.total} resultados totales`);
+        // Complex search with filters
+        const params: any = {};
+
+        // Text search in prompt content
+        if (searchText) params.text = searchText;
+        
+        // Other filters
+        if (nsfwLevel) params.nsfw_level = nsfwLevel;
+        if (artStyle) params.art_style = artStyle;
+        if (numberOfPeople) params.number_of_people = parseInt(numberOfPeople);
+        
+        // Pagination
+        params.limit = pageSize;
+        params.offset = (page - 1) * pageSize;
+
+        const response = await searchService.complexSearch(params);
+        setResults(response.results);
+        setTotalResults(response.results.length);
+        setAllResultsCount(response.total);
+
+        if (response.results.length === 0) {
+          toast.info('No se encontraron resultados');
+        } else {
+          toast.success(`Encontrados ${response.total} resultados totales`);
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en la búsqueda';
@@ -122,16 +138,17 @@ export const SearchPage = () => {
   };
 
   const clearFilters = () => {
-    setSearchText('');
     setNsfwLevel('');
     setArtStyle('');
     setNumberOfPeople('');
+    setSearchText('');
+    setSearchTag('');
     setResults([]);
     setHasSearched(false);
     setCurrentPage(1);
   };
 
-  const activeFiltersCount = [searchText, nsfwLevel, artStyle, numberOfPeople].filter(Boolean).length;
+  const activeFiltersCount = [nsfwLevel, artStyle, numberOfPeople, searchText, searchTag].filter(Boolean).length;
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -146,23 +163,7 @@ export const SearchPage = () => {
 
         {/* Filters Section */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
-          {/* Text Search */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Buscar en Texto del Prompt
-            </label>
-            <input
-              type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Buscar palabras en el prompt..."
-              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Busca por cualquier palabra o frase en el texto del prompt
-            </p>
-          </div>
-          
+          {/* Main Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* NSFW Level Filter */}
             <div>
@@ -214,6 +215,40 @@ export const SearchPage = () => {
               />
             </div>
           </div>
+          
+          {/* Text Search */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Buscar en Texto del Prompt
+            </label>
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Buscar palabras en el prompt..."
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Busca por cualquier palabra o frase en el texto del prompt
+            </p>
+          </div>
+          
+          {/* Tag Search */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Buscar por Tag
+            </label>
+            <input
+              type="text"
+              value={searchTag}
+              onChange={(e) => setSearchTag(e.target.value)}
+              placeholder="Buscar por tag (ej: 1girl, anime, etc)..."
+              className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Busca prompts que contengan un tag específico
+            </p>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex items-center justify-between">
@@ -256,14 +291,6 @@ export const SearchPage = () => {
           {/* Active Filters Chips */}
           {activeFiltersCount > 0 && (
             <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-700">
-              {searchText && (
-                <span className="px-3 py-1 bg-violet-600/20 text-violet-400 rounded-full text-sm flex items-center gap-2">
-                  Texto: "{searchText}"
-                  <button onClick={() => setSearchText('')} className="hover:text-violet-300">
-                    ×
-                  </button>
-                </span>
-              )}
               {nsfwLevel && (
                 <span className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded-full text-sm flex items-center gap-2">
                   NSFW: {nsfwLevel}
@@ -284,6 +311,22 @@ export const SearchPage = () => {
                 <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm flex items-center gap-2">
                   People: {numberOfPeople}
                   <button onClick={() => setNumberOfPeople('')} className="hover:text-green-300">
+                    ×
+                  </button>
+                </span>
+              )}
+              {searchText && (
+                <span className="px-3 py-1 bg-violet-600/20 text-violet-400 rounded-full text-sm flex items-center gap-2">
+                  Texto: "{searchText}"
+                  <button onClick={() => setSearchText('')} className="hover:text-violet-300">
+                    ×
+                  </button>
+                </span>
+              )}
+              {searchTag && (
+                <span className="px-3 py-1 bg-indigo-600/20 text-indigo-400 rounded-full text-sm flex items-center gap-2">
+                  Tag: "{searchTag}"
+                  <button onClick={() => setSearchTag('')} className="hover:text-indigo-300">
                     ×
                   </button>
                 </span>
