@@ -86,6 +86,7 @@ export interface SearchFilters {
 }
 
 export interface ComplexSearchParams {
+  text?: string;
   nsfw_level?: string;
   number_of_people?: number;
   art_style?: string;
