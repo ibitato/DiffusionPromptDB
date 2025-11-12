@@ -13,7 +13,7 @@ from pathlib import Path
 class CatalogSearch:
     """Search interface for prompt catalog."""
     
-    def __init__(self, db_path: str = "catalog_haiku45.db"):
+    def __init__(self, db_path: str = "prompts_catalog.db"):
         """Initialize search."""
         if not Path(db_path).exists():
             raise FileNotFoundError(f"Database not found: {db_path}")

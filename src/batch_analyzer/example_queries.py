@@ -8,7 +8,7 @@ Demonstrates advanced search capabilities.
 import sqlite3
 
 # Connect to database
-conn = sqlite3.connect('catalog_haiku45.db')
+conn = sqlite3.connect('prompts_catalog.db')
 
 print("="*80)
 print("EXAMPLE QUERIES - Prompt Catalog Database")
