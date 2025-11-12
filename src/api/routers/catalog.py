@@ -33,19 +33,21 @@ def get_catalog_db():
 async def get_cataloged_prompt(
     prompt_id: int,
     db: sqlite3.Connection = Depends(get_catalog_db),
-    api_key: str = Depends(verify_api_key)
+    api_key: str = Depends(verify_api_key),
 ):
     """
     Get cataloged prompt with all categories.
-    
+
     Requires: API Key
     """
     # Get main prompt data
-    prompt_row = db.execute("SELECT * FROM prompts WHERE id = ?", (prompt_id,)).fetchone()
-    
+    prompt_row = db.execute(
+        "SELECT * FROM prompts WHERE id = ?", (prompt_id,)
+    ).fetchone()
+
     if not prompt_row:
         raise HTTPException(status_code=404, detail="Cataloged prompt not found")
-    
+
     # Build response with categories
     # This is simplified - in production you'd query all related tables
     result = {
@@ -62,11 +64,11 @@ async def get_cataloged_prompt(
             "model_used": prompt_row["model_used"],
             "tokens_used": {
                 "input": prompt_row["input_tokens"],
-                "output": prompt_row["output_tokens"]
-            }
-        }
+                "output": prompt_row["output_tokens"],
+            },
+        },
     }
-    
+
     return result
 
 
@@ -75,25 +77,25 @@ async def search_by_nsfw(
     level: str,
     limit: int = Query(20, ge=1, le=100),
     db: sqlite3.Connection = Depends(get_catalog_db),
-    api_key: str = Depends(verify_api_key)
+    api_key: str = Depends(verify_api_key),
 ):
     """
     Search prompts by NSFW level.
-    
+
     Requires: API Key
     """
-    results = db.execute("""
+    results = db.execute(
+        """
         SELECT p.id, p.original_prompt
         FROM prompts p
         JOIN nsfw_content n ON p.id = n.prompt_id
         WHERE n.level = ?
         LIMIT ?
-    """, (level, limit)).fetchall()
-    
-    return {
-        "total": len(results),
-        "results": [dict(row) for row in results]
-    }
+    """,
+        (level, limit),
+    ).fetchall()
+
+    return {"total": len(results), "results": [dict(row) for row in results]}
 
 
 @router.get("/search/style/{style}")
@@ -101,22 +103,22 @@ async def search_by_style(
     style: str,
     limit: int = Query(20, ge=1, le=100),
     db: sqlite3.Connection = Depends(get_catalog_db),
-    api_key: str = Depends(verify_api_key)
+    api_key: str = Depends(verify_api_key),
 ):
     """
     Search prompts by art style.
-    
+
     Requires: API Key
     """
-    results = db.execute("""
+    results = db.execute(
+        """
         SELECT p.id, p.original_prompt, a.primary_style
         FROM prompts p
         JOIN art_styles a ON p.id = a.prompt_id
         WHERE a.primary_style LIKE ?
         LIMIT ?
-    """, (f"%{style}%", limit)).fetchall()
-    
-    return {
-        "total": len(results),
-        "results": [dict(row) for row in results]
-    }
+    """,
+        (f"%{style}%", limit),
+    ).fetchall()
+
+    return {"total": len(results), "results": [dict(row) for row in results]}

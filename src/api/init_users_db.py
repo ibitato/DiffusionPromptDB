@@ -1,11 +1,14 @@
 """Initialize users database"""
+
 import sqlite3
 from pathlib import Path
 import hashlib
 
+
 def hash_password(password: str) -> str:
     """Simple hash for demo purposes."""
     return hashlib.sha256(password.encode()).hexdigest()
+
 
 # Create users database
 db_path = Path("../data/users.db")
@@ -15,7 +18,8 @@ conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 # Create users table
-cursor.execute("""
+cursor.execute(
+    """
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
@@ -26,21 +30,28 @@ CREATE TABLE IF NOT EXISTS users (
     last_login TIMESTAMP,
     is_active BOOLEAN DEFAULT 1
 )
-""")
+"""
+)
 
 # Create test user: test/test
 password_hash = hash_password("test")
-cursor.execute("""
+cursor.execute(
+    """
 INSERT OR IGNORE INTO users (username, email, password_hash, role)
 VALUES ('test', 'test@example.com', ?, 'user')
-""", (password_hash,))
+""",
+    (password_hash,),
+)
 
 # Create admin user: admin/admin
 admin_hash = hash_password("admin")
-cursor.execute("""
+cursor.execute(
+    """
 INSERT OR IGNORE INTO users (username, email, password_hash, role)
 VALUES ('admin', 'admin@example.com', ?, 'admin')
-""", (admin_hash,))
+""",
+    (admin_hash,),
+)
 
 conn.commit()
 conn.close()

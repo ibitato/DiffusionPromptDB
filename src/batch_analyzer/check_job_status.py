@@ -19,16 +19,16 @@ with open(latest_job) as f:
     job_info = json.load(f)
 
 # Check status
-client = BedrockBatchClient(region_name='us-east-1')
-success, status, msg = client.get_job_status(job_info['job_arn'])
+client = BedrockBatchClient(region_name="us-east-1")
+success, status, msg = client.get_job_status(job_info["job_arn"])
 
 if success:
     print(f"Job Status: {status['status']}")
     print(f"Model: {status['model_id']}")
     print(f"Submit Time: {status['submit_time']}")
-    if 'end_time' in status:
+    if "end_time" in status:
         print(f"End Time: {status['end_time']}")
-    if 'failure_message' in status:
+    if "failure_message" in status:
         print(f"Failure: {status['failure_message']}")
 else:
     print(f"Error: {msg}")

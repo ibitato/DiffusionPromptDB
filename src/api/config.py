@@ -11,31 +11,33 @@ from pathlib import Path
 
 class Settings(BaseSettings):
     """Application settings."""
-    
+
     # API Info
     app_name: str = "DiffusionPromptDB API"
     app_version: str = "1.0.0"
-    app_description: str = "REST API for Stable Diffusion Prompt Database and Catalogation"
-    
+    app_description: str = (
+        "REST API for Stable Diffusion Prompt Database and Catalogation"
+    )
+
     # Server
     host: str = "0.0.0.0"
     port: int = 8000
     reload: bool = False
-    
+
     # Database (unified - catalog DB with 10,386 prompts, located in api/database/)
     prompts_db_path: str = "database/prompts_catalog.db"
     catalog_db_path: str = "database/prompts_catalog.db"
-    
+
     # Security
     api_keys: List[str] = ["demo-read-key-12345"]  # Change in production!
     jwt_secret_key: str = "your-secret-key-change-this-in-production"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60
-    
+
     # Rate Limiting
     rate_limit_per_minute: int = 100
     rate_limit_per_hour: int = 1000
-    
+
     # CORS
     cors_origins: List[str] = [
         "http://localhost:3000",
@@ -46,15 +48,15 @@ class Settings(BaseSettings):
     cors_allow_credentials: bool = True
     cors_allow_methods: List[str] = ["*"]
     cors_allow_headers: List[str] = ["*"]
-    
+
     # Pagination
     default_page_size: int = 20
     max_page_size: int = 100
-    
+
     # Logging
     log_level: str = "INFO"
     log_file: str = "api.log"
-    
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

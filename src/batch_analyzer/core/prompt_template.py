@@ -10,7 +10,7 @@ import json
 
 class PromptTemplate:
     """Template for generating analysis prompts for Claude."""
-    
+
     SYSTEM_PROMPT = """You are an expert at analyzing Stable Diffusion prompts and extracting structured information.
 
 Your task is to analyze prompts used for AI image generation and categorize them into specific fields.
@@ -133,44 +133,44 @@ OUTPUT (JSON only):"""
     def generate_analysis_prompt(cls, prompt_text: str) -> dict:
         """
         Generate a complete analysis request for Claude.
-        
+
         Args:
             prompt_text: The Stable Diffusion prompt to analyze
-            
+
         Returns:
             dict: Dictionary with 'system' and 'messages' for Claude API
         """
         user_message = cls.ANALYSIS_TEMPLATE.format(prompt_text=prompt_text)
-        
+
         return {
             "system": cls.SYSTEM_PROMPT,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": user_message
-                }
-            ]
+            "messages": [{"role": "user", "content": user_message}],
         }
-    
+
     @classmethod
-    def generate_batch_request(cls, prompt_id: int, prompt_text: str, 
-                              model_id: str, max_tokens: int = 2000,
-                              temperature: float = 0.0) -> dict:
+    def generate_batch_request(
+        cls,
+        prompt_id: int,
+        prompt_text: str,
+        model_id: str,
+        max_tokens: int = 2000,
+        temperature: float = 0.0,
+    ) -> dict:
         """
         Generate a single batch request in Bedrock Batch API format.
-        
+
         Args:
             prompt_id: Unique identifier for the prompt
             prompt_text: The Stable Diffusion prompt to analyze
             model_id: Bedrock model ID
             max_tokens: Maximum tokens for response
             temperature: Sampling temperature
-            
+
         Returns:
             dict: Batch request formatted for Bedrock
         """
         analysis_request = cls.generate_analysis_prompt(prompt_text)
-        
+
         return {
             "recordId": str(prompt_id),
             "modelInput": {
@@ -178,21 +178,21 @@ OUTPUT (JSON only):"""
                 "max_tokens": max_tokens,
                 "temperature": temperature,
                 "system": analysis_request["system"],
-                "messages": analysis_request["messages"]
-            }
+                "messages": analysis_request["messages"],
+            },
         }
-    
+
     @classmethod
     def parse_response(cls, response_text: str) -> dict:
         """
         Parse Claude's JSON response.
-        
+
         Args:
             response_text: Raw response from Claude
-            
+
         Returns:
             dict: Parsed JSON response
-            
+
         Raises:
             ValueError: If response is not valid JSON
         """
@@ -206,26 +206,35 @@ OUTPUT (JSON only):"""
             if text.endswith("```"):
                 text = text[:-3]
             text = text.strip()
-            
+
             return json.loads(text)
         except json.JSONDecodeError as e:
-            raise ValueError(f"Failed to parse JSON response: {e}\nResponse: {response_text[:500]}")
-    
+            raise ValueError(
+                f"Failed to parse JSON response: {e}\nResponse: {response_text[:500]}"
+            )
+
     @classmethod
     def validate_response_structure(cls, response: dict) -> bool:
         """
         Validate that response has required fields.
-        
+
         Args:
             response: Parsed response dictionary
-            
+
         Returns:
             bool: True if valid structure
         """
         required_fields = [
-            "character", "pose", "clothing", "setting", 
-            "lighting", "art_style", "technical", 
-            "nsfw_content", "mood_atmosphere", "main_tags"
+            "character",
+            "pose",
+            "clothing",
+            "setting",
+            "lighting",
+            "art_style",
+            "technical",
+            "nsfw_content",
+            "mood_atmosphere",
+            "main_tags",
         ]
-        
+
         return all(field in response for field in required_fields)
