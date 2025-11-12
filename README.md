@@ -48,12 +48,13 @@ python run_analysis.py --dry-run
 
 ✨ **Two analysis modes**: Batch (cost-effective) and Real-time (fast)  
 💰 50% cost savings with Batch API  
-⚡ **Real-time processing with Claude Haiku 4.5** (fastest, recommended)  
+🤖 **Recommended Model: Claude 3.5 Sonnet** (best accuracy, batch & realtime)  
+⚡ Real-time alternative: Claude Haiku 4.5 (faster, good quality)  
 📊 Structured JSON output  
 🔄 Resumable processing  
 📈 Automatic statistics generation  
 🔍 Dry-run testing mode  
-🎯 **100% success rate** (tested with 30 prompts)  
+🎯 **99.5% success rate** (tested with 10,386 prompts)
 
 ### Documentation
 
@@ -63,22 +64,34 @@ python run_analysis.py --dry-run
 
 ### Cost Example
 
-For the included dataset (10,386 prompts): ~$67 USD using Claude 3.5 Sonnet with Batch API discount.
+**Tested with 10,386 prompts:**
+- Claude 3.5 Sonnet (Batch API): ~$67 USD
+- Result: 10,334 prompts successfully cataloged (99.5% success rate)
+- Recommended for best accuracy and structure compliance
 
 ### 2️⃣ SQLite Catalog Database
 
 **Searchable database with advanced filtering.**
 
 - **Normalized Schema**: 20+ tables for efficient querying
-- **30 Prompts Cataloged**: Demo database included
+- **10,386 Prompts Cataloged**: Production database ready
 - **Advanced Search**: Multi-filter queries combining any categories
 - **CLI Tools**: Interactive search and SQL query examples
+- **Data Normalization**: Automatic cleaning and validation
 
 ```bash
 cd src/batch_analyzer
 
-# Import analyzed prompts to SQLite
+# For batch results: Convert → Normalize → Import
+python convert_batch_output.py results/batch_output_XXX.jsonl
+python normalize_data.py results/converted_batch_XXX.jsonl
+python import_to_db.py results/normalized_batch_XXX.jsonl --db prompts_catalog.db --stats
+
+# For realtime results: Import directly
 python import_to_db.py results/realtime_results_XXX.jsonl --db prompts_catalog.db --stats
+
+# Test database
+python test_catalog_integration.py --db prompts_catalog.db
 
 # Interactive search
 python search_catalog.py
@@ -93,8 +106,9 @@ python example_queries.py
 
 - **FastAPI**: Modern, fast, with auto-generated docs
 - **Secure**: API Keys (read) + JWT tokens (write)
-- **14 Endpoints**: Prompts CRUD + Catalog search + Stats
-- **Tested**: 19/20 unit tests passing (95%)
+- **15 Endpoints**: Auth + Prompts CRUD + Catalog search + Stats
+- **Authentication**: Login endpoint with JWT tokens
+- **Tested**: Unit tests with pytest
 - **Rate Limited**: 100/min, 1000/hour
 - **Auto Docs**: Swagger UI + ReDoc
 
@@ -121,7 +135,39 @@ curl -H "X-API-Key: REDACTED_API_KEY" \
   "http://localhost:8000/api/v1/search/complex?nsfw_level=explicit&art_style=anime"
 ```
 
-See [API README](src/api/README.md) for complete documentation.
+See [API README](src/api/README.md) and [Authentication Setup](AUTHENTICATION_SETUP.md) for complete documentation.
+
+### 4️⃣ Frontend Web Application 🌐
+
+**Modern React application for managing prompts.**
+
+- **React 18 + TypeScript**: Modern frontend with full type safety
+- **Authentication**: JWT-based login system
+- **CRUD Interface**: Create, read, update, delete prompts
+- **Advanced Search**: Multi-filter search with NSFW, style, characters
+- **Data Export**: Export to JSON/CSV
+- **Visualizations**: Charts with Recharts (NSFW distribution, top tags, art styles)
+- **Internationalization**: Spanish and English (160+ strings)
+- **Responsive Design**: Works on desktop and mobile
+- **Performance**: TanStack Query for intelligent caching
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Configure
+cp .env.example .env
+
+# Run development server
+npm run dev
+
+# Frontend: http://localhost:5173
+# Login: test/test, admin/admin, or user/user
+```
+
+See [Frontend README](frontend/FRONTEND_README.md) for complete guide.
 
 ## Project Structure
 
