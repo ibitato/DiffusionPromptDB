@@ -91,16 +91,37 @@ async def search_by_tag(
     db: sqlite3.Connection = Depends(get_catalog_db),
     api_key: str = Depends(verify_api_key),
 ):
-    """Search prompts by tag."""
-    results = db.execute(
-        """
-        SELECT DISTINCT p.id, p.original_prompt
-        FROM prompts p
-        JOIN main_tags t ON p.id = t.prompt_id
-        WHERE t.tag LIKE ?
-        LIMIT ?
-    """,
-        (f"%{tag}%", limit),
-    ).fetchall()
+    """
+    Search prompts by tag(s).
+    Multiple tags can be separated by comma (e.g. "nude,solo")
+    """
+    # Split tags by comma and clean whitespace
+    tags = [t.strip() for t in tag.split(',') if t.strip()]
+    
+    if len(tags) == 1:
+        # Single tag search - simple LIKE query
+        results = db.execute(
+            """
+            SELECT DISTINCT p.id, p.original_prompt
+            FROM prompts p
+            JOIN main_tags t ON p.id = t.prompt_id
+            WHERE t.tag LIKE ?
+            LIMIT ?
+        """,
+            (f"%{tags[0]}%", limit),
+        ).fetchall()
+    else:
+        # Multiple tags search - must have ALL tags (AND logic)
+        # Build query with multiple JOINs
+        query = "SELECT DISTINCT p.id, p.original_prompt FROM prompts p"
+        for i in range(len(tags)):
+            query += f" JOIN main_tags t{i} ON p.id = t{i}.prompt_id"
+        
+        conditions = [f"t{i}.tag LIKE ?" for i in range(len(tags))]
+        query += " WHERE " + " AND ".join(conditions)
+        query += " LIMIT ?"
+        
+        params = [f"%{t}%" for t in tags] + [limit]
+        results = db.execute(query, params).fetchall()
 
     return {"total": len(results), "results": [dict(row) for row in results]}
