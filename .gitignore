@@ -51,6 +51,7 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+a.out
 
 # Logs
 *.log
