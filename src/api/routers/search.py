@@ -1,0 +1,91 @@
+"""
+Search Router
+
+Advanced search operations across catalog.
+"""
+
+from fastapi import APIRouter, Depends, Query
+import sqlite3
+from pathlib import Path
+from typing import Optional
+
+from ..auth import verify_api_key
+from ..config import settings
+from .catalog import get_catalog_db
+
+router = APIRouter()
+
+
+@router.get("/complex")
+async def complex_search(
+    nsfw_level: Optional[str] = Query(None),
+    number_of_people: Optional[int] = Query(None),
+    art_style: Optional[str] = Query(None),
+    indoor_outdoor: Optional[str] = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    db: sqlite3.Connection = Depends(get_catalog_db),
+    api_key: str = Depends(verify_api_key)
+):
+    """
+    Complex search with multiple filters.
+    
+    Requires: API Key
+    """
+    query = "SELECT DISTINCT p.id, p.original_prompt FROM prompts p"
+    joins = []
+    conditions = []
+    params = []
+    
+    if nsfw_level:
+        joins.append("JOIN nsfw_content n ON p.id = n.prompt_id")
+        conditions.append("n.level = ?")
+        params.append(nsfw_level)
+    
+    if number_of_people is not None:
+        joins.append("JOIN characters c ON p.id = c.prompt_id")
+        conditions.append("c.number_of_people = ?")
+        params.append(number_of_people)
+    
+    if art_style:
+        joins.append("JOIN art_styles a ON p.id = a.prompt_id")
+        conditions.append("a.primary_style LIKE ?")
+        params.append(f"%{art_style}%")
+    
+    if indoor_outdoor:
+        joins.append("JOIN settings s ON p.id = s.prompt_id")
+        conditions.append("s.indoor_outdoor = ?")
+        params.append(indoor_outdoor)
+    
+    if joins:
+        query += " " + " ".join(joins)
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+    
+    query += f" LIMIT {limit}"
+    params.append(limit)
+    
+    results = db.execute(query, params[:-1]).fetchall()
+    
+    return {
+        "total": len(results),
+        "results": [dict(row) for row in results]
+    }
+
+
+@router.get("/tags/{tag}")
+async def search_by_tag(
+    tag: str,
+    limit: int = Query(20, ge=1, le=100),
+    db: sqlite3.Connection = Depends(get_catalog_db),
+    api_key: str = Depends(verify_api_key)
+):
+    """Search prompts by tag."""
+    results = db.execute("""
+        SELECT DISTINCT p.id, p.original_prompt
+        FROM prompts p
+        JOIN main_tags t ON p.id = t.prompt_id
+        WHERE t.tag LIKE ?
+        LIMIT ?
+    """, (f"%{tag}%", limit)).fetchall()
+    
+    return {"total": len(results), "results": [dict(row) for row in results]}
