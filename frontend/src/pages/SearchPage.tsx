@@ -175,13 +175,13 @@ export const SearchPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* NSFW Level Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">NSFW Level</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('search.filters.nsfwLevel')}</label>
               <select
                 value={nsfwLevel}
                 onChange={(e) => setNsfwLevel(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600"
               >
-                <option value="">Todos</option>
+                <option value="">{t('search.filters.all')}</option>
                 {nsfwLevels.map((level) => (
                   <option key={level} value={level}>
                     {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -192,13 +192,13 @@ export const SearchPage = () => {
 
             {/* Art Style Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Art Style</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">{t('search.filters.artStyle')}</label>
               <select
                 value={artStyle}
                 onChange={(e) => setArtStyle(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600"
               >
-                <option value="">Todos</option>
+                <option value="">{t('search.filters.all')}</option>
                 {artStyles.map((style) => (
                   <option key={style} value={style}>
                     {style.charAt(0).toUpperCase() + style.slice(1)}
@@ -210,7 +210,7 @@ export const SearchPage = () => {
             {/* Number of People Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Número de Personas
+                {t('search.filters.numberOfPeople')}
               </label>
               <input
                 type="number"
@@ -218,7 +218,7 @@ export const SearchPage = () => {
                 max="10"
                 value={numberOfPeople}
                 onChange={(e) => setNumberOfPeople(e.target.value)}
-                placeholder="Ej: 1, 2, 3..."
+                placeholder={t('search.filters.peoplePlaceholder')}
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
               />
             </div>
@@ -227,34 +227,34 @@ export const SearchPage = () => {
           {/* Text Search */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Buscar en Texto del Prompt
+              {t('search.filters.textSearch')}
             </label>
             <input
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Buscar palabras en el prompt..."
+              placeholder={t('search.filters.textPlaceholder')}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Busca por cualquier palabra o frase en el texto del prompt
+              {t('search.filters.textHelp')}
             </p>
           </div>
           
           {/* Tag Search */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Buscar por Tag
+              {t('search.filters.tagSearch')}
             </label>
             <input
               type="text"
               value={searchTag}
               onChange={(e) => setSearchTag(e.target.value)}
-              placeholder="Buscar por tag (ej: 1girl, anime, etc)..."
+              placeholder={t('search.filters.tagPlaceholder')}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Busca prompts que contengan un tag específico
+              {t('search.filters.tagHelp')}
             </p>
           </div>
 
@@ -290,8 +290,7 @@ export const SearchPage = () => {
 
             {activeFiltersCount > 0 && (
               <span className="text-sm text-gray-400">
-                {activeFiltersCount} filtro{activeFiltersCount !== 1 ? 's' : ''} activo
-                {activeFiltersCount !== 1 ? 's' : ''}
+                {activeFiltersCount} {activeFiltersCount === 1 ? t('search.activeFilters') : t('search.activeFiltersPlural')}
               </span>
             )}
           </div>
@@ -301,7 +300,7 @@ export const SearchPage = () => {
             <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-700">
               {nsfwLevel && (
                 <span className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded-full text-sm flex items-center gap-2">
-                  NSFW: {nsfwLevel}
+                  {t('search.chips.nsfw')}: {nsfwLevel}
                   <button onClick={() => setNsfwLevel('')} className="hover:text-orange-300">
                     ×
                   </button>
@@ -309,7 +308,7 @@ export const SearchPage = () => {
               )}
               {artStyle && (
                 <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm flex items-center gap-2">
-                  Style: {artStyle}
+                  {t('search.chips.style')}: {artStyle}
                   <button onClick={() => setArtStyle('')} className="hover:text-blue-300">
                     ×
                   </button>
@@ -317,7 +316,7 @@ export const SearchPage = () => {
               )}
               {numberOfPeople && (
                 <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm flex items-center gap-2">
-                  People: {numberOfPeople}
+                  {t('search.chips.people')}: {numberOfPeople}
                   <button onClick={() => setNumberOfPeople('')} className="hover:text-green-300">
                     ×
                   </button>
@@ -325,7 +324,7 @@ export const SearchPage = () => {
               )}
               {searchText && (
                 <span className="px-3 py-1 bg-violet-600/20 text-violet-400 rounded-full text-sm flex items-center gap-2">
-                  Texto: "{searchText}"
+                  {t('search.chips.text')}: "{searchText}"
                   <button onClick={() => setSearchText('')} className="hover:text-violet-300">
                     ×
                   </button>
@@ -333,7 +332,7 @@ export const SearchPage = () => {
               )}
               {searchTag && (
                 <span className="px-3 py-1 bg-indigo-600/20 text-indigo-400 rounded-full text-sm flex items-center gap-2">
-                  Tag: "{searchTag}"
+                  {t('search.chips.tag')}: "{searchTag}"
                   <button onClick={() => setSearchTag('')} className="hover:text-indigo-300">
                     ×
                   </button>
@@ -355,15 +354,15 @@ export const SearchPage = () => {
               <h3 className="text-xl font-semibold text-white">
                 {results.length > 0 ? (
                   <>
-                    {allResultsCount > 0 && <span className="text-violet-400">{allResultsCount} resultados totales</span>}
+                    {allResultsCount > 0 && <span className="text-violet-400">{allResultsCount} {t('search.results.total')}</span>}
                     {allResultsCount > 0 && ' - '}
-                    Página {currentPage}
+                    {t('search.results.page')} {currentPage}
                   </>
-                ) : 'Sin Resultados'}
+                ) : t('search.results.noResults')}
               </h3>
               {results.length > 0 && (
                 <span className="text-sm text-gray-400">
-                  Mostrando {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, ((currentPage - 1) * pageSize) + results.length)} de {allResultsCount}
+                  {t('search.results.showing')} {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, ((currentPage - 1) * pageSize) + results.length)} {t('search.results.of')} {allResultsCount}
                 </span>
               )}
             </div>
@@ -436,17 +435,17 @@ export const SearchPage = () => {
                     disabled={currentPage === 1 || isLoading}
                     className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
                   >
-                    Anterior
+                    {t('search.results.previous')}
                   </button>
                   
-                  <span className="text-gray-400 px-4">Página {currentPage}</span>
+                  <span className="text-gray-400 px-4">{t('search.results.page')} {currentPage}</span>
                   
                   <button
                     onClick={() => performSearch(currentPage + 1)}
                     disabled={results.length < pageSize || isLoading}
                     className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
                   >
-                    Siguiente
+                    {t('search.results.next')}
                   </button>
                 </div>
               )}
@@ -467,10 +466,10 @@ export const SearchPage = () => {
                   />
                 </svg>
                 <p className="text-gray-400 text-lg">
-                  No se encontraron resultados con los filtros seleccionados
+                  {t('search.results.noResultsMessage')}
                 </p>
                 <p className="text-gray-500 text-sm mt-2">
-                  Intenta con diferentes criterios de búsqueda
+                  {t('search.results.tryDifferent')}
                 </p>
               </div>
             )}
@@ -490,7 +489,7 @@ export const SearchPage = () => {
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
-            <p className="text-gray-400 text-lg">Selecciona filtros y haz click en Buscar</p>
+            <p className="text-gray-400 text-lg">{t('search.results.selectFilters')}</p>
           </div>
         )}
       </main>
