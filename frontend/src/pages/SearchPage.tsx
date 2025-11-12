@@ -8,8 +8,9 @@ import { useSearchParams } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
 import { useToast } from '../components/ui/Toast';
+import { PromptDetailModal } from '../components/prompts/PromptDetailModal';
 import { searchService } from '../services/search.service';
-import { CatalogPrompt } from '../types/api.types';
+import { CatalogPrompt, Prompt } from '../types/api.types';
 
 export const SearchPage = () => {
   const [searchParams] = useSearchParams();
@@ -18,6 +19,7 @@ export const SearchPage = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+  const [allResultsCount, setAllResultsCount] = useState(0);
   const pageSize = 20;
 
   // Filters state
@@ -25,6 +27,10 @@ export const SearchPage = () => {
   const [nsfwLevel, setNsfwLevel] = useState('');
   const [artStyle, setArtStyle] = useState('');
   const [numberOfPeople, setNumberOfPeople] = useState('');
+  
+  // Detail modal
+  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const toast = useToast();
 
@@ -74,23 +80,45 @@ export const SearchPage = () => {
       if (artStyle) params.art_style = artStyle;
       if (numberOfPeople) params.number_of_people = parseInt(numberOfPeople);
       
-      // Pagination
+      // Text search: if provided, search by tag
+      if (searchText) {
+        const tagResults = await searchService.searchByTag(searchText, 1000);
+        const total = tagResults.length;
+        setAllResultsCount(total);
+        
+        // Paginate client-side
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        setResults(tagResults.slice(start, end));
+        
+        if (total === 0) {
+          toast.info('No se encontraron resultados con ese texto');
+        } else {
+          toast.success(`Encontrados ${total} resultados totales`);
+        }
+        setIsLoading(false);
+        return;
+      }
+      
+      // Regular search with pagination
       params.limit = pageSize;
       params.offset = (page - 1) * pageSize;
 
       const data = await searchService.complexSearch(params);
       setResults(data);
-      setTotalResults(data.length); // Backend doesn't return total, so we estimate
+      setTotalResults(data.length);
+      setAllResultsCount(data.length); // Estimate
 
       if (data.length === 0) {
         toast.info('No se encontraron resultados');
       } else {
-        toast.success(`Mostrando ${data.length} resultados`);
+        toast.success(`Encontrados ${data.length} resultados en esta página`);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en la búsqueda';
       toast.error(message);
       setResults([]);
+      setAllResultsCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -277,11 +305,17 @@ export const SearchPage = () => {
             {/* Results Header */}
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-xl font-semibold text-white">
-                {results.length > 0 ? `${results.length} Resultados (Página ${currentPage})` : 'Sin Resultados'}
+                {results.length > 0 ? (
+                  <>
+                    {allResultsCount > 0 && <span className="text-violet-400">{allResultsCount} resultados totales</span>}
+                    {allResultsCount > 0 && ' - '}
+                    Página {currentPage}
+                  </>
+                ) : 'Sin Resultados'}
               </h3>
               {results.length > 0 && (
                 <span className="text-sm text-gray-400">
-                  Mostrando {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, ((currentPage - 1) * pageSize) + results.length)}
+                  Mostrando {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, ((currentPage - 1) * pageSize) + results.length)} de {allResultsCount}
                 </span>
               )}
             </div>
@@ -293,7 +327,17 @@ export const SearchPage = () => {
                 {results.map((result, index) => (
                   <div
                     key={result.id || index}
-                    className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-slate-600 transition-colors"
+                    onClick={() => {
+                      const promptForModal: Prompt = {
+                        id: result.id,
+                        text: result.original_prompt,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                      } as Prompt;
+                      setSelectedPrompt(promptForModal);
+                      setIsDetailModalOpen(true);
+                    }}
+                    className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-violet-600 hover:shadow-lg transition-all cursor-pointer transform hover:scale-[1.02]"
                   >
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
@@ -402,6 +446,20 @@ export const SearchPage = () => {
           </div>
         )}
       </main>
+      
+      {/* Detail Modal */}
+      {selectedPrompt && (
+        <PromptDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => {
+            setIsDetailModalOpen(false);
+            setSelectedPrompt(null);
+          }}
+          prompt={selectedPrompt}
+          onEdit={() => {}}
+          onDelete={() => {}}
+        />
+      )}
     </div>
   );
 };
