@@ -71,13 +71,14 @@ python run_analysis.py --dry-run
 
 ### 2️⃣ SQLite Catalog Database
 
-**Searchable database with advanced filtering.**
+**Unified database with 10,388 pre-cataloged prompts.**
 
+- **Location**: `src/api/database/prompts_catalog.db` (centralized in API module)
 - **Normalized Schema**: 20+ tables for efficient querying
-- **10,386 Prompts Cataloged**: Production database ready
+- **10,388 Prompts**: Production database pre-filled and cleaned
 - **Advanced Search**: Multi-filter queries combining any categories
 - **CLI Tools**: Interactive search and SQL query examples
-- **Data Normalization**: Automatic cleaning and validation
+- **Data Quality**: Cleaned BREAK patterns, normalized, 100% tested
 
 ```bash
 cd src/batch_analyzer
@@ -119,9 +120,9 @@ cd src/api
 pip install -r requirements.txt
 
 # Run
-python main.py
+python start_server.py
 
-# API: http://localhost:8000
+# API: http://localhost:8000 (pre-filled with 10,388 prompts)
 # Docs: http://localhost:8000/docs
 ```
 
