@@ -88,40 +88,53 @@ async def complex_search(
 async def search_by_tag(
     tag: str,
     limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: sqlite3.Connection = Depends(get_catalog_db),
     api_key: str = Depends(verify_api_key),
 ):
     """
-    Search prompts by tag(s).
+    Search prompts by tag(s) with pagination.
     Multiple tags can be separated by comma (e.g. "nude,solo")
     """
     # Split tags by comma and clean whitespace
     tags = [t.strip() for t in tag.split(',') if t.strip()]
     
     if len(tags) == 1:
-        # Single tag search - simple LIKE query
-        results = db.execute(
-            """
+        # Single tag search
+        query = """
             SELECT DISTINCT p.id, p.original_prompt
             FROM prompts p
             JOIN main_tags t ON p.id = t.prompt_id
             WHERE t.tag LIKE ?
-            LIMIT ?
-        """,
-            (f"%{tags[0]}%", limit),
-        ).fetchall()
+        """
+        params = [f"%{tags[0]}%"]
+        
+        # Get total count
+        count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")
+        total_count = db.execute(count_query, params).fetchone()[0]
+        
+        # Add pagination
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+        results = db.execute(query, params).fetchall()
     else:
         # Multiple tags search - must have ALL tags (AND logic)
-        # Build query with multiple JOINs
         query = "SELECT DISTINCT p.id, p.original_prompt FROM prompts p"
         for i in range(len(tags)):
             query += f" JOIN main_tags t{i} ON p.id = t{i}.prompt_id"
         
         conditions = [f"t{i}.tag LIKE ?" for i in range(len(tags))]
         query += " WHERE " + " AND ".join(conditions)
-        query += " LIMIT ?"
         
-        params = [f"%{t}%" for t in tags] + [limit]
+        params = [f"%{t}%" for t in tags]
+        
+        # Get total count
+        count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")
+        total_count = db.execute(count_query, params).fetchone()[0]
+        
+        # Add pagination
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
         results = db.execute(query, params).fetchall()
 
-    return {"total": len(results), "results": [dict(row) for row in results]}
+    return {"total": total_count, "results": [dict(row) for row in results]}

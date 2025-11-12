@@ -62,14 +62,14 @@ export const searchService = {
   },
 
   /**
-   * Search by tag
+   * Search by tag with pagination
    */
-  searchByTag: async (tag: string, limit: number = 20): Promise<CatalogPrompt[]> => {
+  searchByTag: async (tag: string, limit: number = 20, offset: number = 0): Promise<{ total: number; results: CatalogPrompt[] }> => {
     try {
       const response = await api.get<{ total: number; results: CatalogPrompt[] }>(
-        `/search/tags/${tag}?limit=${limit}`
+        `/search/tags/${tag}?limit=${limit}&offset=${offset}`
       );
-      return response.data.results;
+      return response.data; // Return full response with total and results
     } catch (error) {
       throw new Error(handleApiError(error));
     }
