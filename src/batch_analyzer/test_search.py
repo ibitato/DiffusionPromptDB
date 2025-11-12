@@ -7,7 +7,8 @@ print("="*70)
 print("Testing Search Capabilities")
 print("="*70)
 
-search = CatalogSearch()
+# Use generic database name
+search = CatalogSearch("prompts_catalog.db")
 
 # Test 1: Search by NSFW
 print("\n1. Search explicit content:")
