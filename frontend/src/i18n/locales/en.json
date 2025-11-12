@@ -133,6 +133,12 @@
       "artStyle": "Art Style",
       "numberOfPeople": "Number of People",
       "peoplePlaceholder": "Ex: 1, 2, 3...",
+      "textSearch": "Search in Prompt Text",
+      "textPlaceholder": "Search words in prompt...",
+      "textHelp": "Search for any word or phrase in the prompt text",
+      "tagSearch": "Search by Tag",
+      "tagPlaceholder": "Search by tag (ex: 1girl, anime, etc)...",
+      "tagHelp": "Search prompts containing a specific tag. Multiple tags separated by comma.",
       "all": "All"
     },
     "actions": {
@@ -141,17 +147,31 @@
       "searching": "Searching..."
     },
     "results": {
-      "found": "Results",
+      "total": "total results",
+      "page": "Page",
+      "showing": "Showing",
+      "of": "of",
       "noResults": "No Results",
-      "noResultsMessage": "No results found with the selected filters",
+      "noResultsMessage": "No results found with selected filters",
       "tryDifferent": "Try different search criteria",
-      "selectFilters": "Select filters and click Search"
+      "selectFilters": "Select filters and click Search",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "chips": {
+      "nsfw": "NSFW",
+      "style": "Style",
+      "people": "People",
+      "text": "Text",
+      "tag": "Tag"
     },
     "activeFilters": "active filter",
     "activeFiltersPlural": "active filters",
     "messages": {
       "noResults": "No results found",
-      "foundResults": "Found {{count}} results",
+      "foundResults": "Found {{count}} total results",
+      "tagSearch": "No prompts found with tag",
+      "tagSearchSuccess": "Found {{count}} prompts with tag",
       "error": "Search error"
     }
   },

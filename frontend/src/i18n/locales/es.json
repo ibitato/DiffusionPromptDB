@@ -129,10 +129,16 @@
     "subtitle": "Filtra prompts por múltiples criterios",
     "placeholder": "Buscar prompts...",
     "filters": {
-      "nsfwLevel": "NSFW Level",
-      "artStyle": "Art Style",
+      "nsfwLevel": "Nivel NSFW",
+      "artStyle": "Estilo de Arte",
       "numberOfPeople": "Número de Personas",
-      "peopleePlaceholder": "Ej: 1, 2, 3...",
+      "peoplePlaceholder": "Ej: 1, 2, 3...",
+      "textSearch": "Buscar en Texto del Prompt",
+      "textPlaceholder": "Buscar palabras en el prompt...",
+      "textHelp": "Busca por cualquier palabra o frase en el texto del prompt",
+      "tagSearch": "Buscar por Tag",
+      "tagPlaceholder": "Buscar por tag (ej: 1girl, anime, etc)...",
+      "tagHelp": "Busca prompts que contengan un tag específico. Múltiples tags separados por coma.",
       "all": "Todos"
     },
     "actions": {
@@ -141,17 +147,31 @@
       "searching": "Buscando..."
     },
     "results": {
-      "found": "Resultados",
+      "total": "resultados totales",
+      "page": "Página",
+      "showing": "Mostrando",
+      "of": "de",
       "noResults": "Sin Resultados",
       "noResultsMessage": "No se encontraron resultados con los filtros seleccionados",
       "tryDifferent": "Intenta con diferentes criterios de búsqueda",
-      "selectFilters": "Selecciona filtros y haz click en Buscar"
+      "selectFilters": "Selecciona filtros y haz click en Buscar",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "chips": {
+      "nsfw": "NSFW",
+      "style": "Style",
+      "people": "People",
+      "text": "Texto",
+      "tag": "Tag"
     },
     "activeFilters": "filtro activo",
     "activeFiltersPlural": "filtros activos",
     "messages": {
       "noResults": "No se encontraron resultados",
-      "foundResults": "Se encontraron {{count}} resultados",
+      "foundResults": "Encontrados {{count}} resultados totales",
+      "tagSearch": "No se encontraron prompts con el tag",
+      "tagSearchSuccess": "Encontrados {{count}} prompts con el tag",
       "error": "Error en la búsqueda"
     }
   },
