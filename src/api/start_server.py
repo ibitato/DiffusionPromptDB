@@ -18,21 +18,21 @@ if __name__ == "__main__":
     import uvicorn
     from api.main import app
     from api.config import settings
-    
-    print("="*70)
+
+    print("=" * 70)
     print("DiffusionPromptDB API Server")
-    print("="*70)
+    print("=" * 70)
     print(f"\nStarting server on {settings.host}:{settings.port}")
     print(f"Docs: http://localhost:{settings.port}/docs")
     print(f"ReDoc: http://localhost:{settings.port}/redoc")
     print("\nPress CTRL+C to stop")
-    print("="*70)
+    print("=" * 70)
     print()
-    
+
     uvicorn.run(
         "api.main:app",
         host=settings.host,
         port=settings.port,
         reload=settings.reload,
-        log_level=settings.log_level.lower()
+        log_level=settings.log_level.lower(),
     )

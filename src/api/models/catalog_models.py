@@ -117,6 +117,7 @@ class MoodAtmosphere(BaseModel):
 # Complete categories model
 class Categories(BaseModel):
     """All categories for a prompt."""
+
     character: Character
     pose: Pose
     clothing: Clothing
@@ -144,6 +145,7 @@ class Metadata(BaseModel):
 # Catalog entry (full)
 class CatalogEntry(BaseModel):
     """Complete catalog entry."""
+
     id: int
     original_prompt: str
     categories: Categories
@@ -152,6 +154,7 @@ class CatalogEntry(BaseModel):
 
 class CatalogResponse(BaseModel):
     """Response with catalog data."""
+
     id: int
     original_prompt: str
     categories: Categories
@@ -160,15 +163,19 @@ class CatalogResponse(BaseModel):
 
 class CatalogUpdateRequest(BaseModel):
     """Request to update catalog categories."""
+
     categories: Categories
 
 
 class CatalogSearchRequest(BaseModel):
     """Advanced search request."""
+
     nsfw_level: Optional[str] = Field(None, pattern="^(safe|suggestive|explicit)$")
     number_of_people: Optional[int] = Field(None, ge=0)
     art_style: Optional[str] = None
-    indoor_outdoor: Optional[str] = Field(None, pattern="^(indoor|outdoor|mixed|unclear)$")
+    indoor_outdoor: Optional[str] = Field(
+        None, pattern="^(indoor|outdoor|mixed|unclear)$"
+    )
     hair_color: Optional[str] = None
     tags: Optional[List[str]] = None
     has_references: Optional[bool] = None
@@ -178,6 +185,7 @@ class CatalogSearchRequest(BaseModel):
 
 class CatalogSearchResponse(BaseModel):
     """Response for catalog search."""
+
     total: int
     page: int
     page_size: int
@@ -186,6 +194,7 @@ class CatalogSearchResponse(BaseModel):
 
 class StatsResponse(BaseModel):
     """Statistics response."""
+
     total_prompts: int
     nsfw_distribution: dict
     top_tags: List[dict]

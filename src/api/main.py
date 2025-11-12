@@ -19,11 +19,8 @@ from .routers import prompts, catalog, search, admin, auth
 # Setup logging
 logging.basicConfig(
     level=getattr(logging, settings.log_level),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(settings.log_file),
-        logging.StreamHandler()
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler(settings.log_file), logging.StreamHandler()],
 )
 
 logger = logging.getLogger(__name__)
@@ -38,7 +35,7 @@ app = FastAPI(
     description=settings.app_description,
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url="/openapi.json"
+    openapi_url="/openapi.json",
 )
 
 # Add rate limiting
@@ -71,7 +68,7 @@ async def root():
         "description": settings.app_description,
         "docs": "/docs",
         "redoc": "/redoc",
-        "health": "/api/v1/admin/health"
+        "health": "/api/v1/admin/health",
     }
 
 
@@ -79,28 +76,23 @@ async def root():
 @limiter.limit("60/minute")
 async def health_check(request: Request):
     """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler."""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"}
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "main:app",
         host=settings.host,
         port=settings.port,
         reload=settings.reload,
-        log_level=settings.log_level.lower()
+        log_level=settings.log_level.lower(),
     )

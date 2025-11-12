@@ -11,6 +11,7 @@ from datetime import datetime
 
 class PromptBase(BaseModel):
     """Base prompt model."""
+
     text: str = Field(..., description="The prompt text", min_length=1)
     negative_prompt: Optional[str] = Field(None, description="Negative prompt")
     model: Optional[str] = Field(None, description="Model identifier")
@@ -23,11 +24,13 @@ class PromptBase(BaseModel):
 
 class PromptCreate(PromptBase):
     """Model for creating a new prompt."""
+
     pass
 
 
 class PromptUpdate(BaseModel):
     """Model for updating a prompt (all fields optional)."""
+
     text: Optional[str] = Field(None, min_length=1)
     negative_prompt: Optional[str] = None
     model: Optional[str] = None
@@ -40,16 +43,18 @@ class PromptUpdate(BaseModel):
 
 class PromptResponse(PromptBase):
     """Model for prompt responses."""
+
     id: int
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
 
 
 class PromptListResponse(BaseModel):
     """Response model for list of prompts."""
+
     total: int
     page: int
     page_size: int
@@ -58,6 +63,7 @@ class PromptListResponse(BaseModel):
 
 class PromptSearchRequest(BaseModel):
     """Request model for searching prompts."""
+
     text: Optional[str] = Field(None, description="Search in prompt text")
     category: Optional[str] = Field(None, description="Filter by category")
     model: Optional[str] = Field(None, description="Filter by model")
