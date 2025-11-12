@@ -39,7 +39,9 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: List[str] = [
         "http://localhost:3000",
+        "http://localhost:5173",  # Vite dev server
         "http://localhost:8080",
+        "http://127.0.0.1:5173",  # Vite alternative
     ]
     cors_allow_credentials: bool = True
     cors_allow_methods: List[str] = ["*"]
