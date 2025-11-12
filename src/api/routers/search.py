@@ -73,9 +73,16 @@ async def complex_search(
     query += f" LIMIT ? OFFSET ?"
     params.extend([limit, offset])
 
+    # Get total count first (without LIMIT/OFFSET)
+    count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")
+    # Remove LIMIT and OFFSET from count query
+    count_params = params[:-2]  # Remove last 2 params (limit and offset)
+    total_count = db.execute(count_query, count_params).fetchone()[0]
+    
+    # Get paginated results
     results = db.execute(query, params).fetchall()
 
-    return {"total": len(results), "results": [dict(row) for row in results]}
+    return {"total": total_count, "results": [dict(row) for row in results]}
 
 
 @router.get("/tags/{tag}")

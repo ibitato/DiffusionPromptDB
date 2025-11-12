@@ -10,10 +10,11 @@ export const searchService = {
   /**
    * Complex search with multiple filters
    */
-  complexSearch: async (params: ComplexSearchParams): Promise<CatalogPrompt[]> => {
+  complexSearch: async (params: ComplexSearchParams): Promise<{ total: number; results: CatalogPrompt[] }> => {
     try {
       const searchParams = new URLSearchParams();
 
+      if (params.text) searchParams.append('text', params.text);
       if (params.nsfw_level) searchParams.append('nsfw_level', params.nsfw_level);
       if (params.number_of_people !== undefined) {
         searchParams.append('number_of_people', params.number_of_people.toString());
@@ -26,7 +27,7 @@ export const searchService = {
         `/search/complex?${searchParams.toString()}`
       );
 
-      return response.data.results;
+      return response.data; // Return full response with total and results
     } catch (error) {
       throw new Error(handleApiError(error));
     }

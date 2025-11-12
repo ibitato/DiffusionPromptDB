@@ -101,15 +101,15 @@ export const SearchPage = () => {
       params.limit = pageSize;
       params.offset = (page - 1) * pageSize;
 
-      const data = await searchService.complexSearch(params);
-      setResults(data);
-      setTotalResults(data.length);
-      setAllResultsCount(data.length); // Backend returns current page results
+      const response = await searchService.complexSearch(params);
+      setResults(response.results);
+      setTotalResults(response.results.length);
+      setAllResultsCount(response.total); // Backend now returns total count
 
-      if (data.length === 0) {
+      if (response.results.length === 0) {
         toast.info('No se encontraron resultados');
       } else {
-        toast.success(`Encontrados ${data.length} resultados en esta página`);
+        toast.success(`Encontrados ${response.total} resultados totales`);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en la búsqueda';
