@@ -35,8 +35,8 @@ def clean_double_backslash_patterns(db_path: str = "../api/database/prompts_cata
     conn = sqlite3.connect(db_path, check_same_thread=False)
     cursor = conn.cursor()
     
-    # Pattern to clean: \\n\n (backslash backslash n newline)
-    pattern = '\\n\n'
+    # Pattern to clean: literal \n (backslash-n as text)
+    pattern = r'\n'  # Raw string to match literal backslash-n
     
     # Find prompts with pattern
     total_prompts = cursor.execute("SELECT COUNT(*) FROM prompts").fetchone()[0]
