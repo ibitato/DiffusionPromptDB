@@ -1,6 +1,9 @@
 # DiffusionPromptDB
 
-A portable, self-contained SQLite-based database system for managing diffusion model prompts.
+SQLite database for Stability Diffusion Prompts
+
+**Author**: ibitato (REDACTED_EMAIL)  
+**License**: MIT
 
 ## Features
 

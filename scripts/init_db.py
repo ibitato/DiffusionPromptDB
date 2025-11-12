@@ -8,14 +8,14 @@ from pathlib import Path
 # Add parent directory to path to import the package
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from diffusion_prompt_db.database import Database
+from diffusion_prompt_db.database import Database  # noqa: E402
 
 
 def main():
     """Initialize the database."""
     print("Initializing DiffusionPromptDB...")
     print("-" * 50)
-    
+
     db = Database()
     print(f"✓ Database created at: {db.db_path.absolute()}")
     print("✓ Tables and indexes created successfully")
