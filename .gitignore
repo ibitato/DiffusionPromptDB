@@ -57,3 +57,12 @@ Thumbs.db
 
 # Environment variables
 .env
+
+# Batch Analyzer
+src/batch_analyzer/config.yaml
+src/batch_analyzer/.env
+src/batch_analyzer/results/*
+!src/batch_analyzer/results/.gitkeep
+src/batch_analyzer/logs/*
+!src/batch_analyzer/logs/.gitkeep
+src/batch_analyzer/checkpoints/

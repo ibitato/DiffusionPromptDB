@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Stable Diffusion Prompt Input",
+  "description": "Schema for input JSONL file containing Stable Diffusion prompts",
+  "type": "object",
+  "required": ["id", "prompt"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique prompt identifier"
+    },
+    "prompt": {
+      "type": "string",
+      "description": "The Stable Diffusion prompt text to analyze"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "id": 1,
+      "prompt": "score_9, score_8_up, 1girl, portrait, realistic, cinematic lighting, masterpiece"
+    }
+  ]
+}

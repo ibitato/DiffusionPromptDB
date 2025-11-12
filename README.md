@@ -15,6 +15,54 @@ SQLite database for Stability Diffusion Prompts
 - 📝 **Well Documented**: Comprehensive docstrings and examples
 - 🔄 **Version Control**: Git-ready with proper .gitignore
 
+## NEW: Batch Analyzer 🚀
+
+**Analyze thousands of Stable Diffusion prompts using AWS Bedrock's Claude 3.5 Sonnet.**
+
+The Batch Analyzer is a powerful tool that automatically extracts and categorizes information from your prompt collection, including:
+
+- **15 Main Categories**: Characters, poses, clothing, settings, lighting, art style, technical details, NSFW content, sexual content, relationships, references, camera composition, mood, and more
+- **Detailed Subcategories**: Over 50 specific attributes extracted per prompt
+- **AWS Bedrock Integration**: Uses Claude 3.5 Sonnet via Batch API for cost-effective processing
+- **Structured Output**: JSON schema optimized for indexing and cataloging
+
+### Quick Start
+
+```bash
+cd src/batch_analyzer
+pip install -r requirements.txt
+cp config.yaml.example config.yaml
+# Edit config.yaml with your AWS settings
+python verify_setup.py
+
+# Option 1: Real-time (fast, immediate results)
+python run_realtime.py --count 10
+
+# Option 2: Batch (cost-effective for large datasets)
+python run_analysis.py --dry-run
+```
+
+### Features
+
+✨ **Two analysis modes**: Batch (cost-effective) and Real-time (fast)  
+💰 50% cost savings with Batch API  
+⚡ **Real-time processing with Claude Haiku 4.5** (fastest, recommended)  
+📊 Structured JSON output  
+🔄 Resumable processing  
+📈 Automatic statistics generation  
+🔍 Dry-run testing mode  
+🎯 **100% success rate** (tested with 30 prompts)  
+
+### Documentation
+
+- [Batch Analyzer README](src/batch_analyzer/README.md) - Complete usage guide
+- [Setup Guide](src/batch_analyzer/SETUP.md) - AWS configuration instructions
+- [Cleanup Guide](src/batch_analyzer/CLEANUP.md) - Resource cleanup instructions
+
+### Cost Example
+
+For the included dataset (10,386 prompts): ~$67 USD using Claude 3.5 Sonnet with Batch API discount.
+
 ## Project Structure
 
 ```
@@ -27,12 +75,20 @@ DiffusionPromptDB/
 ├── requirements.txt               # Production dependencies
 ├── requirements-dev.txt           # Development dependencies
 ├── src/
-│   └── diffusion_prompt_db/      # Main package
-│       ├── __init__.py           # Package initialization
-│       ├── __main__.py           # CLI entry point
-│       ├── database.py           # Database operations
-│       ├── models.py             # Data models
-│       └── config.py             # Configuration
+│   ├── diffusion_prompt_db/      # Main package
+│   │   ├── __init__.py           # Package initialization
+│   │   ├── __main__.py           # CLI entry point
+│   │   ├── database.py           # Database operations
+│   │   ├── models.py             # Data models
+│   │   └── config.py             # Configuration
+│   └── batch_analyzer/           # NEW: Batch analysis tool
+│       ├── core/                 # Core library
+│       ├── schemas/              # JSON schemas
+│       ├── examples/             # Examples
+│       ├── README.md             # Full documentation
+│       ├── SETUP.md              # Setup guide
+│       ├── CLEANUP.md            # Cleanup guide
+│       └── run_analysis.py       # Main script
 ├── tests/                        # Unit tests
 │   ├── __init__.py
 │   └── test_database.py
