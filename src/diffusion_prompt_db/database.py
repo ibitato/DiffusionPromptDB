@@ -246,6 +246,15 @@ class Database:
 
     def _row_to_prompt(self, row: sqlite3.Row) -> Prompt:
         """Convert database row to Prompt object."""
+        # Handle timestamp conversion - SQLite may return datetime objects or strings
+        created_at = row["created_at"]
+        if created_at and isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+
+        updated_at = row["updated_at"]
+        if updated_at and isinstance(updated_at, str):
+            updated_at = datetime.fromisoformat(updated_at)
+
         return Prompt(
             id=row["id"],
             text=row["text"],
@@ -256,12 +265,8 @@ class Database:
             category=row["category"],
             rating=row["rating"],
             notes=row["notes"],
-            created_at=(
-                datetime.fromisoformat(row["created_at"]) if row["created_at"] else None
-            ),
-            updated_at=(
-                datetime.fromisoformat(row["updated_at"]) if row["updated_at"] else None
-            ),
+            created_at=created_at,
+            updated_at=updated_at,
         )
 
     def __enter__(self):
