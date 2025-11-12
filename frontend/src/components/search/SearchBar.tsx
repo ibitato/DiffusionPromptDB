@@ -20,9 +20,8 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
       if (onSearch) {
         onSearch(query);
       } else {
-        // Search by tag and navigate with results
-        // Note: SearchBar now searches for tags that match the query
-        navigate(`/search?tag=${encodeURIComponent(query)}`);
+        // Search by text and navigate to search page with text parameter
+        navigate(`/search?text=${encodeURIComponent(query)}`);
       }
     }
   };
