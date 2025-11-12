@@ -25,7 +25,7 @@ export const searchService = {
       const response = await api.get<{ total: number; results: CatalogPrompt[] }>(
         `/search/complex?${searchParams.toString()}`
       );
-      
+
       return response.data.results;
     } catch (error) {
       throw new Error(handleApiError(error));

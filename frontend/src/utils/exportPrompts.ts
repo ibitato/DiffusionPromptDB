@@ -47,10 +47,7 @@ export const exportToCSV = (prompts: Prompt[], filename: string = 'prompts.csv')
   ]);
 
   // Combine headers and rows
-  const csvContent = [
-    headers.join(','),
-    ...rows.map((row) => row.join(',')),
-  ].join('\n');
+  const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
 
   const dataBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   downloadFile(dataBlob, filename);
@@ -61,12 +58,12 @@ export const exportToCSV = (prompts: Prompt[], filename: string = 'prompts.csv')
  */
 const escapeCSVField = (field: string): string => {
   if (!field) return '';
-  
+
   // If field contains comma, quote, or newline, wrap in quotes and escape quotes
   if (field.includes(',') || field.includes('"') || field.includes('\n')) {
     return `"${field.replace(/"/g, '""')}"`;
   }
-  
+
   return field;
 };
 

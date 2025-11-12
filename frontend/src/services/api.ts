@@ -21,7 +21,7 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('auth_token');
-    
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -78,7 +78,7 @@ export const handleApiError = (error: unknown): string => {
     if (error.response?.data?.detail) {
       return error.response.data.detail;
     }
-    
+
     // Request timeout
     if (error.code === 'ECONNABORTED') {
       return 'Request timeout. Please try again.';

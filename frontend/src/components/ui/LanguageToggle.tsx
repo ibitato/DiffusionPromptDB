@@ -20,9 +20,7 @@ export const LanguageToggle = () => {
       <button
         onClick={() => changeLanguage('es')}
         className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-          currentLang === 'es'
-            ? 'bg-violet-600 text-white'
-            : 'text-gray-300 hover:text-white'
+          currentLang === 'es' ? 'bg-violet-600 text-white' : 'text-gray-300 hover:text-white'
         }`}
       >
         ES
@@ -30,9 +28,7 @@ export const LanguageToggle = () => {
       <button
         onClick={() => changeLanguage('en')}
         className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-          currentLang === 'en'
-            ? 'bg-violet-600 text-white'
-            : 'text-gray-300 hover:text-white'
+          currentLang === 'en' ? 'bg-violet-600 text-white' : 'text-gray-300 hover:text-white'
         }`}
       >
         EN

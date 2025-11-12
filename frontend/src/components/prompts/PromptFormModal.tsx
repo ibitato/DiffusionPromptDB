@@ -83,16 +83,12 @@ export const PromptFormModal = ({
             placeholder="Ingresa el prompt..."
             disabled={isLoading}
           />
-          {errors.text && (
-            <p className="mt-1 text-sm text-red-400">{errors.text.message}</p>
-          )}
+          {errors.text && <p className="mt-1 text-sm text-red-400">{errors.text.message}</p>}
         </div>
 
         {/* Negative Prompt */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Negative Prompt
-          </label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Negative Prompt</label>
           <textarea
             {...register('negative_prompt')}
             rows={3}
@@ -105,9 +101,7 @@ export const PromptFormModal = ({
         {/* Model and Category */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Model
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Model</label>
             <input
               {...register('model')}
               type="text"
@@ -118,9 +112,7 @@ export const PromptFormModal = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Category
-            </label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
             <input
               {...register('category')}
               type="text"
@@ -133,9 +125,7 @@ export const PromptFormModal = ({
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Tags
-          </label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Tags</label>
           <input
             {...register('tags')}
             type="text"
@@ -143,16 +133,12 @@ export const PromptFormModal = ({
             placeholder="tag1, tag2, tag3"
             disabled={isLoading}
           />
-          <p className="mt-1 text-xs text-gray-400">
-            Separar tags con comas
-          </p>
+          <p className="mt-1 text-xs text-gray-400">Separar tags con comas</p>
         </div>
 
         {/* Rating */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Rating
-          </label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Rating</label>
           <div className="flex items-center gap-2">
             {[1, 2, 3, 4, 5].map((value) => (
               <label key={value} className="cursor-pointer">
@@ -177,9 +163,7 @@ export const PromptFormModal = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Notes
-          </label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Notes</label>
           <textarea
             {...register('notes')}
             rows={2}

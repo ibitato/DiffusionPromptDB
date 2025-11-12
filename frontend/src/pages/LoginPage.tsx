@@ -17,7 +17,7 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
 
@@ -29,7 +29,7 @@ export const LoginPage = () => {
     try {
       // Using real API login endpoint
       const response = await authService.login({ username, password });
-      
+
       setAuth(response.user, response.access_token);
       navigate('/dashboard');
     } catch (err) {
@@ -49,27 +49,18 @@ export const LoginPage = () => {
 
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            {t('app.title')}
-          </h1>
-          <p className="text-gray-400">
-            {t('app.subtitle')}
-          </p>
+          <h1 className="text-4xl font-bold text-white mb-2">{t('app.title')}</h1>
+          <p className="text-gray-400">{t('app.subtitle')}</p>
         </div>
 
         {/* Login Form */}
         <div className="bg-slate-800 rounded-lg shadow-xl p-8">
-          <h2 className="text-2xl font-semibold text-white mb-6">
-            {t('login.title')}
-          </h2>
+          <h2 className="text-2xl font-semibold text-white mb-6">{t('login.title')}</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username */}
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-300 mb-2"
-              >
+              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
                 {t('login.username')}
               </label>
               <input
@@ -86,10 +77,7 @@ export const LoginPage = () => {
 
             {/* Password */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-300 mb-2"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                 {t('login.password')}
               </label>
               <input
@@ -130,11 +118,10 @@ export const LoginPage = () => {
 
           {/* Demo Credentials */}
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500 rounded-lg">
-            <p className="text-blue-400 text-sm font-medium mb-1">
-              {t('login.demoCredentials')}
-            </p>
+            <p className="text-blue-400 text-sm font-medium mb-1">{t('login.demoCredentials')}</p>
             <p className="text-blue-300 text-sm">
-              {t('login.username')}: <strong>test</strong> / {t('login.password')}: <strong>test</strong>
+              {t('login.username')}: <strong>test</strong> / {t('login.password')}:{' '}
+              <strong>test</strong>
             </p>
           </div>
         </div>
