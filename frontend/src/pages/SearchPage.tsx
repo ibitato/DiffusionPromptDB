@@ -65,13 +65,14 @@ export const SearchPage = () => {
     setHasSearched(true);
     
     try {
-      const results = await searchService.searchByTag(tag, 100);
-      setResults(results);
+      const response = await searchService.searchByTag(tag, 20, 0);
+      setResults(response.results);
+      setAllResultsCount(response.total);
       
-      if (results.length === 0) {
+      if (response.results.length === 0) {
         toast.info(`No se encontraron prompts con el tag "${tag}"`);
       } else {
-        toast.success(`Encontrados ${results.length} prompts con el tag "${tag}"`);
+        toast.success(`Encontrados ${response.total} prompts con el tag "${tag}"`);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en la búsqueda';
@@ -88,25 +89,22 @@ export const SearchPage = () => {
     setCurrentPage(page);
 
     try {
-      // Always use complex search for proper pagination
+      // If searching by tag only, use tag search endpoint
       if (searchTag && !searchText && !nsfwLevel && !artStyle && !numberOfPeople) {
-        // Pure tag search - still use searchByTag but with higher limit
-        const results = await searchService.searchByTag(searchTag, 1000);
-        const total = results.length;
+        const response = await searchService.searchByTag(
+          searchTag, 
+          pageSize, 
+          (page - 1) * pageSize
+        );
         
-        // Paginate client-side
-        const start = (page - 1) * pageSize;
-        const end = start + pageSize;
-        const paginatedResults = results.slice(start, end);
+        setResults(response.results);
+        setTotalResults(response.results.length);
+        setAllResultsCount(response.total);
         
-        setResults(paginatedResults);
-        setTotalResults(paginatedResults.length);
-        setAllResultsCount(total);
-        
-        if (total === 0) {
+        if (response.total === 0) {
           toast.info(`No se encontraron prompts con el tag "${searchTag}"`);
         } else {
-          toast.success(`Encontrados ${total} prompts totales`);
+          toast.success(`Encontrados ${response.total} prompts totales`);
         }
       } else {
         // Complex search with filters
