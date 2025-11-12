@@ -17,19 +17,20 @@ const api: AxiosInstance = axios.create({
   timeout: 10000, // 10 seconds
 });
 
-// Request interceptor - Add JWT token to requests
+// Request interceptor - Add JWT token AND API key to requests
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('auth_token');
+    const apiKey = import.meta.env.VITE_API_KEY || 'demo-read-key-12345';
 
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // Add API key for read operations if no token
-    if (!token && config.headers) {
-      const apiKey = import.meta.env.VITE_API_KEY || 'demo-read-key-12345';
+    if (config.headers) {
+      // Always add API key for catalog/search endpoints
       config.headers['X-API-Key'] = apiKey;
+      
+      // Add JWT token if available (for write operations)
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
 
     return config;

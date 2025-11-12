@@ -4,11 +4,13 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { SearchBar } from '../search/SearchBar';
 import { LanguageToggle } from '../ui/LanguageToggle';
 
 export const Header = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -32,19 +34,19 @@ export const Header = () => {
               onClick={() => navigate('/dashboard')}
               className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
-              Dashboard
+              {t('nav.dashboard')}
             </button>
             <button
               onClick={() => navigate('/prompts')}
               className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
-              Prompts
+              {t('nav.prompts')}
             </button>
             <button
               onClick={() => navigate('/search')}
               className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
-              Búsqueda
+              {t('nav.search')}
             </button>
           </nav>
 
@@ -59,7 +61,7 @@ export const Header = () => {
               onClick={handleLogout}
               className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
             >
-              Cerrar Sesión
+              {t('nav.logout')}
             </button>
           </div>
         </div>
