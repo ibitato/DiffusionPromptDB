@@ -1,0 +1,453 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Prompt Analysis Result",
+  "description": "Schema for output JSON containing analyzed and categorized prompt data",
+  "type": "object",
+  "required": ["id", "original_prompt", "categories", "metadata"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Original prompt ID from input"
+    },
+    "original_prompt": {
+      "type": "string",
+      "description": "Original prompt text"
+    },
+    "categories": {
+      "type": "object",
+      "description": "Extracted categories from the prompt",
+      "properties": {
+        "character": {
+          "type": "object",
+          "description": "Character/person information",
+          "properties": {
+            "number_of_people": {
+              "type": "integer",
+              "description": "Exact number of people/characters (0 if none, 1, 2, 3+)"
+            },
+            "genders": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Genders mentioned (e.g., 'female', 'male', 'mixed', 'non-binary', 'unspecified')"
+            },
+            "age_ranges": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Age ranges for each person (e.g., 'child', 'teen', 'young adult', 'adult', 'mature', 'elderly')"
+            },
+            "body_types": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Body types mentioned (e.g., 'petite', 'athletic', 'curvy', 'muscular', 'slim', 'plus size')"
+            },
+            "hair": {
+              "type": "object",
+              "properties": {
+                "colors": {"type": "array", "items": {"type": "string"}},
+                "styles": {"type": "array", "items": {"type": "string"}},
+                "lengths": {"type": "array", "items": {"type": "string"}}
+              }
+            },
+            "eyes": {
+              "type": "object",
+              "properties": {
+                "colors": {"type": "array", "items": {"type": "string"}},
+                "shapes": {"type": "array", "items": {"type": "string"}}
+              }
+            },
+            "skin_tones": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Skin tones or complexions mentioned"
+            },
+            "facial_features": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Facial features (freckles, makeup, facial hair, etc.)"
+            },
+            "ethnicities": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Ethnic or cultural identities mentioned"
+            },
+            "species": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Species if non-human (elf, alien, furry, monster, etc.)"
+            },
+            "breast_size": {
+              "type": "string",
+              "description": "Breast size if mentioned (small, medium, large, etc.)"
+            },
+            "physical_attributes": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Other physical attributes (tattoos, piercings, scars, wings, tail, etc.)"
+            }
+          }
+        },
+        "pose": {
+          "type": "object",
+          "description": "Pose and positioning information",
+          "properties": {
+            "main_pose": {
+              "type": "string",
+              "description": "Primary pose (e.g., 'standing', 'sitting', 'lying')"
+            },
+            "body_position": {
+              "type": "string",
+              "description": "Body position details (e.g., 'arched back', 'legs apart')"
+            },
+            "view_angle": {
+              "type": "string",
+              "description": "Camera/viewing angle (e.g., 'front view', 'from behind', 'side view')"
+            },
+            "actions": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Actions being performed"
+            }
+          }
+        },
+        "clothing": {
+          "type": "object",
+          "description": "Clothing and accessories",
+          "properties": {
+            "style": {
+              "type": "string",
+              "description": "Overall clothing style (e.g., 'casual', 'formal', 'fantasy')"
+            },
+            "items": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Specific clothing items mentioned"
+            },
+            "coverage": {
+              "type": "string",
+              "description": "Clothing coverage level (e.g., 'fully clothed', 'partial', 'minimal', 'nude')"
+            },
+            "accessories": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Accessories mentioned (jewelry, gloves, etc.)"
+            }
+          }
+        },
+        "setting": {
+          "type": "object",
+          "description": "Scene setting and environment",
+          "properties": {
+            "location_type": {
+              "type": "string",
+              "description": "Type of location (e.g., 'bedroom', 'outdoor', 'studio')"
+            },
+            "indoor_outdoor": {
+              "type": "string",
+              "enum": ["indoor", "outdoor", "mixed", "unclear"],
+              "description": "Whether scene is indoors or outdoors"
+            },
+            "specific_place": {
+              "type": "string",
+              "description": "Specific place mentioned (e.g., 'barn', 'city', 'jungle')"
+            },
+            "environment_details": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Environmental details (furniture, plants, architecture)"
+            }
+          }
+        },
+        "lighting": {
+          "type": "object",
+          "description": "Lighting conditions",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Lighting type (e.g., 'cinematic', 'natural', 'dramatic')"
+            },
+            "time_of_day": {
+              "type": "string",
+              "description": "Time of day if mentioned (e.g., 'sunrise', 'night', 'sunset')"
+            },
+            "quality": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Lighting quality descriptors"
+            }
+          }
+        },
+        "art_style": {
+          "type": "object",
+          "description": "Artistic style and quality indicators",
+          "properties": {
+            "primary_style": {
+              "type": "string",
+              "description": "Main artistic style (e.g., 'realistic', 'anime', 'photorealistic')"
+            },
+            "quality_tags": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Quality indicators (masterpiece, best quality, etc.)"
+            },
+            "technique": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Artistic techniques mentioned"
+            },
+            "score_indicators": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Score tags (score_9, score_8_up, etc.)"
+            }
+          }
+        },
+        "technical": {
+          "type": "object",
+          "description": "Technical aspects and camera settings",
+          "properties": {
+            "resolution": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Resolution tags (8K, high res, etc.)"
+            },
+            "camera_settings": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Camera settings (depth of field, etc.)"
+            },
+            "detail_level": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Detail descriptors (ultra detailed, highly detailed)"
+            }
+          }
+        },
+        "nsfw_content": {
+          "type": "object",
+          "description": "NSFW content classification",
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": ["safe", "suggestive", "explicit"],
+              "description": "Content rating level"
+            },
+            "elements": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Specific NSFW elements present"
+            }
+          }
+        },
+        "mood_atmosphere": {
+          "type": "object",
+          "description": "Mood and atmosphere",
+          "properties": {
+            "overall_mood": {
+              "type": "string",
+              "description": "Overall emotional tone (e.g., 'seductive', 'peaceful', 'dramatic')"
+            },
+            "emotions": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Emotions expressed or implied"
+            }
+          }
+        },
+        "sexual_content": {
+          "type": "object",
+          "description": "Detailed sexual content classification (if applicable)",
+          "properties": {
+            "sexual_acts": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Specific sexual acts mentioned (penetration, oral, masturbation, etc.)"
+            },
+            "sexual_positions": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Sexual positions (missionary, cowgirl, doggystyle, etc.)"
+            },
+            "body_fluids": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Body fluids mentioned (cum, sweat, saliva, etc.)"
+            },
+            "genital_visibility": {
+              "type": "string",
+              "description": "Level of genital visibility (none, partial, full, explicit)"
+            },
+            "fetishes": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Specific fetishes or kinks mentioned"
+            }
+          }
+        },
+        "relationships": {
+          "type": "object",
+          "description": "Relationships and interactions between characters",
+          "properties": {
+            "interaction_type": {
+              "type": "string",
+              "description": "Type of interaction (solo, couple, group, voyeur, etc.)"
+            },
+            "relationship": {
+              "type": "string",
+              "description": "Relationship between characters if mentioned"
+            },
+            "pov_perspective": {
+              "type": "string",
+              "description": "Point of view (first person POV, third person, etc.)"
+            }
+          }
+        },
+        "references": {
+          "type": "object",
+          "description": "References to known characters, artists, or styles",
+          "properties": {
+            "character_names": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Named characters from anime/games/media"
+            },
+            "series_franchise": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Series or franchise names mentioned"
+            },
+            "artist_references": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Artist names or styles referenced"
+            }
+          }
+        },
+        "camera_composition": {
+          "type": "object",
+          "description": "Detailed camera and composition information",
+          "properties": {
+            "shot_type": {
+              "type": "string",
+              "description": "Type of shot (closeup, wide shot, full body, face focus, etc.)"
+            },
+            "camera_angle": {
+              "type": "string",
+              "description": "Camera angle (from above, from below, dutch angle, eye level, etc.)"
+            },
+            "focus_area": {
+              "type": "string",
+              "description": "Main focus area of the image"
+            },
+            "composition_notes": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Other composition details (foreshortening, dynamic angle, etc.)"
+            }
+          }
+        },
+        "main_tags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "maxItems": 20,
+          "description": "Top 15-20 most relevant tags extracted from the prompt"
+        }
+      },
+      "required": ["character", "pose", "setting", "art_style", "nsfw_content", "main_tags"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Processing metadata",
+      "required": ["processed_at", "model_used"],
+      "properties": {
+        "processed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of when the prompt was processed"
+        },
+        "model_used": {
+          "type": "string",
+          "description": "Bedrock model ID used for analysis"
+        },
+        "processing_time_ms": {
+          "type": "integer",
+          "description": "Processing time in milliseconds"
+        },
+        "tokens_used": {
+          "type": "object",
+          "properties": {
+            "input": {"type": "integer"},
+            "output": {"type": "integer"}
+          },
+          "description": "Token usage for this analysis"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": 1,
+      "original_prompt": "score_9, 1girl, portrait, realistic, cinematic lighting",
+      "categories": {
+        "character": {
+          "count": 1,
+          "genders": ["female"],
+          "age_range": "unspecified",
+          "physical_traits": [],
+          "ethnicities": []
+        },
+        "pose": {
+          "main_pose": "portrait",
+          "body_position": "standard",
+          "view_angle": "front view",
+          "actions": []
+        },
+        "clothing": {
+          "style": "unspecified",
+          "items": [],
+          "coverage": "unspecified",
+          "accessories": []
+        },
+        "setting": {
+          "location_type": "unspecified",
+          "indoor_outdoor": "unclear",
+          "specific_place": "none",
+          "environment_details": []
+        },
+        "lighting": {
+          "type": "cinematic",
+          "time_of_day": "unspecified",
+          "quality": ["cinematic lighting"]
+        },
+        "art_style": {
+          "primary_style": "realistic",
+          "quality_tags": [],
+          "technique": [],
+          "score_indicators": ["score_9"]
+        },
+        "technical": {
+          "resolution": [],
+          "camera_settings": [],
+          "detail_level": []
+        },
+        "nsfw_content": {
+          "level": "safe",
+          "elements": []
+        },
+        "mood_atmosphere": {
+          "overall_mood": "neutral",
+          "emotions": []
+        },
+        "main_tags": ["1girl", "portrait", "realistic", "cinematic lighting", "score_9"]
+      },
+      "metadata": {
+        "processed_at": "2025-01-12T07:52:00Z",
+        "model_used": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "processing_time_ms": 1500,
+        "tokens_used": {
+          "input": 250,
+          "output": 450
+        }
+      }
+    }
+  ]
+}

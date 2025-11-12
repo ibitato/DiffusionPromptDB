@@ -1,0 +1,144 @@
+# Batch Analyzer Configuration Template
+# Batch Analyzer Configuration Template
+# Copy this file to config.yaml and customize for your setup
+
+# AWS Configuration
+aws:
+  # AWS profile to use (configured via 'aws configure --profile <name>')
+  # Use 'default' for default profile
+  profile: "default"
+  
+  # AWS region where Bedrock is available
+  # Bedrock available regions: us-east-1, us-west-2, eu-west-1, ap-southeast-1, etc.
+  region: "us-east-1"
+  
+  # Optional: Explicitly set credentials (not recommended, use profile instead)
+  # access_key_id: null
+  # secret_access_key: null
+
+# AWS Bedrock Configuration
+bedrock:
+  # Model ID for BATCH analysis (run_analysis.py)
+  # Must support Batch Inference API (ON_DEMAND)
+  # Available models:
+  # - anthropic.claude-3-5-sonnet-20240620-v1:0 (Recommended - Best quality)
+  # - anthropic.claude-3-sonnet-20240229-v1:0 (Claude 3 Sonnet)
+  # - anthropic.claude-3-haiku-20240307-v1:0 (Faster, cheaper)
+  model_id: "anthropic.claude-3-5-sonnet-20240620-v1:0"
+  
+  # Note: For REAL-TIME analysis (run_realtime.py), you can specify model via --model flag
+  # Real-time uses Claude 3 Haiku by default: anthropic.claude-3-haiku-20240307-v1:0
+  
+  # Maximum tokens for model response
+  max_tokens: 2000
+  
+  # Temperature (0.0 = deterministic, 1.0 = creative)
+  # Use 0.0 for consistent categorization
+  temperature: 0.0
+  
+  # Top P sampling (0.0-1.0)
+  top_p: 1.0
+
+# Batch Processing Configuration
+batch:
+  # Number of prompts to process per batch job
+  # Bedrock Batch API limits: 10,000 requests per job
+  # Recommended: 100-500 for manageable chunks
+  batch_size: 200
+  
+  # Maximum concurrent batch jobs
+  # Be mindful of AWS service quotas
+  max_concurrent_jobs: 1
+  
+  # S3 bucket for batch input/output (optional)
+  # If null, temporary buckets will be created
+  # Format: "s3://your-bucket-name/optional-prefix"
+  input_s3_uri: null
+  output_s3_uri: null
+  
+  # Job naming prefix
+  job_name_prefix: "prompt-analysis"
+  
+  # Poll interval for checking job status (seconds)
+  status_check_interval: 300  # 5 minutes
+
+# Processing Options
+processing:
+  # Dry run mode: only process N prompts for testing
+  dry_run: false
+  dry_run_count: 10
+  
+  # Resume processing from a specific prompt ID
+  # Useful if previous run was interrupted
+  resume_from_id: null
+  
+  # Skip prompts that have already been processed
+  # Checks results directory for existing analyses
+  skip_existing: true
+  
+  # Validate input file before processing
+  validate_input: true
+  
+  # Maximum retries for failed batch jobs
+  max_retries: 3
+  
+  # Save intermediate results
+  save_checkpoints: true
+
+# Input/Output Paths
+paths:
+  # Path to input JSONL file (relative to batch_analyzer directory)
+  input_file: "../../json_data/prompts.jsonl"
+  
+  # Output directory for results
+  output_dir: "./results"
+  
+  # Logs directory
+  logs_dir: "./logs"
+  
+  # Checkpoints directory (for resumable processing)
+  checkpoints_dir: "./checkpoints"
+
+# Categories to Extract
+# Enable/disable specific category extraction
+categories:
+  character: true
+  pose: true
+  clothing: true
+  setting: true
+  lighting: true
+  art_style: true
+  technical: true
+  nsfw_content: true
+  mood_atmosphere: true
+  main_tags: true
+
+# Logging Configuration
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log to file
+  file_logging: true
+  
+  # Log to console
+  console_logging: true
+
+# Cost Estimation (approximate, for reference)
+# Based on Claude 3.5 Sonnet pricing (as of 2024)
+cost_estimation:
+  # Input tokens: $3.00 per million
+  input_token_cost_per_million: 3.00
+  
+  # Output tokens: $15.00 per million
+  output_token_cost_per_million: 15.00
+  
+  # Batch API discount: 50% off standard pricing
+  batch_discount: 0.50
+  
+  # Estimated tokens per prompt
+  estimated_input_tokens_per_prompt: 300
+  estimated_output_tokens_per_prompt: 800
