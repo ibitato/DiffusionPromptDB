@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
 import { useToast } from '../components/ui/Toast';
@@ -13,6 +14,7 @@ import { searchService } from '../services/search.service';
 import { CatalogPrompt, Prompt } from '../types/api.types';
 
 export const SearchPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [results, setResults] = useState<CatalogPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -163,8 +165,8 @@ export const SearchPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Búsqueda Avanzada</h2>
-          <p className="text-gray-400">Filtra prompts por múltiples criterios</p>
+          <h2 className="text-3xl font-bold text-white mb-2">{t('search.title')}</h2>
+          <p className="text-gray-400">{t('search.subtitle')}</p>
         </div>
 
         {/* Filters Section */}
@@ -273,7 +275,7 @@ export const SearchPage = () => {
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
-                Buscar
+                {t('search.searchButton')}
               </button>
 
               {activeFiltersCount > 0 && (
@@ -281,7 +283,7 @@ export const SearchPage = () => {
                   onClick={clearFilters}
                   className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
                 >
-                  Limpiar Filtros
+                  {t('search.clearFilters')}
                 </button>
               )}
             </div>
