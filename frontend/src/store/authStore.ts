@@ -11,7 +11,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  
+
   // Actions
   setAuth: (user: User, token: string) => void;
   logout: () => void;
@@ -29,15 +29,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   initAuth: () => {
     const token = localStorage.getItem('auth_token');
     const userStr = localStorage.getItem('user');
-    
+
     if (token && userStr) {
       try {
         const user = JSON.parse(userStr);
-        set({ 
-          user, 
-          token, 
+        set({
+          user,
+          token,
           isAuthenticated: true,
-          isLoading: false 
+          isLoading: false,
         });
       } catch (error) {
         console.error('Failed to parse user data:', error);
@@ -54,11 +54,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuth: (user: User, token: string) => {
     localStorage.setItem('auth_token', token);
     localStorage.setItem('user', JSON.stringify(user));
-    set({ 
-      user, 
-      token, 
+    set({
+      user,
+      token,
       isAuthenticated: true,
-      isLoading: false 
+      isLoading: false,
     });
   },
 
@@ -66,11 +66,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
-    set({ 
-      user: null, 
-      token: null, 
+    set({
+      user: null,
+      token: null,
       isAuthenticated: false,
-      isLoading: false 
+      isLoading: false,
     });
   },
 

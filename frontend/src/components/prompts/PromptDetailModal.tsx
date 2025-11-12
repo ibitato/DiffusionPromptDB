@@ -61,12 +61,7 @@ export const PromptDetailModal = ({
 
   return (
     <>
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title={`Prompt #${prompt.id}`}
-        size="xl"
-      >
+      <Modal isOpen={isOpen} onClose={onClose} title={`Prompt #${prompt.id}`} size="xl">
         <div className="space-y-6">
           {/* Header with badges */}
           <div className="flex items-center gap-3 pb-4 border-b border-slate-700">
@@ -136,9 +131,7 @@ export const PromptDetailModal = ({
               </button>
             </div>
             <div className="p-4 bg-slate-700/50 rounded-lg">
-              <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
-                {prompt.text}
-              </p>
+              <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{prompt.text}</p>
             </div>
           </motion.div>
 
@@ -151,10 +144,10 @@ export const PromptDetailModal = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-semibold text-gray-300">Negative Prompt</h4>
-              <button
-                onClick={() => copyToClipboard(prompt.negative_prompt!)}
-                className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1"
-              >
+                <button
+                  onClick={() => copyToClipboard(prompt.negative_prompt!)}
+                  className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1"
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
@@ -223,9 +216,7 @@ export const PromptDetailModal = ({
             >
               <h4 className="text-sm font-semibold text-gray-300 mb-2">Notes</h4>
               <div className="p-4 bg-slate-700/50 rounded-lg">
-                <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
-                  {prompt.notes}
-                </p>
+                <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{prompt.notes}</p>
               </div>
             </motion.div>
           )}

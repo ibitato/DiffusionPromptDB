@@ -1,7 +1,7 @@
 # DiffusionPromptDB Makefile
 # Virtual environment aware - automatically uses .venv/
 
-.PHONY: help setup install clean clean-all format lint typecheck check test test-coverage init-db build run
+.PHONY: help setup install clean clean-all format lint typecheck check test test-coverage init-db build run format-frontend lint-frontend check-frontend
 
 # Detect OS
 ifeq ($(OS),Windows_NT)
@@ -30,11 +30,16 @@ help:
 	@echo "  make install        - Install package in development mode"
 	@echo "  make install-dev    - Install with development dependencies"
 	@echo ""
-	@echo "Code Quality:"
-	@echo "  make format         - Format code with black"
-	@echo "  make lint           - Run flake8 linter"
+	@echo "Code Quality (Backend):"
+	@echo "  make format         - Format Python code with black"
+	@echo "  make lint           - Run flake8 linter on Python"
 	@echo "  make typecheck      - Run mypy type checker"
-	@echo "  make check          - Run all quality checks (format + lint + typecheck)"
+	@echo "  make check          - Run all Python quality checks (format + lint + typecheck)"
+	@echo ""
+	@echo "Code Quality (Frontend):"
+	@echo "  make format-frontend - Format TypeScript/React code with Prettier"
+	@echo "  make lint-frontend   - Run ESLint on TypeScript/React"
+	@echo "  make check-frontend  - Run all frontend checks (format + lint)"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test           - Run all tests"
@@ -97,10 +102,27 @@ typecheck:
 	$(PYTHON) -m mypy src/
 	@echo "Type checking complete!"
 
-# Run all quality checks
+# Run all quality checks (backend)
 check: format lint typecheck
 	@echo ""
-	@echo "All quality checks passed!"
+	@echo "All backend quality checks passed!"
+
+# Format frontend code with Prettier
+format-frontend:
+	@echo "Formatting frontend code with Prettier..."
+	cd frontend && npm run format || (echo "Installing prettier..." && npm install --save-dev prettier && npm run format)
+	@echo "Frontend code formatting complete!"
+
+# Lint frontend code
+lint-frontend:
+	@echo "Linting frontend code with ESLint..."
+	cd frontend && npm run lint
+	@echo "Frontend linting complete!"
+
+# Check frontend code
+check-frontend: format-frontend lint-frontend
+	@echo ""
+	@echo "All frontend quality checks passed!"
 
 # Run tests
 test:

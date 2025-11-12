@@ -4,11 +4,7 @@
  */
 
 import api, { handleApiError } from './api';
-import {
-  Prompt,
-  CreatePromptRequest,
-  PaginatedResponse,
-} from '../types/api.types';
+import { Prompt, CreatePromptRequest, PaginatedResponse } from '../types/api.types';
 
 export const promptsService = {
   /**
@@ -29,9 +25,7 @@ export const promptsService = {
         params.append('category', category);
       }
 
-      const response = await api.get<PaginatedResponse<Prompt>>(
-        `/prompts?${params.toString()}`
-      );
+      const response = await api.get<PaginatedResponse<Prompt>>(`/prompts?${params.toString()}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));

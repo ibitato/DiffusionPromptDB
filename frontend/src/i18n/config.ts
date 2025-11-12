@@ -17,15 +17,13 @@ const resources = {
   },
 };
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: localStorage.getItem('language') || 'es', // Default language
-    fallbackLng: 'es',
-    interpolation: {
-      escapeValue: false, // React already escapes
-    },
-  });
+i18n.use(initReactI18next).init({
+  resources,
+  lng: localStorage.getItem('language') || 'es', // Default language
+  fallbackLng: 'es',
+  interpolation: {
+    escapeValue: false, // React already escapes
+  },
+});
 
 export default i18n;

@@ -54,10 +54,7 @@ export const Modal = ({ isOpen, onClose, title, children, size = 'md' }: ModalPr
                 className={`w-full ${sizeClasses[size]} transform overflow-hidden rounded-lg bg-slate-800 border border-slate-700 p-6 text-left align-middle shadow-xl transition-all`}
               >
                 {/* Header */}
-                <Dialog.Title
-                  as="h3"
-                  className="text-xl font-semibold text-white mb-4"
-                >
+                <Dialog.Title as="h3" className="text-xl font-semibold text-white mb-4">
                   {title}
                 </Dialog.Title>
 

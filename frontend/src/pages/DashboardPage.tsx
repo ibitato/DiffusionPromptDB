@@ -64,9 +64,7 @@ export const DashboardPage = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">Dashboard</h2>
-          <p className="text-gray-400">
-            Resumen general del sistema de catalogación
-          </p>
+          <p className="text-gray-400">Resumen general del sistema de catalogación</p>
         </div>
 
         {/* Stats Grid */}
@@ -75,12 +73,8 @@ export const DashboardPage = () => {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">
-                  Total Prompts
-                </p>
-                <p className="text-3xl font-bold text-white mt-2">
-                  {stats?.total_prompts || 0}
-                </p>
+                <p className="text-gray-400 text-sm font-medium">Total Prompts</p>
+                <p className="text-3xl font-bold text-white mt-2">{stats?.total_prompts || 0}</p>
               </div>
               <div className="bg-violet-600/10 p-3 rounded-lg">
                 <svg
@@ -104,9 +98,7 @@ export const DashboardPage = () => {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">
-                  Estilos de Arte
-                </p>
+                <p className="text-gray-400 text-sm font-medium">Estilos de Arte</p>
                 <p className="text-3xl font-bold text-white mt-2">
                   {stats?.top_art_styles?.length || 0}
                 </p>
@@ -134,9 +126,7 @@ export const DashboardPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm font-medium">Tags</p>
-                <p className="text-3xl font-bold text-white mt-2">
-                  {stats?.top_tags?.length || 0}
-                </p>
+                <p className="text-3xl font-bold text-white mt-2">{stats?.top_tags?.length || 0}</p>
               </div>
               <div className="bg-green-600/10 p-3 rounded-lg">
                 <svg
@@ -160,9 +150,7 @@ export const DashboardPage = () => {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">
-                  Categorías NSFW
-                </p>
+                <p className="text-gray-400 text-sm font-medium">Categorías NSFW</p>
                 <p className="text-3xl font-bold text-white mt-2">
                   {Object.keys(stats?.nsfw_distribution || {}).length}
                 </p>
@@ -189,9 +177,7 @@ export const DashboardPage = () => {
         {/* Top Tags Table */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">
-              Top Tags
-            </h3>
+            <h3 className="text-xl font-semibold text-white mb-4">Top Tags</h3>
             <div className="space-y-3">
               {stats?.top_tags?.slice(0, 5).map((tag, index) => (
                 <div
@@ -199,9 +185,7 @@ export const DashboardPage = () => {
                   className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
                 >
                   <span className="text-gray-300">{tag.tag}</span>
-                  <span className="text-violet-400 font-semibold">
-                    {tag.count}
-                  </span>
+                  <span className="text-violet-400 font-semibold">{tag.count}</span>
                 </div>
               ))}
             </div>
@@ -209,9 +193,7 @@ export const DashboardPage = () => {
 
           {/* Top Art Styles */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">
-              Estilos Más Usados
-            </h3>
+            <h3 className="text-xl font-semibold text-white mb-4">Estilos Más Usados</h3>
             <div className="space-y-3">
               {stats?.top_art_styles?.slice(0, 5).map((style, index) => (
                 <div
@@ -219,9 +201,7 @@ export const DashboardPage = () => {
                   className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
                 >
                   <span className="text-gray-300">{style.style}</span>
-                  <span className="text-blue-400 font-semibold">
-                    {style.count}
-                  </span>
+                  <span className="text-blue-400 font-semibold">{style.count}</span>
                 </div>
               ))}
             </div>
@@ -230,23 +210,14 @@ export const DashboardPage = () => {
 
         {/* NSFW Distribution */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
-          <h3 className="text-xl font-semibold text-white mb-4">
-            Distribución NSFW
-          </h3>
+          <h3 className="text-xl font-semibold text-white mb-4">Distribución NSFW</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {Object.entries(stats?.nsfw_distribution || {}).map(
-              ([level, count]) => (
-                <div
-                  key={level}
-                  className="p-4 bg-slate-700/50 rounded-lg text-center"
-                >
-                  <p className="text-gray-400 text-sm mb-1 capitalize">
-                    {level}
-                  </p>
-                  <p className="text-2xl font-bold text-white">{count}</p>
-                </div>
-              )
-            )}
+            {Object.entries(stats?.nsfw_distribution || {}).map(([level, count]) => (
+              <div key={level} className="p-4 bg-slate-700/50 rounded-lg text-center">
+                <p className="text-gray-400 text-sm mb-1 capitalize">{level}</p>
+                <p className="text-2xl font-bold text-white">{count}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -255,9 +226,7 @@ export const DashboardPage = () => {
 
         {/* Quick Actions */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mt-8">
-          <h3 className="text-xl font-semibold text-white mb-4">
-            Acciones Rápidas
-          </h3>
+          <h3 className="text-xl font-semibold text-white mb-4">Acciones Rápidas</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => navigate('/prompts')}
@@ -265,12 +234,7 @@ export const DashboardPage = () => {
             >
               <div className="flex items-center justify-between">
                 <span>Ver Todos los Prompts</span>
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -287,12 +251,7 @@ export const DashboardPage = () => {
             >
               <div className="flex items-center justify-between">
                 <span>Crear Nuevo Prompt</span>
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

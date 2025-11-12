@@ -21,7 +21,7 @@ export const SearchPage = () => {
   const [nsfwLevel, setNsfwLevel] = useState('');
   const [artStyle, setArtStyle] = useState('');
   const [numberOfPeople, setNumberOfPeople] = useState('');
-  
+
   const toast = useToast();
 
   // Available options
@@ -82,12 +82,8 @@ export const SearchPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">
-            Búsqueda Avanzada
-          </h2>
-          <p className="text-gray-400">
-            Filtra prompts por múltiples criterios
-          </p>
+          <h2 className="text-3xl font-bold text-white mb-2">Búsqueda Avanzada</h2>
+          <p className="text-gray-400">Filtra prompts por múltiples criterios</p>
         </div>
 
         {/* Filters Section */}
@@ -95,9 +91,7 @@ export const SearchPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* NSFW Level Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                NSFW Level
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">NSFW Level</label>
               <select
                 value={nsfwLevel}
                 onChange={(e) => setNsfwLevel(e.target.value)}
@@ -114,9 +108,7 @@ export const SearchPage = () => {
 
             {/* Art Style Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Art Style
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Art Style</label>
               <select
                 value={artStyle}
                 onChange={(e) => setArtStyle(e.target.value)}
@@ -180,7 +172,8 @@ export const SearchPage = () => {
 
             {activeFiltersCount > 0 && (
               <span className="text-sm text-gray-400">
-                {activeFiltersCount} filtro{activeFiltersCount !== 1 ? 's' : ''} activo{activeFiltersCount !== 1 ? 's' : ''}
+                {activeFiltersCount} filtro{activeFiltersCount !== 1 ? 's' : ''} activo
+                {activeFiltersCount !== 1 ? 's' : ''}
               </span>
             )}
           </div>
@@ -191,19 +184,25 @@ export const SearchPage = () => {
               {nsfwLevel && (
                 <span className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded-full text-sm flex items-center gap-2">
                   NSFW: {nsfwLevel}
-                  <button onClick={() => setNsfwLevel('')} className="hover:text-orange-300">×</button>
+                  <button onClick={() => setNsfwLevel('')} className="hover:text-orange-300">
+                    ×
+                  </button>
                 </span>
               )}
               {artStyle && (
                 <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm flex items-center gap-2">
                   Style: {artStyle}
-                  <button onClick={() => setArtStyle('')} className="hover:text-blue-300">×</button>
+                  <button onClick={() => setArtStyle('')} className="hover:text-blue-300">
+                    ×
+                  </button>
                 </span>
               )}
               {numberOfPeople && (
                 <span className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm flex items-center gap-2">
                   People: {numberOfPeople}
-                  <button onClick={() => setNumberOfPeople('')} className="hover:text-green-300">×</button>
+                  <button onClick={() => setNumberOfPeople('')} className="hover:text-green-300">
+                    ×
+                  </button>
                 </span>
               )}
             </div>
@@ -234,9 +233,7 @@ export const SearchPage = () => {
                   >
                     <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="text-lg font-semibold text-white">
-                          Prompt #{result.id}
-                        </h4>
+                        <h4 className="text-lg font-semibold text-white">Prompt #{result.id}</h4>
                         {result.nsfw_level && (
                           <span className="px-2 py-1 bg-orange-600/20 text-orange-400 text-xs rounded-full">
                             {result.nsfw_level}
@@ -313,9 +310,7 @@ export const SearchPage = () => {
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
-            <p className="text-gray-400 text-lg">
-              Selecciona filtros y haz click en Buscar
-            </p>
+            <p className="text-gray-400 text-lg">Selecciona filtros y haz click en Buscar</p>
           </div>
         )}
       </main>

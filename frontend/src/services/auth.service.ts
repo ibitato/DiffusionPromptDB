@@ -39,7 +39,7 @@ export const authService = {
    */
   mockLogin: async (credentials: LoginRequest): Promise<LoginResponse> => {
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Mock validation
     if (credentials.username === 'test' && credentials.password === 'test') {

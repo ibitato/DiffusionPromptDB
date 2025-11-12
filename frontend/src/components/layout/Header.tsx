@@ -23,9 +23,7 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-white">
-              DiffusionPromptDB
-            </h1>
+            <h1 className="text-xl font-bold text-white">DiffusionPromptDB</h1>
           </div>
 
           {/* Navigation */}
@@ -56,9 +54,7 @@ export const Header = () => {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             <LanguageToggle />
-            <span className="text-gray-400 text-sm">
-              {user?.username}
-            </span>
+            <span className="text-gray-400 text-sm">{user?.username}</span>
             <button
               onClick={handleLogout}
               className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
