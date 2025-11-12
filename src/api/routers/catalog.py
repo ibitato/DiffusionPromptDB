@@ -21,7 +21,7 @@ def get_catalog_db():
     db_path = Path(settings.catalog_db_path)
     if not db_path.exists():
         raise HTTPException(status_code=503, detail="Catalog database not available")
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     try:
         yield conn
