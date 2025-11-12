@@ -14,14 +14,15 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       if (onSearch) {
         onSearch(query);
       } else {
-        // Navigate to search page with query
-        navigate(`/search?q=${encodeURIComponent(query)}`);
+        // Search by tag and navigate with results
+        // Note: SearchBar now searches for tags that match the query
+        navigate(`/search?tag=${encodeURIComponent(query)}`);
       }
     }
   };
