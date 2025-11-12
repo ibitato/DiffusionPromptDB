@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     port: int = 8000
     reload: bool = False
     
-    # Databases
-    prompts_db_path: str = "../data/prompts.db"
+    # Database (unified - uses the catalog DB with 10,386 prompts for everything)
+    prompts_db_path: str = "../batch_analyzer/prompts_catalog.db"
     catalog_db_path: str = "../batch_analyzer/prompts_catalog.db"
     
     # Security

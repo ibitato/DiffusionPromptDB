@@ -45,16 +45,19 @@ curl -H "X-API-Key: REDACTED_API_KEY" http://localhost:8000/api/v1/prompts
 
 **3. JWT Token (Lectura/Escritura):**
 ```bash
-# Crear token (implementar endpoint de login)
-curl -X POST http://localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"secret"}'
+cd src/api
 
-# Usar token
-curl -H "Authorization: Bearer <token>" \
-  -X POST http://localhost:8000/api/v1/prompts \
-  -H "Content-Type: application/json" \
-  -d '{"text":"my prompt","category":"landscape"}'
+# Instalar
+pip install -r requirements.txt
+
+# Ejecutar (IMPORTANTE: usar start_server.py para evitar errores de imports)
+python start_server.py
+
+# O desde el root del proyecto:
+python -m src.api.start_server
+
+# API: http://localhost:8000
+# Docs: http://localhost:8000/docs
 ```
 
 ## 📡 Endpoints Principales

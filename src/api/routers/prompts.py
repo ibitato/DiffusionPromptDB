@@ -26,7 +26,7 @@ def get_prompts_db():
     db_path = Path(settings.prompts_db_path)
     if not db_path.exists():
         db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     try:
         yield conn
@@ -44,20 +44,36 @@ async def list_prompts(
 ):
     """
     List prompts with pagination.
+    Uses catalog DB schema (original_prompt, processed_at).
     
     Requires: API Key
     """
     offset = (page - 1) * page_size
     
+    # Catalog DB doesn't have category column, so ignore for now
     # Count total
-    if category:
-        total = db.execute("SELECT COUNT(*) FROM prompts WHERE category = ?", (category,)).fetchone()[0]
-        query = "SELECT * FROM prompts WHERE category = ? ORDER BY created_at DESC LIMIT ? OFFSET ?"
-        params = (category, page_size, offset)
-    else:
-        total = db.execute("SELECT COUNT(*) FROM prompts").fetchone()[0]
-        query = "SELECT * FROM prompts ORDER BY created_at DESC LIMIT ? OFFSET ?"
-        params = (page_size, offset)
+    total = db.execute("SELECT COUNT(*) FROM prompts").fetchone()[0]
+    
+    # Get results - map catalog fields to expected frontend fields
+    query = """
+        SELECT 
+            p.id,
+            p.original_prompt as text,
+            p.model_used as model,
+            p.processed_at as created_at,
+            p.processed_at as updated_at,
+            a.primary_style as category,
+            NULL as negative_prompt,
+            NULL as parameters,
+            NULL as tags,
+            NULL as rating,
+            NULL as notes
+        FROM prompts p
+        LEFT JOIN art_styles a ON p.id = a.prompt_id
+        ORDER BY p.processed_at DESC
+        LIMIT ? OFFSET ?
+    """
+    params = (page_size, offset)
     
     # Get results
     results = db.execute(query, params).fetchall()
@@ -80,10 +96,28 @@ async def get_prompt(
 ):
     """
     Get a specific prompt by ID.
+    Maps catalog schema to frontend expected schema.
     
     Requires: API Key
     """
-    row = db.execute("SELECT * FROM prompts WHERE id = ?", (prompt_id,)).fetchone()
+    # Get prompt with mapped fields
+    row = db.execute("""
+        SELECT 
+            p.id,
+            p.original_prompt as text,
+            p.model_used as model,
+            p.processed_at as created_at,
+            p.processed_at as updated_at,
+            a.primary_style as category,
+            NULL as negative_prompt,
+            NULL as parameters,
+            NULL as tags,
+            NULL as rating,
+            NULL as notes
+        FROM prompts p
+        LEFT JOIN art_styles a ON p.id = a.prompt_id
+        WHERE p.id = ?
+    """, (prompt_id,)).fetchone()
     
     if not row:
         raise HTTPException(status_code=404, detail="Prompt not found")
@@ -98,29 +132,56 @@ async def create_prompt(
     auth: dict = Depends(verify_token)
 ):
     """
-    Create a new prompt.
+    Create a new prompt in catalog DB.
+    Only admin users can create prompts.
     
     Requires: JWT Token (write access)
     """
-    cursor = db.execute("""
-        INSERT INTO prompts (text, negative_prompt, model, parameters, tags, category, rating, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    from datetime import datetime
+    
+    # Get next ID
+    max_id = db.execute("SELECT MAX(id) FROM prompts").fetchone()[0]
+    next_id = (max_id or 0) + 1
+    
+    # Insert into prompts table (catalog schema)
+    db.execute("""
+        INSERT INTO prompts (id, original_prompt, processed_at, model_used, input_tokens, output_tokens)
+        VALUES (?, ?, ?, ?, 0, 0)
     """, (
+        next_id,
         prompt.text,
-        prompt.negative_prompt,
-        prompt.model,
-        prompt.parameters,
-        prompt.tags,
-        prompt.category,
-        prompt.rating,
-        prompt.notes
+        datetime.utcnow().isoformat(),
+        prompt.model or 'manual-entry'
     ))
     
-    db.commit()
-    prompt_id = cursor.lastrowid
+    # Insert basic categorization
+    db.execute("INSERT INTO characters (prompt_id, number_of_people, breast_size) VALUES (?, 1, 'unspecified')", (next_id,))
+    db.execute("INSERT INTO nsfw_content (prompt_id, level) VALUES (?, 'safe')", (next_id,))
     
-    # Return created prompt
-    row = db.execute("SELECT * FROM prompts WHERE id = ?", (prompt_id,)).fetchone()
+    if prompt.category:
+        db.execute("INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)", (next_id, prompt.category))
+    
+    db.commit()
+    
+    # Return created prompt with mapping
+    row = db.execute("""
+        SELECT 
+            p.id,
+            p.original_prompt as text,
+            p.model_used as model,
+            p.processed_at as created_at,
+            p.processed_at as updated_at,
+            a.primary_style as category,
+            NULL as negative_prompt,
+            NULL as parameters,
+            NULL as tags,
+            NULL as rating,
+            NULL as notes
+        FROM prompts p
+        LEFT JOIN art_styles a ON p.id = a.prompt_id
+        WHERE p.id = ?
+    """, (next_id,)).fetchone()
+    
     return dict(row)
 
 
@@ -132,7 +193,8 @@ async def update_prompt(
     auth: dict = Depends(verify_token)
 ):
     """
-    Update an existing prompt.
+    Update an existing prompt in catalog DB.
+    Updates prompt text and category (art_style).
     
     Requires: JWT Token (write access)
     """
@@ -141,45 +203,44 @@ async def update_prompt(
     if not existing:
         raise HTTPException(status_code=404, detail="Prompt not found")
     
-    # Build update query dynamically
-    updates = []
-    values = []
-    
+    # Update prompt text
     if prompt.text is not None:
-        updates.append("text = ?")
-        values.append(prompt.text)
-    if prompt.negative_prompt is not None:
-        updates.append("negative_prompt = ?")
-        values.append(prompt.negative_prompt)
+        db.execute("UPDATE prompts SET original_prompt = ? WHERE id = ?", (prompt.text, prompt_id))
+    
+    # Update model
     if prompt.model is not None:
-        updates.append("model = ?")
-        values.append(prompt.model)
-    if prompt.parameters is not None:
-        updates.append("parameters = ?")
-        values.append(prompt.parameters)
-    if prompt.tags is not None:
-        updates.append("tags = ?")
-        values.append(prompt.tags)
+        db.execute("UPDATE prompts SET model_used = ? WHERE id = ?", (prompt.model, prompt_id))
+    
+    # Update category (art_style)
     if prompt.category is not None:
-        updates.append("category = ?")
-        values.append(prompt.category)
-    if prompt.rating is not None:
-        updates.append("rating = ?")
-        values.append(prompt.rating)
-    if prompt.notes is not None:
-        updates.append("notes = ?")
-        values.append(prompt.notes)
+        # Check if art_style entry exists
+        exists = db.execute("SELECT 1 FROM art_styles WHERE prompt_id = ?", (prompt_id,)).fetchone()
+        if exists:
+            db.execute("UPDATE art_styles SET primary_style = ? WHERE prompt_id = ?", (prompt.category, prompt_id))
+        else:
+            db.execute("INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)", (prompt_id, prompt.category))
     
-    if updates:
-        updates.append("updated_at = CURRENT_TIMESTAMP")
-        values.append(prompt_id)
-        
-        query = f"UPDATE prompts SET {', '.join(updates)} WHERE id = ?"
-        db.execute(query, values)
-        db.commit()
+    db.commit()
     
-    # Return updated prompt
-    row = db.execute("SELECT * FROM prompts WHERE id = ?", (prompt_id,)).fetchone()
+    # Return updated prompt with mapping
+    row = db.execute("""
+        SELECT 
+            p.id,
+            p.original_prompt as text,
+            p.model_used as model,
+            p.processed_at as created_at,
+            p.processed_at as updated_at,
+            a.primary_style as category,
+            NULL as negative_prompt,
+            NULL as parameters,
+            NULL as tags,
+            NULL as rating,
+            NULL as notes
+        FROM prompts p
+        LEFT JOIN art_styles a ON p.id = a.prompt_id
+        WHERE p.id = ?
+    """, (prompt_id,)).fetchone()
+    
     return dict(row)
 
 
@@ -190,14 +251,36 @@ async def delete_prompt(
     auth: dict = Depends(verify_token)
 ):
     """
-    Delete a prompt.
+    Delete a prompt from catalog DB.
+    Cascades to all related tables.
     
     Requires: JWT Token (write access)
     """
-    result = db.execute("DELETE FROM prompts WHERE id = ?", (prompt_id,))
-    db.commit()
-    
-    if result.rowcount == 0:
+    # Check if exists
+    existing = db.execute("SELECT 1 FROM prompts WHERE id = ?", (prompt_id,)).fetchone()
+    if not existing:
         raise HTTPException(status_code=404, detail="Prompt not found")
+    
+    # Delete from all related tables (catalog schema has 20+ tables)
+    tables = [
+        "main_tags", "emotions", "mood_atmosphere", "composition_notes", 
+        "camera_composition", "prompt_references", "relationships",
+        "sexual_details", "sexual_content", "nsfw_elements", "nsfw_content",
+        "technical_details", "technical", "art_style_tags", "art_styles",
+        "lighting_quality", "lighting", "environment_details", "settings",
+        "clothing_accessories", "clothing_items", "clothing",
+        "pose_actions", "poses", "character_attributes", "character_eyes",
+        "character_hair", "character_body_types", "character_ages",
+        "character_genders", "characters"
+    ]
+    
+    # Delete from related tables first (foreign key constraints)
+    for table in tables:
+        db.execute(f"DELETE FROM {table} WHERE prompt_id = ?", (prompt_id,))
+    
+    # Finally delete from prompts table
+    db.execute("DELETE FROM prompts WHERE id = ?", (prompt_id,))
+    
+    db.commit()
     
     return None
