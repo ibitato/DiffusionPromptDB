@@ -3,7 +3,7 @@
 SQLite database for Stability Diffusion Prompts
 
 **Author**: ibitato (ibitato@gmail.com)  
-**License**: MIT
+**License**: Apache 2.0
 
 ## Features
 
@@ -220,7 +220,7 @@ To move the project:
 
 ## License
 
-MIT License - Feel free to use this project for any purpose.
+Apache License 2.0 - See the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
