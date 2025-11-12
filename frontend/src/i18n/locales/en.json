@@ -1,0 +1,176 @@
+{
+  "app": {
+    "title": "DiffusionPromptDB",
+    "subtitle": "Prompt Cataloging System"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "prompts": "Prompts",
+    "search": "Search",
+    "logout": "Logout"
+  },
+  "login": {
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "usernamePlaceholder": "Enter your username",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Login",
+    "loggingIn": "Logging in...",
+    "demoCredentials": "Demo credentials:",
+    "backendApi": "Backend API: http://localhost:8000"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "General overview of the cataloging system",
+    "totalPrompts": "Total Prompts",
+    "artStyles": "Art Styles",
+    "tags": "Tags",
+    "nsfwCategories": "NSFW Categories",
+    "topTags": "Top Tags",
+    "topStyles": "Most Used Styles",
+    "nsfwDistribution": "NSFW Distribution",
+    "quickActions": "Quick Actions",
+    "viewAllPrompts": "View All Prompts",
+    "createNewPrompt": "Create New Prompt",
+    "loadingStats": "Loading statistics...",
+    "charts": {
+      "nsfwTitle": "NSFW Distribution",
+      "tagsTitle": "Top 10 Tags",
+      "stylesTitle": "Top 10 Art Styles"
+    }
+  },
+  "prompts": {
+    "title": "Prompts",
+    "totalPrompts": "prompts total",
+    "newPrompt": "New Prompt",
+    "loading": "Loading prompts...",
+    "noResults": "No prompts found",
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "export": {
+      "json": "JSON",
+      "csv": "CSV",
+      "successJson": "Successfully exported to JSON",
+      "successCsv": "Successfully exported to CSV"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "promptForm": {
+    "createTitle": "Create New Prompt",
+    "editTitle": "Edit Prompt",
+    "fields": {
+      "text": "Prompt Text",
+      "textPlaceholder": "Enter the prompt...",
+      "textRequired": "Prompt text is required",
+      "negativePrompt": "Negative Prompt",
+      "negativePromptPlaceholder": "Negative prompt (optional)...",
+      "model": "Model",
+      "modelPlaceholder": "stable-diffusion-v1.5",
+      "category": "Category",
+      "categoryPlaceholder": "landscape, portrait, etc.",
+      "tags": "Tags",
+      "tagsPlaceholder": "tag1, tag2, tag3",
+      "tagsHelp": "Separate tags with commas",
+      "rating": "Rating",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes (optional)..."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "create": "Create",
+      "update": "Update"
+    },
+    "messages": {
+      "created": "Prompt created successfully",
+      "updated": "Prompt updated successfully",
+      "createError": "Error creating prompt",
+      "updateError": "Error updating prompt"
+    }
+  },
+  "promptDetail": {
+    "title": "Prompt",
+    "copy": "Copy",
+    "sections": {
+      "promptText": "Prompt Text",
+      "negativePrompt": "Negative Prompt",
+      "tags": "Tags",
+      "parameters": "Parameters",
+      "notes": "Notes"
+    },
+    "metadata": {
+      "created": "Created",
+      "updated": "Updated"
+    },
+    "actions": {
+      "close": "Close",
+      "edit": "Edit",
+      "delete": "Delete"
+    }
+  },
+  "deleteConfirm": {
+    "title": "Delete Prompt",
+    "message": "Are you sure you want to delete prompt",
+    "warning": "This action cannot be undone.",
+    "confirm": "Delete",
+    "cancel": "Cancel",
+    "success": "Prompt deleted successfully",
+    "error": "Error deleting prompt",
+    "deleting": "Processing..."
+  },
+  "search": {
+    "title": "Advanced Search",
+    "subtitle": "Filter prompts by multiple criteria",
+    "placeholder": "Search prompts...",
+    "filters": {
+      "nsfwLevel": "NSFW Level",
+      "artStyle": "Art Style",
+      "numberOfPeople": "Number of People",
+      "peoplePlaceholder": "Ex: 1, 2, 3...",
+      "all": "All"
+    },
+    "actions": {
+      "search": "Search",
+      "clear": "Clear Filters",
+      "searching": "Searching..."
+    },
+    "results": {
+      "found": "Results",
+      "noResults": "No Results",
+      "noResultsMessage": "No results found with the selected filters",
+      "tryDifferent": "Try different search criteria",
+      "selectFilters": "Select filters and click Search"
+    },
+    "activeFilters": "active filter",
+    "activeFiltersPlural": "active filters",
+    "messages": {
+      "noResults": "No results found",
+      "foundResults": "Found {{count}} results",
+      "error": "Search error"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "retry": "Retry",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "export": "Export",
+    "import": "Import",
+    "more": "more"
+  }
+}

@@ -14,7 +14,7 @@ import logging
 from datetime import datetime
 
 from .config import settings
-from .routers import prompts, catalog, search, admin
+from .routers import prompts, catalog, search, admin, auth
 
 # Setup logging
 logging.basicConfig(
@@ -55,6 +55,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(prompts.router, prefix="/api/v1/prompts", tags=["prompts"])
 app.include_router(catalog.router, prefix="/api/v1/catalog", tags=["catalog"])
 app.include_router(search.router, prefix="/api/v1/search", tags=["search"])
