@@ -39,9 +39,19 @@ export const SearchPage = () => {
   const artStyles = ['anime', 'photorealistic', 'cartoon', 'digital art', '3d', 'pixel art'];
 
   useEffect(() => {
-    // Check for tag search from SearchBar
+    // Check for text search from SearchBar
+    const textParam = searchParams.get('text');
+    if (textParam) {
+      setSearchText(textParam);
+      // Trigger search automatically
+      setTimeout(() => {
+        performSearch(1);
+      }, 100);
+    }
+    
+    // Check for tag search (legacy)
     const tag = searchParams.get('tag');
-    if (tag) {
+    if (tag && !textParam) {
       performTagSearch(tag);
     }
   }, [searchParams]);
@@ -76,38 +86,22 @@ export const SearchPage = () => {
     try {
       const params: any = {};
 
+      // Text search in prompt content
+      if (searchText) params.text = searchText;
+      
+      // Other filters
       if (nsfwLevel) params.nsfw_level = nsfwLevel;
       if (artStyle) params.art_style = artStyle;
       if (numberOfPeople) params.number_of_people = parseInt(numberOfPeople);
       
-      // Text search: if provided, search by tag
-      if (searchText) {
-        const tagResults = await searchService.searchByTag(searchText, 1000);
-        const total = tagResults.length;
-        setAllResultsCount(total);
-        
-        // Paginate client-side
-        const start = (page - 1) * pageSize;
-        const end = start + pageSize;
-        setResults(tagResults.slice(start, end));
-        
-        if (total === 0) {
-          toast.info('No se encontraron resultados con ese texto');
-        } else {
-          toast.success(`Encontrados ${total} resultados totales`);
-        }
-        setIsLoading(false);
-        return;
-      }
-      
-      // Regular search with pagination
+      // Pagination
       params.limit = pageSize;
       params.offset = (page - 1) * pageSize;
 
       const data = await searchService.complexSearch(params);
       setResults(data);
       setTotalResults(data.length);
-      setAllResultsCount(data.length); // Estimate
+      setAllResultsCount(data.length); // Backend returns current page results
 
       if (data.length === 0) {
         toast.info('No se encontraron resultados');
