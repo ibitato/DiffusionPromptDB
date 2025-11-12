@@ -43,10 +43,6 @@ export const SearchPage = () => {
     const textParam = searchParams.get('text');
     if (textParam) {
       setSearchText(textParam);
-      // Trigger search automatically
-      setTimeout(() => {
-        performSearch(1);
-      }, 100);
     }
     
     // Check for tag search (legacy)
@@ -55,6 +51,13 @@ export const SearchPage = () => {
       performTagSearch(tag);
     }
   }, [searchParams]);
+  
+  // Auto-search when searchText changes from URL parameter
+  useEffect(() => {
+    if (searchText && !hasSearched) {
+      performSearch(1);
+    }
+  }, [searchText]);
   
   const performTagSearch = async (tag: string) => {
     setIsLoading(true);
