@@ -1,6 +1,7 @@
 """
 Data models for DiffusionPromptDB.
 """
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
@@ -10,7 +11,7 @@ from typing import Optional
 class Prompt:
     """
     Represents a diffusion model prompt.
-    
+
     Attributes:
         id: Unique identifier (auto-generated)
         text: The prompt text
@@ -24,6 +25,7 @@ class Prompt:
         rating: Optional rating (1-5)
         notes: Additional notes
     """
+
     text: str
     negative_prompt: Optional[str] = None
     model: Optional[str] = None
@@ -35,12 +37,12 @@ class Prompt:
     id: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    
+
     def __post_init__(self):
         """Validate rating if provided."""
         if self.rating is not None and not (1 <= self.rating <= 5):
             raise ValueError("Rating must be between 1 and 5")
-    
+
     def to_dict(self):
         """Convert prompt to dictionary."""
         return {

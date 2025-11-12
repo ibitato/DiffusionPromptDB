@@ -1,6 +1,7 @@
 """
 Configuration management for DiffusionPromptDB.
 """
+
 from pathlib import Path
 
 
