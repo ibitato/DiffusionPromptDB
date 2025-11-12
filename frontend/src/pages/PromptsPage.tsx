@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
 import { ConfirmModal } from '../components/ui/Modal';
@@ -15,6 +16,7 @@ import { Prompt, CreatePromptRequest } from '../types/api.types';
 import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
 
 export const PromptsPage = () => {
+  const { t } = useTranslation();
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -79,11 +81,11 @@ export const PromptsPage = () => {
       if (selectedPrompt) {
         // Update existing prompt
         await promptsService.updatePrompt(selectedPrompt.id, data);
-        toast.success('Prompt actualizado exitosamente');
+        toast.success(t('promptForm.messages.updated'));
       } else {
         // Create new prompt
         await promptsService.createPrompt(data);
-        toast.success('Prompt creado exitosamente');
+        toast.success(t('promptForm.messages.created'));
       }
 
       setIsFormModalOpen(false);
@@ -103,7 +105,7 @@ export const PromptsPage = () => {
     setIsSubmitting(true);
     try {
       await promptsService.deletePrompt(promptToDelete.id);
-      toast.success('Prompt eliminado exitosamente');
+      toast.success(t('deleteConfirm.success'));
       setIsDeleteModalOpen(false);
       setPromptToDelete(null);
       await loadPrompts();
@@ -158,8 +160,8 @@ export const PromptsPage = () => {
         {/* Page Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-white mb-2">Prompts</h2>
-            <p className="text-gray-400">{totalPrompts} prompts en total</p>
+            <h2 className="text-3xl font-bold text-white mb-2">{t('prompts.title')}</h2>
+            <p className="text-gray-400">{totalPrompts} {t('prompts.totalPrompts')}</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -169,10 +171,9 @@ export const PromptsPage = () => {
                 <button
                   onClick={() => {
                     exportToJSON(prompts, getExportFilename('json'));
-                    toast.success('Exportado a JSON exitosamente');
+                    toast.success(t('prompts.export.successJson'));
                   }}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-                  title="Exportar a JSON"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -182,15 +183,14 @@ export const PromptsPage = () => {
                       d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
                     />
                   </svg>
-                  JSON
+                  {t('prompts.export.json')}
                 </button>
                 <button
                   onClick={() => {
                     exportToCSV(prompts, getExportFilename('csv'));
-                    toast.success('Exportado a CSV exitosamente');
+                    toast.success(t('prompts.export.successCsv'));
                   }}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-                  title="Exportar a CSV"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -200,7 +200,7 @@ export const PromptsPage = () => {
                       d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
                     />
                   </svg>
-                  CSV
+                  {t('prompts.export.csv')}
                 </button>
               </div>
             )}
@@ -217,7 +217,7 @@ export const PromptsPage = () => {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              Nuevo Prompt
+              {t('prompts.newPrompt')}
             </button>
           </div>
         </div>
@@ -225,7 +225,7 @@ export const PromptsPage = () => {
         {/* Loading State */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loading size="lg" text="Cargando prompts..." />
+            <Loading size="lg" text={t('prompts.loading')} />
           </div>
         ) : (
           <>
@@ -292,23 +292,29 @@ export const PromptsPage = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
+            <button
+              onClick={() => loadPrompts()}
+              className="mt-2 text-red-400 hover:text-red-300 underline"
+            >
+              {t('common.retry')}
+            </button>
                       <button
                         onClick={() => handleView(prompt)}
                         className="px-3 py-1 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded transition-colors"
                       >
-                        Ver
+                        {t('prompts.actions.view')}
                       </button>
                       <button
                         onClick={() => handleEdit(prompt)}
                         className="px-3 py-1 text-green-400 hover:text-green-300 hover:bg-green-400/10 rounded transition-colors"
                       >
-                        Editar
+                        {t('prompts.actions.edit')}
                       </button>
                       <button
                         onClick={() => handleDelete(prompt)}
                         className="px-3 py-1 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
                       >
-                        Eliminar
+                        {t('prompts.actions.delete')}
                       </button>
                     </div>
                   </div>
@@ -324,7 +330,7 @@ export const PromptsPage = () => {
                   disabled={currentPage === 1}
                   className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
                 >
-                  Anterior
+                  {t('prompts.pagination.previous')}
                 </button>
 
                 <div className="flex items-center gap-1">
@@ -361,7 +367,7 @@ export const PromptsPage = () => {
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
                 >
-                  Siguiente
+                  {t('prompts.pagination.next')}
                 </button>
               </div>
             )}
@@ -401,10 +407,10 @@ export const PromptsPage = () => {
           setPromptToDelete(null);
         }}
         onConfirm={confirmDelete}
-        title="Eliminar Prompt"
-        message={`¿Estás seguro de que deseas eliminar el prompt #${promptToDelete?.id}? Esta acción no se puede deshacer.`}
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        title={t('deleteConfirm.title')}
+        message={`${t('deleteConfirm.message')} #${promptToDelete?.id}? ${t('deleteConfirm.warning')}`}
+        confirmText={t('deleteConfirm.confirm')}
+        cancelText={t('deleteConfirm.cancel')}
         isLoading={isSubmitting}
       />
     </div>

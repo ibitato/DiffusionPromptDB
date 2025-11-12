@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
 import { StatsCharts } from '../components/dashboard/StatsCharts';
@@ -12,6 +13,7 @@ import { statsService } from '../services/stats.service';
 import { Stats } from '../types/api.types';
 
 export const DashboardPage = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -37,7 +39,7 @@ export const DashboardPage = () => {
       <div className="min-h-screen bg-slate-900">
         <Header />
         <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-          <Loading size="lg" text="Cargando estadísticas..." />
+          <Loading size="lg" text={t('dashboard.loadingStats')} />
         </div>
       </div>
     );
@@ -63,8 +65,8 @@ export const DashboardPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Dashboard</h2>
-          <p className="text-gray-400">Resumen general del sistema de catalogación</p>
+          <h2 className="text-3xl font-bold text-white mb-2">{t('dashboard.title')}</h2>
+          <p className="text-gray-400">{t('dashboard.subtitle')}</p>
         </div>
 
         {/* Stats Grid */}
@@ -73,7 +75,7 @@ export const DashboardPage = () => {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Total Prompts</p>
+                <p className="text-gray-400 text-sm font-medium">{t('dashboard.totalPrompts')}</p>
                 <p className="text-3xl font-bold text-white mt-2">{stats?.total_prompts || 0}</p>
               </div>
               <div className="bg-violet-600/10 p-3 rounded-lg">
@@ -98,7 +100,7 @@ export const DashboardPage = () => {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Estilos de Arte</p>
+                <p className="text-gray-400 text-sm font-medium">{t('dashboard.artStyles')}</p>
                 <p className="text-3xl font-bold text-white mt-2">
                   {stats?.top_art_styles?.length || 0}
                 </p>
@@ -125,7 +127,7 @@ export const DashboardPage = () => {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Tags</p>
+                <p className="text-gray-400 text-sm font-medium">{t('dashboard.tags')}</p>
                 <p className="text-3xl font-bold text-white mt-2">{stats?.top_tags?.length || 0}</p>
               </div>
               <div className="bg-green-600/10 p-3 rounded-lg">
@@ -150,7 +152,7 @@ export const DashboardPage = () => {
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">Categorías NSFW</p>
+                <p className="text-gray-400 text-sm font-medium">{t('dashboard.nsfwCategories')}</p>
                 <p className="text-3xl font-bold text-white mt-2">
                   {Object.keys(stats?.nsfw_distribution || {}).length}
                 </p>
@@ -177,7 +179,7 @@ export const DashboardPage = () => {
         {/* Top Tags Table */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">Top Tags</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t('dashboard.topTags')}</h3>
             <div className="space-y-3">
               {stats?.top_tags?.slice(0, 5).map((tag, index) => (
                 <div
@@ -193,7 +195,7 @@ export const DashboardPage = () => {
 
           {/* Top Art Styles */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">Estilos Más Usados</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t('dashboard.topStyles')}</h3>
             <div className="space-y-3">
               {stats?.top_art_styles?.slice(0, 5).map((style, index) => (
                 <div
@@ -210,7 +212,7 @@ export const DashboardPage = () => {
 
         {/* NSFW Distribution */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
-          <h3 className="text-xl font-semibold text-white mb-4">Distribución NSFW</h3>
+          <h3 className="text-xl font-semibold text-white mb-4">{t('dashboard.nsfwDistribution')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Object.entries(stats?.nsfw_distribution || {}).map(([level, count]) => (
               <div key={level} className="p-4 bg-slate-700/50 rounded-lg text-center">
@@ -226,14 +228,14 @@ export const DashboardPage = () => {
 
         {/* Quick Actions */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mt-8">
-          <h3 className="text-xl font-semibold text-white mb-4">Acciones Rápidas</h3>
+          <h3 className="text-xl font-semibold text-white mb-4">{t('dashboard.quickActions')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => navigate('/prompts')}
               className="p-4 bg-violet-600 hover:bg-violet-700 rounded-lg text-white font-medium transition-colors text-left"
             >
               <div className="flex items-center justify-between">
-                <span>Ver Todos los Prompts</span>
+                <span>{t('dashboard.viewAllPrompts')}</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -250,7 +252,7 @@ export const DashboardPage = () => {
               className="p-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-colors text-left"
             >
               <div className="flex items-center justify-between">
-                <span>Crear Nuevo Prompt</span>
+                <span>{t('dashboard.createNewPrompt')}</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
