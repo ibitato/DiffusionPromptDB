@@ -72,6 +72,10 @@ src/batch_analyzer/catalog*.db
 # API
 src/api/.env
 src/api/api.log
+src/api/database/*.db
 
 # JSON Data - Keep local only
 json_data/*.jsonl
+
+# Batch Analyzer databases
+src/batch_analyzer/prompts_catalog.db
