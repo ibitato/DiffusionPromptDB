@@ -1,0 +1,176 @@
+{
+  "app": {
+    "title": "DiffusionPromptDB",
+    "subtitle": "Sistema de Catalogación de Prompts"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "prompts": "Prompts",
+    "search": "Búsqueda",
+    "logout": "Cerrar Sesión"
+  },
+  "login": {
+    "title": "Iniciar Sesión",
+    "username": "Usuario",
+    "password": "Contraseña",
+    "usernamePlace": "Ingresa tu usuario",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "submit": "Iniciar Sesión",
+    "loggingIn": "Iniciando sesión...",
+    "demoCredentials": "Credenciales de prueba:",
+    "backendApi": "Backend API: http://localhost:8000"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Resumen general del sistema de catalogación",
+    "totalPrompts": "Total Prompts",
+    "artStyles": "Estilos de Arte",
+    "tags": "Tags",
+    "nsfwCategories": "Categorías NSFW",
+    "topTags": "Top Tags",
+    "topStyles": "Estilos Más Usados",
+    "nsfwDistribution": "Distribución NSFW",
+    "quickActions": "Acciones Rápidas",
+    "viewAllPrompts": "Ver Todos los Prompts",
+    "createNewPrompt": "Crear Nuevo Prompt",
+    "loadingStats": "Cargando estadísticas...",
+    "charts": {
+      "nsfwTitle": "Distribución NSFW",
+      "tagsTitle": "Top 10 Tags",
+      "stylesTitle": "Top 10 Estilos de Arte"
+    }
+  },
+  "prompts": {
+    "title": "Prompts",
+    "totalPrompts": "prompts en total",
+    "newPrompt": "Nuevo Prompt",
+    "loading": "Cargando prompts...",
+    "noResults": "No se encontraron prompts",
+    "actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "export": {
+      "json": "JSON",
+      "csv": "CSV",
+      "successJson": "Exportado a JSON exitosamente",
+      "successCsv": "Exportado a CSV exitosamente"
+    },
+    "pagination": {
+      "previous": "Anterior",
+      "next": "Siguiente"
+    }
+  },
+  "promptForm": {
+    "createTitle": "Crear Nuevo Prompt",
+    "editTitle": "Editar Prompt",
+    "fields": {
+      "text": "Prompt Text",
+      "textPlaceholder": "Ingresa el prompt...",
+      "textRequired": "El texto del prompt es requerido",
+      "negativePrompt": "Negative Prompt",
+      "negativePromptPlaceholder": "Prompt negativo (opcional)...",
+      "model": "Model",
+      "modelPlaceholder": "stable-diffusion-v1.5",
+      "category": "Category",
+      "categoryPlaceholder": "landscape, portrait, etc.",
+      "tags": "Tags",
+      "tagsPlaceholder": "tag1, tag2, tag3",
+      "tagsHelp": "Separar tags con comas",
+      "rating": "Rating",
+      "notes": "Notes",
+      "notesPlaceholder": "Notas adicionales (opcional)..."
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "create": "Crear",
+      "update": "Actualizar"
+    },
+    "messages": {
+      "created": "Prompt creado exitosamente",
+      "updated": "Prompt actualizado exitosamente",
+      "createError": "Error al crear prompt",
+      "updateError": "Error al actualizar prompt"
+    }
+  },
+  "promptDetail": {
+    "title": "Prompt",
+    "copy": "Copiar",
+    "sections": {
+      "promptText": "Prompt Text",
+      "negativePrompt": "Negative Prompt",
+      "tags": "Tags",
+      "parameters": "Parameters",
+      "notes": "Notes"
+    },
+    "metadata": {
+      "created": "Created",
+      "updated": "Updated"
+    },
+    "actions": {
+      "close": "Cerrar",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    }
+  },
+  "deleteConfirm": {
+    "title": "Eliminar Prompt",
+    "message": "¿Estás seguro de que deseas eliminar el prompt",
+    "warning": "Esta acción no se puede deshacer.",
+    "confirm": "Eliminar",
+    "cancel": "Cancelar",
+    "success": "Prompt eliminado exitosamente",
+    "error": "Error al eliminar prompt",
+    "deleting": "Procesando..."
+  },
+  "search": {
+    "title": "Búsqueda Avanzada",
+    "subtitle": "Filtra prompts por múltiples criterios",
+    "placeholder": "Buscar prompts...",
+    "filters": {
+      "nsfwLevel": "NSFW Level",
+      "artStyle": "Art Style",
+      "numberOfPeople": "Número de Personas",
+      "peopleePlaceholder": "Ej: 1, 2, 3...",
+      "all": "Todos"
+    },
+    "actions": {
+      "search": "Buscar",
+      "clear": "Limpiar Filtros",
+      "searching": "Buscando..."
+    },
+    "results": {
+      "found": "Resultados",
+      "noResults": "Sin Resultados",
+      "noResultsMessage": "No se encontraron resultados con los filtros seleccionados",
+      "tryDifferent": "Intenta con diferentes criterios de búsqueda",
+      "selectFilters": "Selecciona filtros y haz click en Buscar"
+    },
+    "activeFilters": "filtro activo",
+    "activeFiltersPlural": "filtros activos",
+    "messages": {
+      "noResults": "No se encontraron resultados",
+      "foundResults": "Se encontraron {{count}} resultados",
+      "error": "Error en la búsqueda"
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "retry": "Reintentar",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "export": "Exportar",
+    "import": "Importar",
+    "more": "más"
+  }
+}

@@ -1,0 +1,113 @@
+/**
+ * API Types
+ * TypeScript definitions for API responses and requests
+ */
+
+// Base API Response
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  status: number;
+}
+
+// Pagination
+export interface PaginatedResponse<T> {
+  total: number;
+  page: number;
+  page_size: number;
+  results: T[];
+}
+
+// Error Response
+export interface ApiError {
+  detail: string;
+  status?: number;
+}
+
+// Auth Types
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  email?: string;
+  role: 'admin' | 'user';
+}
+
+// Prompt Types
+export interface Prompt {
+  id: number;
+  text: string;
+  negative_prompt?: string;
+  model?: string;
+  parameters?: string;
+  tags?: string;
+  category?: string;
+  rating?: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePromptRequest {
+  text: string;
+  negative_prompt?: string;
+  model?: string;
+  parameters?: string;
+  tags?: string;
+  category?: string;
+  rating?: number;
+  notes?: string;
+}
+
+export interface UpdatePromptRequest extends CreatePromptRequest {
+  id: number;
+}
+
+// Search Types
+export interface SearchFilters {
+  text?: string;
+  category?: string;
+  model?: string;
+  min_rating?: number;
+  nsfw_level?: 'explicit' | 'suggestive' | 'safe';
+  art_style?: string;
+  number_of_people?: number;
+  tags?: string[];
+}
+
+export interface ComplexSearchParams {
+  nsfw_level?: string;
+  number_of_people?: number;
+  art_style?: string;
+  limit?: number;
+  offset?: number;
+}
+
+// Stats Types
+export interface Stats {
+  total_prompts: number;
+  nsfw_distribution: Record<string, number>;
+  top_tags: Array<{ tag: string; count: number }>;
+  top_art_styles: Array<{ style: string; count: number }>;
+  categories_distribution?: Record<string, number>;
+}
+
+// Catalog Types
+export interface CatalogPrompt {
+  id: number;
+  original_prompt: string;
+  nsfw_level?: string;
+  art_style?: string;
+  number_of_people?: number;
+  tags?: string[];
+}
