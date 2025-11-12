@@ -22,9 +22,9 @@ class Settings(BaseSettings):
     port: int = 8000
     reload: bool = False
     
-    # Database (unified - uses the catalog DB with 10,386 prompts for everything)
-    prompts_db_path: str = "../batch_analyzer/prompts_catalog.db"
-    catalog_db_path: str = "../batch_analyzer/prompts_catalog.db"
+    # Database (unified - catalog DB with 10,386 prompts, located in api/database/)
+    prompts_db_path: str = "database/prompts_catalog.db"
+    catalog_db_path: str = "database/prompts_catalog.db"
     
     # Security
     api_keys: List[str] = ["demo-read-key-12345"]  # Change in production!
