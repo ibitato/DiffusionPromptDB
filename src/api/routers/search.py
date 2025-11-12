@@ -70,14 +70,13 @@ async def complex_search(
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
 
-    query += f" LIMIT ? OFFSET ?"
-    params.extend([limit, offset])
-
     # Get total count first (without LIMIT/OFFSET)
     count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")
-    # Remove LIMIT and OFFSET from count query
-    count_params = params[:-2]  # Remove last 2 params (limit and offset)
-    total_count = db.execute(count_query, count_params).fetchone()[0]
+    total_count = db.execute(count_query, params).fetchone()[0]
+    
+    # Add pagination to main query
+    query += f" LIMIT ? OFFSET ?"
+    params.extend([limit, offset])
     
     # Get paginated results
     results = db.execute(query, params).fetchall()
