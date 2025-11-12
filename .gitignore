@@ -68,3 +68,7 @@ src/batch_analyzer/logs/*
 src/batch_analyzer/checkpoints/
 src/batch_analyzer/*.db
 src/batch_analyzer/catalog*.db
+
+# API
+src/api/.env
+src/api/api.log
