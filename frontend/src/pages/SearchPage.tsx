@@ -16,6 +16,9 @@ export const SearchPage = () => {
   const [results, setResults] = useState<CatalogPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const pageSize = 20;
 
   // Filters state
   const [nsfwLevel, setNsfwLevel] = useState('');
@@ -29,16 +32,39 @@ export const SearchPage = () => {
   const artStyles = ['anime', 'photorealistic', 'cartoon', 'digital art', '3d', 'pixel art'];
 
   useEffect(() => {
-    // Check for query parameter
-    const query = searchParams.get('q');
-    if (query) {
-      performSearch();
+    // Check for tag search from SearchBar
+    const tag = searchParams.get('tag');
+    if (tag) {
+      performTagSearch(tag);
     }
   }, [searchParams]);
-
-  const performSearch = async () => {
+  
+  const performTagSearch = async (tag: string) => {
     setIsLoading(true);
     setHasSearched(true);
+    
+    try {
+      const results = await searchService.searchByTag(tag, 100);
+      setResults(results);
+      
+      if (results.length === 0) {
+        toast.info(`No se encontraron prompts con el tag "${tag}"`);
+      } else {
+        toast.success(`Encontrados ${results.length} prompts con el tag "${tag}"`);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error en la búsqueda';
+      toast.error(message);
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const performSearch = async (page: number = 1) => {
+    setIsLoading(true);
+    setHasSearched(true);
+    setCurrentPage(page);
 
     try {
       const params: any = {};
@@ -46,15 +72,19 @@ export const SearchPage = () => {
       if (nsfwLevel) params.nsfw_level = nsfwLevel;
       if (artStyle) params.art_style = artStyle;
       if (numberOfPeople) params.number_of_people = parseInt(numberOfPeople);
-      params.limit = 50;
+      
+      // Pagination
+      params.limit = pageSize;
+      params.offset = (page - 1) * pageSize;
 
       const data = await searchService.complexSearch(params);
       setResults(data);
+      setTotalResults(data.length); // Backend doesn't return total, so we estimate
 
       if (data.length === 0) {
         toast.info('No se encontraron resultados');
       } else {
-        toast.success(`Se encontraron ${data.length} resultados`);
+        toast.success(`Mostrando ${data.length} resultados`);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en la búsqueda';
@@ -71,6 +101,7 @@ export const SearchPage = () => {
     setNumberOfPeople('');
     setResults([]);
     setHasSearched(false);
+    setCurrentPage(1);
   };
 
   const activeFiltersCount = [nsfwLevel, artStyle, numberOfPeople].filter(Boolean).length;
@@ -144,7 +175,7 @@ export const SearchPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
-                onClick={performSearch}
+                onClick={() => performSearch(1)}
                 disabled={isLoading || activeFiltersCount === 0}
                 className="px-6 py-2 bg-violet-600 hover:bg-violet-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
               >
@@ -225,7 +256,8 @@ export const SearchPage = () => {
 
             {/* Results Grid */}
             {results.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {results.map((result, index) => (
                   <div
                     key={result.id || index}
@@ -271,6 +303,30 @@ export const SearchPage = () => {
                   </div>
                 ))}
               </div>
+              
+              {/* Pagination */}
+              {results.length === pageSize && (
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => performSearch(currentPage - 1)}
+                    disabled={currentPage === 1 || isLoading}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                  >
+                    Anterior
+                  </button>
+                  
+                  <span className="text-gray-400 px-4">Página {currentPage}</span>
+                  
+                  <button
+                    onClick={() => performSearch(currentPage + 1)}
+                    disabled={results.length < pageSize || isLoading}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              )}
+              </>
             ) : (
               <div className="text-center py-12">
                 <svg
