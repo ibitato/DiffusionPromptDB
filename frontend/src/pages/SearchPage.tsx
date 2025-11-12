@@ -88,17 +88,25 @@ export const SearchPage = () => {
     setCurrentPage(page);
 
     try {
-      // If searching by tag, use tag search instead
+      // Always use complex search for proper pagination
       if (searchTag && !searchText && !nsfwLevel && !artStyle && !numberOfPeople) {
-        const results = await searchService.searchByTag(searchTag, 100);
-        setResults(results);
-        setTotalResults(results.length);
-        setAllResultsCount(results.length);
+        // Pure tag search - still use searchByTag but with higher limit
+        const results = await searchService.searchByTag(searchTag, 1000);
+        const total = results.length;
         
-        if (results.length === 0) {
+        // Paginate client-side
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const paginatedResults = results.slice(start, end);
+        
+        setResults(paginatedResults);
+        setTotalResults(paginatedResults.length);
+        setAllResultsCount(total);
+        
+        if (total === 0) {
           toast.info(`No se encontraron prompts con el tag "${searchTag}"`);
         } else {
-          toast.success(`Encontrados ${results.length} prompts con el tag "${searchTag}"`);
+          toast.success(`Encontrados ${total} prompts totales`);
         }
       } else {
         // Complex search with filters
