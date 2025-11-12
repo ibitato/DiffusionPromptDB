@@ -15,7 +15,9 @@ SQLite database for Stability Diffusion Prompts
 - 📝 **Well Documented**: Comprehensive docstrings and examples
 - 🔄 **Version Control**: Git-ready with proper .gitignore
 
-## NEW: Batch Analyzer 🚀
+## NEW: Complete Catalogation System 🚀
+
+### 1️⃣ Batch Analyzer
 
 **Analyze thousands of Stable Diffusion prompts using AWS Bedrock's Claude 3.5 Sonnet.**
 
@@ -63,6 +65,64 @@ python run_analysis.py --dry-run
 
 For the included dataset (10,386 prompts): ~$67 USD using Claude 3.5 Sonnet with Batch API discount.
 
+### 2️⃣ SQLite Catalog Database
+
+**Searchable database with advanced filtering.**
+
+- **Normalized Schema**: 20+ tables for efficient querying
+- **30 Prompts Cataloged**: Demo database included
+- **Advanced Search**: Multi-filter queries combining any categories
+- **CLI Tools**: Interactive search and SQL query examples
+
+```bash
+cd src/batch_analyzer
+
+# Import analyzed prompts to SQLite
+python import_to_db.py results/realtime_results_XXX.jsonl --db prompts_catalog.db --stats
+
+# Interactive search
+python search_catalog.py
+
+# Example queries
+python example_queries.py
+```
+
+### 3️⃣ REST API 📡
+
+**Secure REST API for CRUD operations and advanced searches.**
+
+- **FastAPI**: Modern, fast, with auto-generated docs
+- **Secure**: API Keys (read) + JWT tokens (write)
+- **14 Endpoints**: Prompts CRUD + Catalog search + Stats
+- **Tested**: 19/20 unit tests passing (95%)
+- **Rate Limited**: 100/min, 1000/hour
+- **Auto Docs**: Swagger UI + ReDoc
+
+```bash
+cd src/api
+
+# Install
+pip install -r requirements.txt
+
+# Run
+python main.py
+
+# API: http://localhost:8000
+# Docs: http://localhost:8000/docs
+```
+
+**Quick Example:**
+```bash
+# Get stats (public)
+curl http://localhost:8000/api/v1/admin/stats
+
+# Search with API key
+curl -H "X-API-Key: demo-read-key-12345" \
+  "http://localhost:8000/api/v1/search/complex?nsfw_level=explicit&art_style=anime"
+```
+
+See [API README](src/api/README.md) for complete documentation.
+
 ## Project Structure
 
 ```
@@ -81,14 +141,25 @@ DiffusionPromptDB/
 │   │   ├── database.py           # Database operations
 │   │   ├── models.py             # Data models
 │   │   └── config.py             # Configuration
-│   └── batch_analyzer/           # NEW: Batch analysis tool
-│       ├── core/                 # Core library
-│       ├── schemas/              # JSON schemas
-│       ├── examples/             # Examples
-│       ├── README.md             # Full documentation
-│       ├── SETUP.md              # Setup guide
-│       ├── CLEANUP.md            # Cleanup guide
-│       └── run_analysis.py       # Main script
+│   ├── batch_analyzer/           # Batch analysis tool
+│   │   ├── core/                 # 6 analysis modules
+│   │   ├── schemas/              # JSON input/output schemas
+│   │   ├── db_schema.sql         # SQLite catalog schema
+│   │   ├── import_to_db.py       # JSONL → SQLite importer
+│   │   ├── search_catalog.py     # Interactive search tool
+│   │   ├── run_analysis.py       # Batch mode (Claude 3.5 Sonnet)
+│   │   ├── run_realtime.py       # Real-time mode (Haiku 4.5)
+│   │   ├── README.md             # Complete documentation
+│   │   ├── SETUP.md              # AWS setup guide
+│   │   └── CLEANUP.md            # Resource cleanup
+│   └── api/                      # REST API
+│       ├── main.py               # FastAPI application
+│       ├── config.py             # API configuration
+│       ├── auth.py               # Authentication
+│       ├── models/               # Pydantic models
+│       ├── routers/              # API endpoints (4 routers)
+│       ├── tests/                # Unit tests (20 tests)
+│       └── README.md             # API documentation
 ├── tests/                        # Unit tests
 │   ├── __init__.py
 │   └── test_database.py
