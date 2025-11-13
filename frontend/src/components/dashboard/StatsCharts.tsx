@@ -20,9 +20,10 @@ import { motion } from 'framer-motion';
 
 interface StatsChartsProps {
   stats: Stats;
+  showUnspecified?: boolean;
 }
 
-export const StatsCharts = ({ stats }: StatsChartsProps) => {
+export const StatsCharts = ({ stats, showUnspecified = true }: StatsChartsProps) => {
   // Prepare NSFW distribution data for pie chart
   const nsfwData = Object.entries(stats.nsfw_distribution || {}).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
@@ -35,8 +36,12 @@ export const StatsCharts = ({ stats }: StatsChartsProps) => {
     count: tag.count,
   }));
 
-  // Prepare art styles data for bar chart
-  const stylesData = (stats.top_art_styles || []).slice(0, 10).map((style) => ({
+  // Prepare art styles data for bar chart (filter unspecified if needed)
+  const filteredStyles = showUnspecified 
+    ? (stats.top_art_styles || [])
+    : (stats.top_art_styles || []).filter(s => s.style.toLowerCase() !== 'unspecified');
+  
+  const stylesData = filteredStyles.slice(0, 10).map((style) => ({
     name: style.style,
     count: style.count,
   }));
@@ -120,12 +125,24 @@ export const StatsCharts = ({ stats }: StatsChartsProps) => {
           transition={{ delay: 0.4 }}
           className="bg-slate-800 rounded-lg p-6 border border-slate-700 lg:col-span-2"
         >
-          <h3 className="text-xl font-semibold text-white mb-4">Top 10 Estilos de Arte</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={stylesData} layout="horizontal">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold text-white">Top 10 Estilos de Arte</h3>
+            <span className="text-xs text-gray-500 bg-slate-700 px-2 py-1 rounded">
+              Mostrando 10 de {stats.top_art_styles?.length || 0}
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={stylesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-              <XAxis type="number" stroke="#94a3b8" />
-              <YAxis type="category" dataKey="name" stroke="#94a3b8" width={150} />
+              <XAxis 
+                dataKey="name" 
+                stroke="#94a3b8" 
+                angle={-45} 
+                textAnchor="end" 
+                height={120}
+                interval={0}
+              />
+              <YAxis stroke="#94a3b8" />
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#1e293b',
@@ -134,7 +151,7 @@ export const StatsCharts = ({ stats }: StatsChartsProps) => {
                   color: '#fff',
                 }}
               />
-              <Bar dataKey="count" fill="#3b82f6" />
+              <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </motion.div>

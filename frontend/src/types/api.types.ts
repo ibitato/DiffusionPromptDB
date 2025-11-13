@@ -56,6 +56,7 @@ export interface Prompt {
   notes?: string;
   created_at: string;
   updated_at: string;
+  created_by?: number | null; // NULL = preloaded, number = user_id
 }
 
 export interface CreatePromptRequest {
@@ -97,6 +98,8 @@ export interface ComplexSearchParams {
 // Stats Types
 export interface Stats {
   total_prompts: number;
+  total_art_styles?: number;
+  total_tags?: number;
   nsfw_distribution: Record<string, number>;
   top_tags: Array<{ tag: string; count: number }>;
   top_art_styles: Array<{ style: string; count: number }>;

@@ -11,6 +11,7 @@ import { Loading } from '../components/ui/Loading';
 import { useToast } from '../components/ui/Toast';
 import { PromptDetailModal } from '../components/prompts/PromptDetailModal';
 import { searchService } from '../services/search.service';
+import { statsService } from '../services/stats.service';
 import { CatalogPrompt, Prompt } from '../types/api.types';
 
 export const SearchPage = () => {
@@ -18,6 +19,7 @@ export const SearchPage = () => {
   const [searchParams] = useSearchParams();
   const [results, setResults] = useState<CatalogPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingFilters, setIsLoadingFilters] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
@@ -35,11 +37,16 @@ export const SearchPage = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+  // Available filter options (loaded from database)
+  const [nsfwLevels, setNsfwLevels] = useState<string[]>([]);
+  const [artStyles, setArtStyles] = useState<Array<{ style: string; count: number }>>([]);
+
   const toast = useToast();
 
-  // Available options
-  const nsfwLevels = ['explicit', 'suggestive', 'safe'];
-  const artStyles = ['anime', 'photorealistic', 'cartoon', 'digital art', '3d', 'pixel art'];
+  // Load available filters on mount
+  useEffect(() => {
+    loadFilters();
+  }, []);
 
   useEffect(() => {
     // Check for text search from SearchBar
@@ -54,6 +61,19 @@ export const SearchPage = () => {
       performTagSearch(tag);
     }
   }, [searchParams]);
+
+  const loadFilters = async () => {
+    try {
+      const filters = await statsService.getFilters();
+      setNsfwLevels(filters.nsfw_levels);
+      setArtStyles(filters.art_styles);
+    } catch (err) {
+      console.error('Error loading filters:', err);
+      toast.error('Error al cargar los filtros');
+    } finally {
+      setIsLoadingFilters(false);
+    }
+  };
   
   // Auto-search when searchText changes from URL parameter
   useEffect(() => {
@@ -199,9 +219,9 @@ export const SearchPage = () => {
                 className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600"
               >
                 <option value="">{t('search.filters.all')}</option>
-                {artStyles.map((style) => (
-                  <option key={style} value={style}>
-                    {style.charAt(0).toUpperCase() + style.slice(1)}
+                {artStyles.map((item) => (
+                  <option key={item.style} value={item.style}>
+                    {item.style.charAt(0).toUpperCase() + item.style.slice(1)}
                   </option>
                 ))}
               </select>

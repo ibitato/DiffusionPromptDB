@@ -21,7 +21,7 @@ USERS_DB = {
         "username": "test",
         "password": "test",  # In production, use hashed passwords!
         "email": "test@example.com",
-        "role": "admin",
+        "role": "user",  # FIXED: test is regular user, not admin
     },
     "admin": {
         "id": 2,

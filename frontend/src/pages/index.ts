@@ -7,3 +7,4 @@ export { LoginPage } from './LoginPage';
 export { DashboardPage } from './DashboardPage';
 export { PromptsPage } from './PromptsPage';
 export { SearchPage } from './SearchPage';
+export { SettingsPage } from './SettingsPage';

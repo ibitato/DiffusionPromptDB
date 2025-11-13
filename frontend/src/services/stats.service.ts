@@ -32,4 +32,17 @@ export const statsService = {
       throw new Error(handleApiError(error));
     }
   },
+
+  /**
+   * Get available filters
+   * Public endpoint - no auth required
+   */
+  getFilters: async (): Promise<{ nsfw_levels: string[]; art_styles: Array<{ style: string; count: number }> }> => {
+    try {
+      const response = await api.get('/admin/filters');
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
 };
