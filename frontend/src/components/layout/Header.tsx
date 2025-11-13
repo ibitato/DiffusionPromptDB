@@ -25,7 +25,7 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-white">DiffusionPromptDB</h1>
+            <h1 className="text-xl font-bold text-white">{t('app.title')}</h1>
           </div>
 
           {/* Navigation */}
