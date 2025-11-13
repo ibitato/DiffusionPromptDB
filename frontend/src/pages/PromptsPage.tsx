@@ -87,10 +87,16 @@ export const PromptsPage = () => {
   const handleFormSubmit = async (data: CreatePromptRequest) => {
     setIsSubmitting(true);
     try {
+      let updatedPrompt: Prompt;
       if (selectedPrompt) {
         // Update existing prompt
-        await promptsService.updatePrompt(selectedPrompt.id, data);
+        updatedPrompt = await promptsService.updatePrompt(selectedPrompt.id, data);
         toast.success(t('promptForm.messages.updated'));
+        
+        // If the detail modal is open, update the viewed prompt
+        if (promptToView && promptToView.id === selectedPrompt.id) {
+          setPromptToView(updatedPrompt);
+        }
       } else {
         // Create new prompt
         await promptsService.createPrompt(data);
@@ -99,7 +105,11 @@ export const PromptsPage = () => {
 
       setIsFormModalOpen(false);
       setSelectedPrompt(null);
-      await loadPrompts();
+      
+      // Force reload prompts with a small delay to ensure DB is updated
+      setTimeout(async () => {
+        await loadPrompts();
+      }, 100);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save prompt';
       toast.error(message);
