@@ -10,18 +10,34 @@
 
 ## Technology Stack
 
-### Core Technologies
+### Backend Technologies
 - **Python**: 3.8+ (use `python3` command)
 - **Database**: SQLite3 (built-in Python module)
+- **API Framework**: FastAPI with JWT authentication
 - **Package Management**: pip with pyproject.toml (PEP 517/518)
 - **Virtual Environment**: `.venv/` (MANDATORY for all operations)
 
-### Development Tools
+### Frontend Technologies
+- **Framework**: React 18+ with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **State Management**: Zustand
+- **HTTP Client**: Axios with React Query
+- **Routing**: React Router v6
+- **Internationalization**: i18next
+
+### Development Tools (Backend)
 - **Testing**: pytest, pytest-cov
 - **Code Formatting**: black (line-length: 88)
 - **Linting**: flake8
 - **Type Checking**: mypy
 - **Build Tools**: setuptools, wheel, build
+
+### Development Tools (Frontend)
+- **Package Manager**: npm
+- **Code Formatting**: Prettier
+- **Linting**: ESLint with TypeScript support
+- **Type Checking**: TypeScript compiler
 
 ## Development Workflow
 
@@ -62,34 +78,79 @@ pip freeze > requirements.txt  # Production
 
 ### 3. Code Quality Standards
 
-#### Formatting (MANDATORY before commit)
+#### Backend Code Quality
+
+##### Formatting (MANDATORY before commit)
 
 ```bash
-# Format all code with black
+# Format all Python code with black
 make format
 
 # Or manually:
 black src/ tests/ scripts/
 ```
 
-#### Linting (MANDATORY before commit)
+##### Linting (MANDATORY before commit)
 
 ```bash
-# Run linter
+# Run Python linter
 make lint
 
 # Or manually:
 flake8 src/ tests/ scripts/
 ```
 
-#### Type Checking (RECOMMENDED)
+##### Type Checking (RECOMMENDED)
 
 ```bash
-# Run type checker
+# Run Python type checker
 make typecheck
 
 # Or manually:
 mypy src/
+```
+
+##### Run All Backend Checks
+
+```bash
+# Format + Lint + Typecheck
+make check
+```
+
+#### Frontend Code Quality
+
+##### Formatting (MANDATORY before commit)
+
+```bash
+# Format all TypeScript/React code with Prettier
+make format-frontend
+
+# Or manually:
+cd frontend && npm run format
+```
+
+##### Linting (MANDATORY before commit)
+
+```bash
+# Run ESLint on TypeScript/React code
+make lint-frontend
+
+# Or manually:
+cd frontend && npm run lint
+```
+
+##### Run All Frontend Checks
+
+```bash
+# Format + Lint for frontend
+make check-frontend
+```
+
+#### Full Project Check (RECOMMENDED)
+
+```bash
+# Run all checks for both backend and frontend
+make check && make check-frontend
 ```
 
 ### 4. Testing Standards
@@ -179,35 +240,33 @@ make setup
 # Install package in development mode
 make install
 
-# Code formatting
-make format
+# Backend Code Quality
+make format           # Format Python code with black
+make lint            # Run flake8 linter on Python
+make typecheck       # Run mypy type checker
+make check           # Run all Python quality checks
 
-# Linting
-make lint
+# Frontend Code Quality
+make format-frontend  # Format TypeScript/React code with Prettier
+make lint-frontend   # Run ESLint on TypeScript/React
+make check-frontend  # Run all frontend checks
 
-# Type checking
-make typecheck
+# Testing
+make test            # Run all tests
+make test-coverage   # Run tests with coverage report
+make test-verbose    # Run tests with verbose output
 
-# Run all quality checks (format + lint + typecheck)
-make check
+# Database
+make init-db         # Initialize the database
 
-# Run tests
-make test
+# Build & Distribution
+make build           # Build distribution packages
+make build-wheel     # Build wheel package only
 
-# Run tests with coverage
-make test-coverage
-
-# Initialize database
-make init-db
-
-# Build distribution packages
-make build
-
-# Clean temporary files
-make clean
-
-# Complete cleanup (including venv)
-make clean-all
+# Utilities
+make run             # Run the CLI (shows help)
+make clean           # Remove temporary files
+make clean-all       # Complete cleanup including venv
 ```
 
 ## Project Structure Rules
@@ -216,12 +275,28 @@ make clean-all
 
 ```
 DiffusionPromptDB/
-├── src/diffusion_prompt_db/   # Source code ONLY
-├── tests/                     # Test files ONLY
-├── scripts/                   # Utility scripts
-├── data/                      # Database files (ignored by git)
-├── json_data/                 # Data files
-└── docs/                      # Additional documentation (future)
+├── frontend/                  # React/TypeScript application
+│   ├── src/
+│   │   ├── components/       # Reusable UI components
+│   │   ├── pages/           # Page components
+│   │   ├── services/        # API services
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── store/           # Zustand stores
+│   │   ├── i18n/            # Internationalization
+│   │   └── types/           # TypeScript types
+│   └── package.json
+├── src/
+│   ├── api/                  # FastAPI backend
+│   │   ├── routers/         # API endpoints
+│   │   ├── models/          # Pydantic models
+│   │   ├── database/        # Database utilities
+│   │   └── middleware/      # API middleware
+│   ├── diffusion_prompt_db/  # Core library
+│   └── batch_analyzer/       # Batch processing tools
+├── tests/                    # Test files
+├── scripts/                  # Utility scripts
+├── data/                     # Database files (ignored by git)
+└── json_data/               # Data files
 ```
 
 ### File Naming Conventions
@@ -289,7 +364,160 @@ Before submitting code, ensure:
 - [ ] No hardcoded paths or credentials
 - [ ] Virtual environment was used for all operations
 
+## API Development Guidelines
+
+### FastAPI Structure
+
+The API is built with FastAPI and includes:
+
+- **Authentication**: JWT-based authentication
+- **Routers**: Modular endpoint organization
+- **Models**: Pydantic models for validation
+- **Middleware**: CORS, authentication, error handling
+
+### Running the API
+
+```bash
+# Development server
+cd src/api
+python main.py
+
+# Or using uvicorn directly
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### API Endpoints
+
+- `/auth/*` - Authentication endpoints
+- `/prompts/*` - Prompt management
+- `/search/*` - Search functionality
+- `/catalog/*` - Catalog operations
+- `/preferences/*` - User preferences
+- `/admin/*` - Admin operations
+
+### Testing API Endpoints
+
+```bash
+# Run API tests
+cd src/api
+pytest tests/
+
+# Test specific endpoint
+pytest tests/test_all_endpoints.py::test_prompt_creation
+```
+
+## Frontend Development Guidelines
+
+### Setup Frontend
+
+```bash
+# Install dependencies
+cd frontend
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Frontend Commands
+
+```bash
+# Development
+npm run dev           # Start dev server
+npm run build        # Build for production
+npm run preview      # Preview production build
+
+# Code Quality
+npm run format       # Format with Prettier
+npm run lint         # Lint with ESLint
+npm run type-check   # TypeScript type checking
+```
+
+### Component Structure
+
+```typescript
+// Example React component with TypeScript
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+interface Props {
+  title: string;
+  onSubmit: (data: FormData) => void;
+}
+
+export function ExampleComponent({ title, onSubmit }: Props) {
+  const { t } = useTranslation();
+  const [data, setData] = useState<FormData>({});
+  
+  // Component logic here
+  
+  return (
+    <div className="container">
+      {/* JSX content */}
+    </div>
+  );
+}
+```
+
+### State Management
+
+Using Zustand for state management:
+
+```typescript
+// Example store
+import { create } from 'zustand';
+
+interface StoreState {
+  items: Item[];
+  addItem: (item: Item) => void;
+  removeItem: (id: string) => void;
+}
+
+export const useStore = create<StoreState>((set) => ({
+  items: [],
+  addItem: (item) => set((state) => ({ 
+    items: [...state.items, item] 
+  })),
+  removeItem: (id) => set((state) => ({ 
+    items: state.items.filter(i => i.id !== id) 
+  })),
+}));
+```
+
 ## Common Tasks for Agents
+
+### Working with Frontend and Backend
+
+```bash
+# 1. Ensure both environments are ready
+source .venv/bin/activate  # Backend Python environment
+cd frontend && npm install  # Frontend dependencies
+
+# 2. Format both codebases
+make check              # Backend formatting and linting
+make check-frontend     # Frontend formatting and linting
+
+# 3. Run both servers for development
+# Terminal 1: Backend
+cd src/api && python main.py
+
+# Terminal 2: Frontend
+cd frontend && npm run dev
+
+# 4. Test full stack
+# Backend tests
+make test
+
+# Frontend tests (when added)
+cd frontend && npm test
+
+# 5. Commit changes
+git add .
+git commit -m "feat: add full-stack feature"
+```
 
 ### Adding a New Feature
 
@@ -421,5 +649,5 @@ For questions about this project, contact: REDACTED_EMAIL
 
 ---
 
-**Last Updated**: November 12, 2025  
-**Version**: 1.0
+**Last Updated**: November 13, 2025  
+**Version**: 1.1
