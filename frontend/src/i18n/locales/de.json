@@ -1,0 +1,233 @@
+{
+  "app": {
+    "title": "DiffusionPrompt",
+    "subtitle": "Prompt-Katalogisierungssystem"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "prompts": "Prompts",
+    "search": "Suche",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "login": {
+    "title": "Anmeldung",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "usernamePlaceholder": "Geben Sie Ihren Benutzernamen ein",
+    "passwordPlaceholder": "Geben Sie Ihr Passwort ein",
+    "submit": "Anmelden",
+    "loggingIn": "Anmeldung läuft...",
+    "demoCredentials": "Demo-Anmeldedaten:",
+    "backendApi": "Backend-API: http://localhost:8000"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Allgemeine Übersicht des Katalogisierungssystems",
+    "totalPrompts": "Gesamt Prompts",
+    "artStyles": "Kunststile",
+    "tags": "Tags",
+    "nsfwCategories": "NSFW-Kategorien",
+    "topTags": "Top Tags",
+    "topStyles": "Meist Verwendete Stile",
+    "nsfwDistribution": "NSFW-Verteilung",
+    "quickActions": "Schnellaktionen",
+    "viewAllPrompts": "Alle Prompts Anzeigen",
+    "createNewPrompt": "Neuen Prompt Erstellen",
+    "loadingStats": "Statistiken werden geladen...",
+    "clickToViewAll": "Klicken Sie, um alles anzuzeigen",
+    "modals": {
+      "allArtStyles": "Alle Kunststile",
+      "allTags": "Alle Tags",
+      "allNsfwCategories": "Alle NSFW-Kategorien",
+      "count": "Anzahl",
+      "style": "Stil",
+      "tag": "Tag",
+      "category": "Kategorie"
+    },
+    "charts": {
+      "nsfwTitle": "NSFW-Verteilung",
+      "tagsTitle": "Top 10 Tags",
+      "stylesTitle": "Top 10 Kunststile"
+    }
+  },
+  "prompts": {
+    "title": "Prompts",
+    "totalPrompts": "Prompts insgesamt",
+    "newPrompt": "Neuer Prompt",
+    "loading": "Prompts werden geladen...",
+    "noResults": "Keine Prompts gefunden",
+    "actions": {
+      "view": "Anzeigen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen"
+    },
+    "export": {
+      "json": "JSON",
+      "csv": "CSV",
+      "successJson": "Erfolgreich nach JSON exportiert",
+      "successCsv": "Erfolgreich nach CSV exportiert"
+    },
+    "pagination": {
+      "previous": "Zurück",
+      "next": "Weiter"
+    }
+  },
+  "promptForm": {
+    "createTitle": "Neuen Prompt Erstellen",
+    "editTitle": "Prompt Bearbeiten",
+    "fields": {
+      "text": "Prompt-Text",
+      "textPlaceholder": "Geben Sie den Prompt ein...",
+      "textRequired": "Prompt-Text ist erforderlich",
+      "negativePrompt": "Negativer Prompt",
+      "negativePromptPlaceholder": "Negativer Prompt (optional)...",
+      "model": "Modell",
+      "modelPlaceholder": "stable-diffusion-v1.5",
+      "category": "Kategorie",
+      "categoryPlaceholder": "Landschaft, Porträt, usw.",
+      "tags": "Tags",
+      "tagsPlaceholder": "Tag1, Tag2, Tag3",
+      "tagsHelp": "Tags mit Kommas trennen",
+      "rating": "Bewertung",
+      "notes": "Notizen",
+      "notesPlaceholder": "Zusätzliche Notizen (optional)..."
+    },
+    "actions": {
+      "cancel": "Abbrechen",
+      "create": "Erstellen",
+      "update": "Aktualisieren"
+    },
+    "messages": {
+      "created": "Prompt erfolgreich erstellt",
+      "updated": "Prompt erfolgreich aktualisiert",
+      "createError": "Fehler beim Erstellen des Prompts",
+      "updateError": "Fehler beim Aktualisieren des Prompts"
+    }
+  },
+  "promptDetail": {
+    "title": "Prompt",
+    "copy": "Kopieren",
+    "sections": {
+      "promptText": "Prompt-Text",
+      "negativePrompt": "Negativer Prompt",
+      "tags": "Tags",
+      "parameters": "Parameter",
+      "notes": "Notizen"
+    },
+    "metadata": {
+      "created": "Erstellt",
+      "updated": "Aktualisiert"
+    },
+    "actions": {
+      "close": "Schließen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen"
+    }
+  },
+  "deleteConfirm": {
+    "title": "Prompt Löschen",
+    "message": "Sind Sie sicher, dass Sie den Prompt löschen möchten",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirm": "Löschen",
+    "cancel": "Abbrechen",
+    "success": "Prompt erfolgreich gelöscht",
+    "error": "Fehler beim Löschen des Prompts",
+    "deleting": "Verarbeitung..."
+  },
+  "search": {
+    "title": "Erweiterte Suche",
+    "subtitle": "Prompts nach mehreren Kriterien filtern",
+    "placeholder": "Prompts suchen...",
+    "filters": {
+      "nsfwLevel": "NSFW-Level",
+      "artStyle": "Kunststil",
+      "numberOfPeople": "Anzahl der Personen",
+      "peoplePlaceholder": "Z.B.: 1, 2, 3...",
+      "textSearch": "Suche im Prompt-Text",
+      "textPlaceholder": "Wörter im Prompt suchen...",
+      "textHelp": "Suchen Sie nach einem Wort oder einer Phrase im Prompt-Text",
+      "tagSearch": "Suche nach Tag",
+      "tagPlaceholder": "Suche nach Tag (z.B.: 1girl, anime, etc)...",
+      "tagHelp": "Suche nach Prompts mit einem bestimmten Tag. Mehrere Tags durch Komma getrennt.",
+      "all": "Alle"
+    },
+    "actions": {
+      "search": "Suchen",
+      "clear": "Filter Löschen",
+      "searching": "Suche läuft..."
+    },
+    "results": {
+      "total": "Ergebnisse insgesamt",
+      "page": "Seite",
+      "showing": "Anzeige",
+      "of": "von",
+      "noResults": "Keine Ergebnisse",
+      "noResultsMessage": "Keine Ergebnisse mit den ausgewählten Filtern gefunden",
+      "tryDifferent": "Versuchen Sie andere Suchkriterien",
+      "selectFilters": "Wählen Sie Filter und klicken Sie auf Suchen",
+      "previous": "Zurück",
+      "next": "Weiter"
+    },
+    "chips": {
+      "nsfw": "NSFW",
+      "style": "Stil",
+      "people": "Personen",
+      "text": "Text",
+      "tag": "Tag"
+    },
+    "activeFilters": "aktiver Filter",
+    "activeFiltersPlural": "aktive Filter",
+    "messages": {
+      "noResults": "Keine Ergebnisse gefunden",
+      "foundResults": "{{count}} Ergebnisse insgesamt gefunden",
+      "tagSearch": "Keine Prompts mit dem Tag gefunden",
+      "tagSearchSuccess": "{{count}} Prompts mit dem Tag gefunden",
+      "error": "Suchfehler"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Passen Sie Ihre Dashboard-Einstellungen an",
+    "loading": "Einstellungen werden geladen...",
+    "display": {
+      "title": "Anzeigeeinstellungen",
+      "showUnspecified": "\"Nicht spezifiziert\" standardmäßig anzeigen",
+      "showUnspecifiedDesc": "Kunststile, die als \"nicht spezifiziert\" markiert sind, im Dashboard und in Diagrammen anzeigen"
+    },
+    "blacklist": {
+      "title": "Tag-Blacklist",
+      "description": "Schließen Sie generische Tags vom Dashboard aus, um sich auf relevantere Informationen zu konzentrieren",
+      "addPlaceholder": "Geben Sie ein Tag zum Ausschließen ein...",
+      "add": "Hinzufügen",
+      "noTags": "Keine ausgeschlossenen Tags"
+    },
+    "actions": {
+      "save": "Änderungen Speichern",
+      "saving": "Speichern...",
+      "reset": "Auf Standard Zurücksetzen"
+    },
+    "messages": {
+      "saved": "Einstellungen erfolgreich gespeichert",
+      "saveError": "Fehler beim Speichern der Einstellungen"
+    }
+  },
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "retry": "Wiederholen",
+    "close": "Schließen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Anzeigen",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "search": "Suchen",
+    "export": "Exportieren",
+    "import": "Importieren",
+    "more": "mehr"
+  }
+}

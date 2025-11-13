@@ -15,6 +15,7 @@ export const searchService = {
       const searchParams = new URLSearchParams();
 
       if (params.text) searchParams.append('text', params.text);
+      if (params.tags) searchParams.append('tags', params.tags);
       if (params.nsfw_level) searchParams.append('nsfw_level', params.nsfw_level);
       if (params.number_of_people !== undefined) {
         searchParams.append('number_of_people', params.number_of_people.toString());

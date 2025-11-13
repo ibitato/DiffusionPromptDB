@@ -19,6 +19,7 @@ router = APIRouter()
 @router.get("/complex")
 async def complex_search(
     text: Optional[str] = Query(None),
+    tags: Optional[str] = Query(None, description="Comma-separated tags to search for"),
     nsfw_level: Optional[str] = Query(None),
     number_of_people: Optional[int] = Query(None),
     art_style: Optional[str] = Query(None),
@@ -29,9 +30,10 @@ async def complex_search(
     api_key: str = Depends(verify_api_key),
 ):
     """
-    Complex search with multiple filters including text search.
+    Complex search with multiple filters including text and tags search.
     
     Text search looks in original_prompt field.
+    Tags can be comma-separated for multiple tag search.
 
     Requires: API Key
     """
@@ -44,6 +46,15 @@ async def complex_search(
     if text:
         conditions.append("p.original_prompt LIKE ?")
         params.append(f"%{text}%")
+    
+    # Tags search - can be multiple tags separated by comma
+    if tags:
+        tag_list = [t.strip() for t in tags.split(',') if t.strip()]
+        for i, tag in enumerate(tag_list):
+            alias = f"t{i}"
+            joins.append(f"JOIN main_tags {alias} ON p.id = {alias}.prompt_id")
+            conditions.append(f"{alias}.tag LIKE ?")
+            params.append(f"%{tag}%")
 
     if nsfw_level:
         joins.append("JOIN nsfw_content n ON p.id = n.prompt_id")
