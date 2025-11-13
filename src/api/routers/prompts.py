@@ -10,7 +10,7 @@ import sqlite3
 from pathlib import Path
 
 from ..models import PromptCreate, PromptUpdate, PromptResponse, PromptListResponse
-from ..auth import verify_api_key, verify_token
+from ..auth import verify_api_key, verify_token, verify_admin, verify_ownership_or_admin
 from ..config import settings
 
 router = APIRouter()
@@ -57,6 +57,7 @@ async def list_prompts(
             p.model_used as model,
             p.processed_at as created_at,
             p.processed_at as updated_at,
+            p.created_by,
             a.primary_style as category,
             NULL as negative_prompt,
             NULL as parameters,
@@ -99,6 +100,7 @@ async def get_prompt(
             p.model_used as model,
             p.processed_at as created_at,
             p.processed_at as updated_at,
+            p.created_by,
             a.primary_style as category,
             NULL as negative_prompt,
             NULL as parameters,
@@ -126,27 +128,29 @@ async def create_prompt(
 ):
     """
     Create a new prompt in catalog DB.
-    Only admin users can create prompts.
+    Any authenticated user can create their own prompts.
 
-    Requires: JWT Token (write access)
+    Requires: JWT Token
     """
+    user_id = auth["user_id"]
     from datetime import datetime
 
     # Get next ID
     max_id = db.execute("SELECT MAX(id) FROM prompts").fetchone()[0]
     next_id = (max_id or 0) + 1
 
-    # Insert into prompts table (catalog schema)
+    # Insert into prompts table (catalog schema) with created_by
     db.execute(
         """
-        INSERT INTO prompts (id, original_prompt, processed_at, model_used, input_tokens, output_tokens)
-        VALUES (?, ?, ?, ?, 0, 0)
+        INSERT INTO prompts (id, original_prompt, processed_at, model_used, input_tokens, output_tokens, created_by)
+        VALUES (?, ?, ?, ?, 0, 0, ?)
     """,
         (
             next_id,
             prompt.text,
             datetime.utcnow().isoformat(),
             prompt.model or "manual-entry",
+            user_id,
         ),
     )
 
@@ -176,6 +180,7 @@ async def create_prompt(
             p.model_used as model,
             p.processed_at as created_at,
             p.processed_at as updated_at,
+            p.created_by,
             a.primary_style as category,
             NULL as negative_prompt,
             NULL as parameters,
@@ -202,13 +207,12 @@ async def update_prompt(
     """
     Update an existing prompt in catalog DB.
     Updates prompt text and category (art_style).
+    User can only update their own prompts, admin can update all.
 
-    Requires: JWT Token (write access)
+    Requires: JWT Token (owner or admin)
     """
-    # Check if exists
-    existing = db.execute("SELECT * FROM prompts WHERE id = ?", (prompt_id,)).fetchone()
-    if not existing:
-        raise HTTPException(status_code=404, detail="Prompt not found")
+    # Verify ownership or admin
+    verify_ownership_or_admin(prompt_id, auth, db)
 
     # Update prompt text
     if prompt.text is not None:
@@ -251,6 +255,7 @@ async def update_prompt(
             p.model_used as model,
             p.processed_at as created_at,
             p.processed_at as updated_at,
+            p.created_by,
             a.primary_style as category,
             NULL as negative_prompt,
             NULL as parameters,
@@ -276,13 +281,12 @@ async def delete_prompt(
     """
     Delete a prompt from catalog DB.
     Cascades to all related tables.
+    User can only delete their own prompts, admin can delete all.
 
-    Requires: JWT Token (write access)
+    Requires: JWT Token (owner or admin)
     """
-    # Check if exists
-    existing = db.execute("SELECT 1 FROM prompts WHERE id = ?", (prompt_id,)).fetchone()
-    if not existing:
-        raise HTTPException(status_code=404, detail="Prompt not found")
+    # Verify ownership or admin
+    verify_ownership_or_admin(prompt_id, auth, db)
 
     # Delete from all related tables (catalog schema has 20+ tables)
     tables = [

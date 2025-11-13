@@ -15,6 +15,7 @@ interface PromptDetailModalProps {
   prompt: Prompt | null;
   onEdit: (prompt: Prompt) => void;
   onDelete: (prompt: Prompt) => void;
+  canModify?: boolean; // Whether user can edit/delete this prompt
 }
 
 export const PromptDetailModal = ({
@@ -23,6 +24,7 @@ export const PromptDetailModal = ({
   prompt,
   onEdit,
   onDelete,
+  canModify = false,
 }: PromptDetailModalProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -251,20 +253,22 @@ export const PromptDetailModal = ({
             >
               Cerrar
             </button>
-            <div className="flex gap-3">
-              <button
-                onClick={handleEdit}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-              >
-                Editar
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-              >
-                Eliminar
-              </button>
-            </div>
+            {canModify && (
+              <div className="flex gap-3">
+                <button
+                  onClick={handleEdit}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            )}
           </motion.div>
         </div>
       </Modal>

@@ -7,6 +7,7 @@
     "dashboard": "Dashboard",
     "prompts": "Prompts",
     "search": "Search",
+    "settings": "Settings",
     "logout": "Logout"
   },
   "login": {
@@ -34,6 +35,16 @@
     "viewAllPrompts": "View All Prompts",
     "createNewPrompt": "Create New Prompt",
     "loadingStats": "Loading statistics...",
+    "clickToViewAll": "Click to view all",
+    "modals": {
+      "allArtStyles": "All Art Styles",
+      "allTags": "All Tags",
+      "allNsfwCategories": "All NSFW Categories",
+      "count": "Count",
+      "style": "Style",
+      "tag": "Tag",
+      "category": "Category"
+    },
     "charts": {
       "nsfwTitle": "NSFW Distribution",
       "tagsTitle": "Top 10 Tags",
@@ -173,6 +184,32 @@
       "tagSearch": "No prompts found with tag",
       "tagSearchSuccess": "Found {{count}} prompts with tag",
       "error": "Search error"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize your dashboard preferences",
+    "loading": "Loading settings...",
+    "display": {
+      "title": "Display Preferences",
+      "showUnspecified": "Show \"unspecified\" by default",
+      "showUnspecifiedDesc": "Display art styles marked as \"unspecified\" in dashboard and charts"
+    },
+    "blacklist": {
+      "title": "Tag Blacklist",
+      "description": "Exclude generic tags from dashboard to focus on more relevant information",
+      "addPlaceholder": "Type a tag to exclude...",
+      "add": "Add",
+      "noTags": "No excluded tags"
+    },
+    "actions": {
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "reset": "Reset to Defaults"
+    },
+    "messages": {
+      "saved": "Preferences saved successfully",
+      "saveError": "Error saving preferences"
     }
   },
   "common": {

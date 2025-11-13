@@ -8,8 +8,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
+import { Modal } from '../components/ui/Modal';
 import { StatsCharts } from '../components/dashboard/StatsCharts';
 import { statsService } from '../services/stats.service';
+import { searchService } from '../services/search.service';
+import { preferencesService } from '../services/preferences.service';
 import { Stats } from '../types/api.types';
 
 export const DashboardPage = () => {
@@ -17,11 +20,32 @@ export const DashboardPage = () => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showArtStylesModal, setShowArtStylesModal] = useState(false);
+  const [showTagsModal, setShowTagsModal] = useState(false);
+  const [showNsfwModal, setShowNsfwModal] = useState(false);
+  const [allArtStyles, setAllArtStyles] = useState<Array<{ style: string; count: number }>>([]);
+  const [allTags, setAllTags] = useState<Array<{ tag: string; count: number }>>([]);
+  const [showUnspecified, setShowUnspecified] = useState(true);
+  const [excludedTags, setExcludedTags] = useState<string[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
+    loadPreferences();
     loadStats();
   }, []);
+
+  const loadPreferences = async () => {
+    try {
+      const prefs = await preferencesService.getPreferences();
+      setShowUnspecified(prefs.show_unspecified);
+      setExcludedTags(prefs.excluded_tags);
+    } catch (err) {
+      console.error('Error loading preferences:', err);
+      // Use defaults if preferences not available
+      setShowUnspecified(true);
+      setExcludedTags(['high quality', 'masterpiece', 'best quality']);
+    }
+  };
 
   const loadStats = async () => {
     try {
@@ -31,6 +55,48 @@ export const DashboardPage = () => {
       setError(err instanceof Error ? err.message : 'Failed to load stats');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Filter function to exclude unspecified
+  const filterUnspecified = (styles: Array<{ style: string; count: number }>) => {
+    if (showUnspecified) return styles;
+    return styles.filter(s => s.style.toLowerCase() !== 'unspecified');
+  };
+
+  // Filter function to exclude blacklisted tags
+  const filterBlacklistedTags = (tags: Array<{ tag: string; count: number }>) => {
+    return tags.filter(t => !excludedTags.includes(t.tag.toLowerCase()));
+  };
+
+  const loadAllArtStyles = async () => {
+    try {
+      const filters = await statsService.getFilters();
+      setAllArtStyles(filters.art_styles);
+    } catch (err) {
+      console.error('Error loading all art styles:', err);
+    }
+  };
+
+  const loadAllTags = async () => {
+    try {
+      // Get all tags by querying with empty filters
+      const response = await searchService.complexSearch({ limit: 1000 });
+      // Extract unique tags from results
+      const tagCounts = new Map<string, number>();
+      response.results.forEach(result => {
+        if (result.tags) {
+          result.tags.forEach(tag => {
+            tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+          });
+        }
+      });
+      const sortedTags = Array.from(tagCounts.entries())
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count);
+      setAllTags(sortedTags);
+    } catch (err) {
+      console.error('Error loading all tags:', err);
     }
   };
 
@@ -97,13 +163,20 @@ export const DashboardPage = () => {
           </div>
 
           {/* Top Art Styles */}
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div
+            onClick={() => {
+              setShowArtStylesModal(true);
+              loadAllArtStyles();
+            }}
+            className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:bg-slate-750 hover:border-blue-600 transition-all duration-200 hover:shadow-lg hover:shadow-blue-600/20"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm font-medium">{t('dashboard.artStyles')}</p>
                 <p className="text-3xl font-bold text-white mt-2">
-                  {stats?.top_art_styles?.length || 0}
+                  {stats?.total_art_styles || stats?.top_art_styles?.length || 0}
                 </p>
+                <p className="text-xs text-blue-400 mt-2">{t('dashboard.clickToViewAll')}</p>
               </div>
               <div className="bg-blue-600/10 p-3 rounded-lg">
                 <svg
@@ -124,11 +197,20 @@ export const DashboardPage = () => {
           </div>
 
           {/* Top Tags */}
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div
+            onClick={() => {
+              setShowTagsModal(true);
+              if (stats?.top_tags && stats.top_tags.length > 0) {
+                setAllTags(stats.top_tags);
+              }
+            }}
+            className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:bg-slate-750 hover:border-green-600 transition-all duration-200 hover:shadow-lg hover:shadow-green-600/20"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm font-medium">{t('dashboard.tags')}</p>
-                <p className="text-3xl font-bold text-white mt-2">{stats?.top_tags?.length || 0}</p>
+                <p className="text-3xl font-bold text-white mt-2">{stats?.total_tags || stats?.top_tags?.length || 0}</p>
+                <p className="text-xs text-green-400 mt-2">{t('dashboard.clickToViewAll')}</p>
               </div>
               <div className="bg-green-600/10 p-3 rounded-lg">
                 <svg
@@ -149,13 +231,17 @@ export const DashboardPage = () => {
           </div>
 
           {/* NSFW Categories */}
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+          <div
+            onClick={() => setShowNsfwModal(true)}
+            className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:bg-slate-750 hover:border-orange-600 transition-all duration-200 hover:shadow-lg hover:shadow-orange-600/20"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm font-medium">{t('dashboard.nsfwCategories')}</p>
                 <p className="text-3xl font-bold text-white mt-2">
                   {Object.keys(stats?.nsfw_distribution || {}).length}
                 </p>
+                <p className="text-xs text-orange-400 mt-2">{t('dashboard.clickToViewAll')}</p>
               </div>
               <div className="bg-orange-600/10 p-3 rounded-lg">
                 <svg
@@ -176,12 +262,15 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Top Tags Table */}
+          {/* Top Tags Table */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">{t('dashboard.topTags')}</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-white">{t('dashboard.topTags')}</h3>
+              <span className="text-xs text-gray-500 bg-slate-700 px-2 py-1 rounded">Top 5 de {stats?.total_tags || 0}</span>
+            </div>
             <div className="space-y-3">
-              {stats?.top_tags?.slice(0, 5).map((tag, index) => (
+              {filterBlacklistedTags(stats?.top_tags || []).slice(0, 5).map((tag, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
@@ -195,9 +284,25 @@ export const DashboardPage = () => {
 
           {/* Top Art Styles */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">{t('dashboard.topStyles')}</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <h3 className="text-xl font-semibold text-white">{t('dashboard.topStyles')}</h3>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={showUnspecified}
+                    onChange={(e) => setShowUnspecified(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-400">Mostrar "unspecified"</span>
+                </label>
+              </div>
+              <span className="text-xs text-gray-500 bg-slate-700 px-2 py-1 rounded">
+                Mostrando 5 de {filterUnspecified(stats?.top_art_styles || []).length}
+              </span>
+            </div>
             <div className="space-y-3">
-              {stats?.top_art_styles?.slice(0, 5).map((style, index) => (
+              {filterUnspecified(stats?.top_art_styles || []).slice(0, 5).map((style, index) => (
                 <div
                   key={index}
                   className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
@@ -224,7 +329,15 @@ export const DashboardPage = () => {
         </div>
 
         {/* Charts Section */}
-        {stats && <StatsCharts stats={stats} />}
+        {stats && (
+          <StatsCharts 
+            stats={{
+              ...stats,
+              top_tags: filterBlacklistedTags(stats.top_tags || [])
+            }} 
+            showUnspecified={showUnspecified} 
+          />
+        )}
 
         {/* Quick Actions */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mt-8">
@@ -266,6 +379,149 @@ export const DashboardPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Art Styles Modal */}
+      <Modal
+        isOpen={showArtStylesModal}
+        onClose={() => setShowArtStylesModal(false)}
+        title={`${t('dashboard.modals.allArtStyles')} (${filterUnspecified(allArtStyles.length > 0 ? allArtStyles : stats?.top_art_styles || []).length} de ${stats?.total_art_styles || 0})`}
+        size="lg"
+      >
+        <div className="mb-4 flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showUnspecified}
+              onChange={(e) => setShowUnspecified(e.target.checked)}
+              className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-300">Mostrar "unspecified"</span>
+          </label>
+        </div>
+        <div className="max-h-96 overflow-y-auto">
+          <table className="w-full">
+            <thead className="sticky top-0 bg-slate-800 border-b border-slate-700">
+              <tr>
+                <th className="text-left py-3 px-4 text-gray-400 font-medium">
+                  {t('dashboard.modals.style')}
+                </th>
+                <th className="text-right py-3 px-4 text-gray-400 font-medium">
+                  {t('dashboard.modals.count')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filterUnspecified(allArtStyles.length > 0 ? allArtStyles : stats?.top_art_styles || []).map((style, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+                >
+                  <td className="py-3 px-4 text-gray-300">{style.style}</td>
+                  <td className="py-3 px-4 text-right text-blue-400 font-semibold">
+                    {style.count}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => setShowArtStylesModal(false)}
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+          >
+            {t('common.close')}
+          </button>
+        </div>
+      </Modal>
+
+      {/* Tags Modal */}
+      <Modal
+        isOpen={showTagsModal}
+        onClose={() => setShowTagsModal(false)}
+        title={`${t('dashboard.modals.allTags')} (Mostrando Top 200 de ${stats?.total_tags || 0})`}
+        size="lg"
+      >
+        <div className="max-h-96 overflow-y-auto">
+          <table className="w-full">
+            <thead className="sticky top-0 bg-slate-800 border-b border-slate-700">
+              <tr>
+                <th className="text-left py-3 px-4 text-gray-400 font-medium">
+                  {t('dashboard.modals.tag')}
+                </th>
+                <th className="text-right py-3 px-4 text-gray-400 font-medium">
+                  {t('dashboard.modals.count')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filterBlacklistedTags(allTags.length > 0 ? allTags : stats?.top_tags || []).map((tag, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+                >
+                  <td className="py-3 px-4 text-gray-300">{tag.tag}</td>
+                  <td className="py-3 px-4 text-right text-green-400 font-semibold">
+                    {tag.count}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => setShowTagsModal(false)}
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+          >
+            {t('common.close')}
+          </button>
+        </div>
+      </Modal>
+
+      {/* NSFW Categories Modal */}
+      <Modal
+        isOpen={showNsfwModal}
+        onClose={() => setShowNsfwModal(false)}
+        title={t('dashboard.modals.allNsfwCategories')}
+        size="lg"
+      >
+        <div className="max-h-96 overflow-y-auto">
+          <table className="w-full">
+            <thead className="sticky top-0 bg-slate-800 border-b border-slate-700">
+              <tr>
+                <th className="text-left py-3 px-4 text-gray-400 font-medium">
+                  {t('dashboard.modals.category')}
+                </th>
+                <th className="text-right py-3 px-4 text-gray-400 font-medium">
+                  {t('dashboard.modals.count')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(stats?.nsfw_distribution || {}).map(([level, count]) => (
+                <tr
+                  key={level}
+                  className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+                >
+                  <td className="py-3 px-4 text-gray-300 capitalize">{level}</td>
+                  <td className="py-3 px-4 text-right text-orange-400 font-semibold">
+                    {count}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => setShowNsfwModal(false)}
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+          >
+            {t('common.close')}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

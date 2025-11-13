@@ -11,18 +11,22 @@ import { ConfirmModal } from '../components/ui/Modal';
 import { PromptFormModal } from '../components/prompts/PromptFormModal';
 import { PromptDetailModal } from '../components/prompts/PromptDetailModal';
 import { useToast } from '../components/ui/Toast';
+import { useAuthStore } from '../store/authStore';
 import { promptsService } from '../services/prompts.service';
 import { Prompt, CreatePromptRequest } from '../types/api.types';
 import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
 
 export const PromptsPage = () => {
   const { t } = useTranslation();
+  const { user } = useAuthStore();
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPrompts, setTotalPrompts] = useState(0);
   const pageSize = 20;
+
+  const isAdmin = user?.role === 'admin';
 
   // Modal states
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -133,6 +137,17 @@ export const PromptsPage = () => {
     return text.substring(0, maxLength) + '...';
   };
 
+  // Check if user can edit/delete a prompt
+  const canModify = (prompt: Prompt): boolean => {
+    if (isAdmin) return true; // Admin can modify everything
+    if (prompt.created_by === null) return false; // Preloaded, only admin
+    return prompt.created_by === user?.id; // Own prompt
+  };
+
+  const isPreloaded = (prompt: Prompt): boolean => {
+    return prompt.created_by === null;
+  };
+
   if (error && !prompts.length) {
     return (
       <div className="min-h-screen bg-slate-900">
@@ -205,6 +220,7 @@ export const PromptsPage = () => {
               </div>
             )}
 
+            {/* All authenticated users can create their own prompts */}
             <button
               onClick={handleCreate}
               className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
@@ -240,6 +256,11 @@ export const PromptsPage = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-semibold text-white">Prompt #{prompt.id}</h3>
+                        {isPreloaded(prompt) && (
+                          <span className="px-2 py-1 bg-orange-600/20 text-orange-400 text-xs rounded-full">
+                            Precargado
+                          </span>
+                        )}
                         {prompt.category && (
                           <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full">
                             {prompt.category}
@@ -292,30 +313,28 @@ export const PromptsPage = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-            <button
-              onClick={() => loadPrompts()}
-              className="mt-2 text-red-400 hover:text-red-300 underline"
-            >
-              {t('common.retry')}
-            </button>
                       <button
                         onClick={() => handleView(prompt)}
                         className="px-3 py-1 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded transition-colors"
                       >
                         {t('prompts.actions.view')}
                       </button>
-                      <button
-                        onClick={() => handleEdit(prompt)}
-                        className="px-3 py-1 text-green-400 hover:text-green-300 hover:bg-green-400/10 rounded transition-colors"
-                      >
-                        {t('prompts.actions.edit')}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(prompt)}
-                        className="px-3 py-1 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
-                      >
-                        {t('prompts.actions.delete')}
-                      </button>
+                      {canModify(prompt) && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(prompt)}
+                            className="px-3 py-1 text-green-400 hover:text-green-300 hover:bg-green-400/10 rounded transition-colors"
+                          >
+                            {t('prompts.actions.edit')}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(prompt)}
+                            className="px-3 py-1 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
+                          >
+                            {t('prompts.actions.delete')}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -385,6 +404,7 @@ export const PromptsPage = () => {
         prompt={promptToView}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        canModify={promptToView ? canModify(promptToView) : false}
       />
 
       {/* Form Modal */}

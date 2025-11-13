@@ -7,6 +7,7 @@
     "dashboard": "Dashboard",
     "prompts": "Prompts",
     "search": "Búsqueda",
+    "settings": "Configuración",
     "logout": "Cerrar Sesión"
   },
   "login": {
@@ -34,6 +35,16 @@
     "viewAllPrompts": "Ver Todos los Prompts",
     "createNewPrompt": "Crear Nuevo Prompt",
     "loadingStats": "Cargando estadísticas...",
+    "clickToViewAll": "Click para ver todos",
+    "modals": {
+      "allArtStyles": "Todos los Estilos de Arte",
+      "allTags": "Todos los Tags",
+      "allNsfwCategories": "Todas las Categorías NSFW",
+      "count": "Cantidad",
+      "style": "Estilo",
+      "tag": "Tag",
+      "category": "Categoría"
+    },
     "charts": {
       "nsfwTitle": "Distribución NSFW",
       "tagsTitle": "Top 10 Tags",
@@ -173,6 +184,32 @@
       "tagSearch": "No se encontraron prompts con el tag",
       "tagSearchSuccess": "Encontrados {{count}} prompts con el tag",
       "error": "Error en la búsqueda"
+    }
+  },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Personaliza tus preferencias del dashboard",
+    "loading": "Cargando configuración...",
+    "display": {
+      "title": "Preferencias de Visualización",
+      "showUnspecified": "Mostrar \"unspecified\" por defecto",
+      "showUnspecifiedDesc": "Mostrar estilos de arte marcados como \"unspecified\" en el dashboard y gráficas"
+    },
+    "blacklist": {
+      "title": "Blacklist de Tags",
+      "description": "Excluye tags genéricos del dashboard para enfocarte en información más relevante",
+      "addPlaceholder": "Escribe un tag para excluir...",
+      "add": "Agregar",
+      "noTags": "No hay tags excluidos"
+    },
+    "actions": {
+      "save": "Guardar Cambios",
+      "saving": "Guardando...",
+      "reset": "Restaurar Valores por Defecto"
+    },
+    "messages": {
+      "saved": "Preferencias guardadas exitosamente",
+      "saveError": "Error al guardar preferencias"
     }
   },
   "common": {

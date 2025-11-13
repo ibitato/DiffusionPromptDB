@@ -52,12 +52,12 @@ async def get_statistics(
         FROM main_tags 
         GROUP BY tag 
         ORDER BY count DESC 
-        LIMIT 15
+        LIMIT 200
     """
     ):
         stats["top_tags"].append({"tag": row[0], "count": row[1]})
 
-    # Top art styles
+    # All art styles (no limit)
     stats["top_art_styles"] = []
     for row in db.execute(
         """
@@ -65,11 +65,27 @@ async def get_statistics(
         FROM art_styles 
         WHERE primary_style IS NOT NULL
         GROUP BY primary_style 
-        ORDER BY count DESC 
-        LIMIT 10
+        ORDER BY count DESC
     """
     ):
         stats["top_art_styles"].append({"style": row[0], "count": row[1]})
+    
+    # Total unique art styles count
+    stats["total_art_styles"] = len(db.execute(
+        """
+        SELECT DISTINCT primary_style 
+        FROM art_styles 
+        WHERE primary_style IS NOT NULL
+    """
+    ).fetchall())
+    
+    # Total unique tags count
+    stats["total_tags"] = len(db.execute(
+        """
+        SELECT DISTINCT tag 
+        FROM main_tags
+    """
+    ).fetchall())
 
     # Character distribution
     stats["character_distribution"] = {}
@@ -83,3 +99,42 @@ async def get_statistics(
         stats["character_distribution"][str(row[0])] = row[1]
 
     return stats
+
+
+@router.get("/filters")
+async def get_filters(
+    db: sqlite3.Connection = Depends(get_catalog_db),
+    auth: dict = Depends(optional_auth),
+):
+    """
+    Get available filter values from database (public).
+    Returns unique values for NSFW levels and art styles with counts.
+    """
+    filters = {}
+
+    # Get unique NSFW levels
+    filters["nsfw_levels"] = []
+    for row in db.execute(
+        """
+        SELECT DISTINCT level 
+        FROM nsfw_content 
+        WHERE level IS NOT NULL
+        ORDER BY level
+    """
+    ):
+        filters["nsfw_levels"].append(row[0])
+
+    # Get all art styles with counts (ordered by count)
+    filters["art_styles"] = []
+    for row in db.execute(
+        """
+        SELECT primary_style, COUNT(*) as count 
+        FROM art_styles 
+        WHERE primary_style IS NOT NULL
+        GROUP BY primary_style 
+        ORDER BY count DESC
+    """
+    ):
+        filters["art_styles"].append({"style": row[0], "count": row[1]})
+
+    return filters

@@ -121,3 +121,94 @@ def optional_auth(
         return {"type": "api_key", "key": api_key}
 
     return None  # Public access
+
+
+def verify_admin(auth: dict = Security(verify_token)) -> dict:
+    """
+    Verify that the user is an admin.
+
+    Args:
+        auth: Decoded token payload
+
+    Returns:
+        Auth payload if user is admin
+
+    Raises:
+        HTTPException: If user is not admin
+    """
+    if auth.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required"
+        )
+    return auth
+
+
+def verify_ownership_or_admin(prompt_id: int, auth: dict, db) -> bool:
+    """
+    Verify that user owns the prompt or is admin.
+
+    Args:
+        prompt_id: ID of the prompt
+        auth: Decoded token payload
+        db: Database connection
+
+    Returns:
+        True if user is owner or admin
+
+    Raises:
+        HTTPException: If user doesn't have access
+    """
+    user_id = auth.get("user_id")
+    user_role = auth.get("role")
+    
+    # Admin can access everything
+    if user_role == "admin":
+        return True
+    
+    # Check ownership
+    row = db.execute(
+        "SELECT created_by FROM prompts WHERE id = ?",
+        (prompt_id,)
+    ).fetchone()
+    
+    if not row:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    
+    created_by = row[0]
+    
+    # NULL means preloaded (only admin can modify)
+    if created_by is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot modify preloaded prompts. Admin privileges required."
+        )
+    
+    # Check if user owns this prompt
+    if created_by != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only modify your own prompts"
+        )
+    
+    return True
+
+
+def can_modify_prompt(prompt_id: int, auth: dict, db) -> dict:
+    """
+    Check and verify if user can modify prompt.
+    Helper that combines verification with the database connection.
+    
+    Args:
+        prompt_id: ID of the prompt
+        auth: Decoded token payload
+        db: Database connection
+        
+    Returns:
+        Auth dict if user has permission
+        
+    Raises:
+        HTTPException: If user doesn't have permission
+    """
+    verify_ownership_or_admin(prompt_id, auth, db)
+    return auth
