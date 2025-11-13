@@ -17,6 +17,12 @@ const resources = {
   en: {
     translation: en,
   },
+  'en-US': {
+    translation: en,
+  },
+  'en-GB': {
+    translation: en,
+  },
   fr: {
     translation: fr,
   },
