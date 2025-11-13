@@ -35,6 +35,7 @@ export const PromptFormModal = ({
       negative_prompt: '',
       model: '',
       category: '',
+      art_style: '',
       tags: '',
       rating: 5,
       notes: '',
@@ -51,6 +52,7 @@ export const PromptFormModal = ({
         negative_prompt: '',
         model: '',
         category: '',
+        art_style: '',
         tags: '',
         rating: 5,
         notes: '',
@@ -101,7 +103,12 @@ export const PromptFormModal = ({
         {/* Model and Category */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Model</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <span className="flex items-center gap-1">
+                <span>🤖</span>
+                <span>Model</span>
+              </span>
+            </label>
             <input
               {...register('model')}
               type="text"
@@ -112,7 +119,12 @@ export const PromptFormModal = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <span className="flex items-center gap-1">
+                <span>📁</span>
+                <span>Category</span>
+              </span>
+            </label>
             <input
               {...register('category')}
               type="text"
@@ -123,9 +135,32 @@ export const PromptFormModal = ({
           </div>
         </div>
 
+        {/* Art Style */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            <span className="flex items-center gap-1">
+              <span>🎨</span>
+              <span>Art Style</span>
+            </span>
+          </label>
+          <input
+            {...register('art_style')}
+            type="text"
+            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
+            placeholder="anime, realistic, cartoon, digital art, etc."
+            disabled={isLoading}
+          />
+          <p className="mt-1 text-xs text-gray-400">Estilo artístico del prompt</p>
+        </div>
+
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Tags</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            <span className="flex items-center gap-1">
+              <span>🏷️</span>
+              <span>Tags</span>
+            </span>
+          </label>
           <input
             {...register('tags')}
             type="text"
@@ -138,7 +173,12 @@ export const PromptFormModal = ({
 
         {/* Rating */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Rating</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            <span className="flex items-center gap-1">
+              <span>⭐</span>
+              <span>Rating</span>
+            </span>
+          </label>
           <div className="flex items-center gap-2">
             {[1, 2, 3, 4, 5].map((value) => (
               <label key={value} className="cursor-pointer">
@@ -163,7 +203,12 @@ export const PromptFormModal = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Notes</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            <span className="flex items-center gap-1">
+              <span>📝</span>
+              <span>Notes</span>
+            </span>
+          </label>
           <textarea
             {...register('notes')}
             rows={2}
