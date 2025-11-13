@@ -19,6 +19,7 @@ export const promptsService = {
       const params = new URLSearchParams({
         page: page.toString(),
         page_size: pageSize.toString(),
+        _t: Date.now().toString(), // Add timestamp to prevent caching
       });
 
       if (category) {
@@ -37,7 +38,7 @@ export const promptsService = {
    */
   getPromptById: async (id: number): Promise<Prompt> => {
     try {
-      const response = await api.get<Prompt>(`/prompts/${id}`);
+      const response = await api.get<Prompt>(`/prompts/${id}?_t=${Date.now()}`);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
