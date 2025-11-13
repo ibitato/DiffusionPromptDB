@@ -52,6 +52,7 @@ export interface Prompt {
   parameters?: string;
   tags?: string;
   category?: string;
+  art_style?: string; // Art style from catalog
   rating?: number;
   notes?: string;
   created_at: string;
@@ -66,6 +67,7 @@ export interface CreatePromptRequest {
   parameters?: string;
   tags?: string;
   category?: string;
+  art_style?: string;
   rating?: number;
   notes?: string;
 }

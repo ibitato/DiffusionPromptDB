@@ -56,14 +56,24 @@ export const PromptDetailModal = ({
       <Modal isOpen={isOpen} onClose={onClose} title={`Prompt #${prompt.id}`} size="xl">
         <div className="space-y-6">
           {/* Header with badges */}
-          <div className="flex items-center gap-3 pb-4 border-b border-slate-700">
+          <div className="flex flex-wrap items-center gap-3 pb-4 border-b border-slate-700">
             {prompt.category && (
               <motion.span
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm font-medium"
               >
-                {prompt.category}
+                📁 {prompt.category}
+              </motion.span>
+            )}
+            {prompt.art_style && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.05 }}
+                className="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm font-medium"
+              >
+                🎨 {prompt.art_style}
               </motion.span>
             )}
             {prompt.model && (
@@ -73,14 +83,14 @@ export const PromptDetailModal = ({
                 transition={{ delay: 0.1 }}
                 className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm font-medium"
               >
-                {prompt.model}
+                🤖 {prompt.model}
               </motion.span>
             )}
             {prompt.rating && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.15 }}
                 className="flex items-center gap-1"
               >
                 {[...Array(5)].map((_, i) => (
@@ -166,7 +176,10 @@ export const PromptDetailModal = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h4 className="text-sm font-semibold text-gray-300 mb-2">Tags</h4>
+              <h4 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                <span>🏷️</span>
+                <span>Tags</span>
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {prompt.tags.split(',').map((tag, index) => (
                   <motion.span
@@ -174,9 +187,9 @@ export const PromptDetailModal = ({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 + index * 0.05 }}
-                    className="px-3 py-1 bg-slate-700 text-gray-300 text-sm rounded-full"
+                    className="px-3 py-1 bg-gradient-to-r from-violet-600/20 to-blue-600/20 text-blue-300 text-sm rounded-full border border-blue-600/30 hover:border-blue-400/50 transition-colors cursor-default"
                   >
-                    {tag.trim()}
+                    #{tag.trim()}
                   </motion.span>
                 ))}
               </div>
@@ -221,13 +234,23 @@ export const PromptDetailModal = ({
             className="grid grid-cols-2 gap-4 p-4 bg-slate-700/30 rounded-lg"
           >
             <div>
-              <p className="text-xs text-gray-400 mb-1">Created</p>
+              <p className="text-xs text-gray-400 mb-1">📅 Created</p>
               <p className="text-sm text-gray-200">{formatDate(prompt.created_at)}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1">Updated</p>
+              <p className="text-xs text-gray-400 mb-1">🔄 Updated</p>
               <p className="text-sm text-gray-200">{formatDate(prompt.updated_at)}</p>
             </div>
+            {prompt.created_by !== undefined && (
+              <div className="col-span-2">
+                <p className="text-xs text-gray-400 mb-1">
+                  👤 Created by
+                </p>
+                <p className="text-sm text-gray-200">
+                  {prompt.created_by === null ? 'System (Preloaded)' : `User ID: ${prompt.created_by}`}
+                </p>
+              </div>
+            )}
           </motion.div>
 
           {/* Actions */}

@@ -59,13 +59,16 @@ async def list_prompts(
             p.processed_at as updated_at,
             p.created_by,
             a.primary_style as category,
+            a.primary_style as art_style,
             NULL as negative_prompt,
             NULL as parameters,
-            NULL as tags,
+            GROUP_CONCAT(DISTINCT t.tag) as tags,
             NULL as rating,
             NULL as notes
         FROM prompts p
         LEFT JOIN art_styles a ON p.id = a.prompt_id
+        LEFT JOIN main_tags t ON p.id = t.prompt_id
+        GROUP BY p.id
         ORDER BY p.processed_at DESC
         LIMIT ? OFFSET ?
     """
@@ -91,7 +94,7 @@ async def get_prompt(
 
     Requires: API Key
     """
-    # Get prompt with mapped fields
+    # Get prompt with mapped fields including tags and art_style
     row = db.execute(
         """
         SELECT 
@@ -102,14 +105,17 @@ async def get_prompt(
             p.processed_at as updated_at,
             p.created_by,
             a.primary_style as category,
+            a.primary_style as art_style,
             NULL as negative_prompt,
             NULL as parameters,
-            NULL as tags,
+            GROUP_CONCAT(DISTINCT t.tag) as tags,
             NULL as rating,
             NULL as notes
         FROM prompts p
         LEFT JOIN art_styles a ON p.id = a.prompt_id
+        LEFT JOIN main_tags t ON p.id = t.prompt_id
         WHERE p.id = ?
+        GROUP BY p.id
     """,
         (prompt_id,),
     ).fetchone()
@@ -163,15 +169,26 @@ async def create_prompt(
         "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, 'safe')", (next_id,)
     )
 
-    if prompt.category:
+    # Handle art_style (using category field for backward compatibility)
+    art_style_value = prompt.art_style or prompt.category
+    if art_style_value:
         db.execute(
             "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
-            (next_id, prompt.category),
+            (next_id, art_style_value),
         )
+    
+    # Handle tags
+    if prompt.tags:
+        tags_list = [tag.strip() for tag in prompt.tags.split(',') if tag.strip()]
+        for tag in tags_list:
+            db.execute(
+                "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
+                (next_id, tag),
+            )
 
     db.commit()
 
-    # Return created prompt with mapping
+    # Return created prompt with mapping including tags and art_style
     row = db.execute(
         """
         SELECT 
@@ -182,14 +199,17 @@ async def create_prompt(
             p.processed_at as updated_at,
             p.created_by,
             a.primary_style as category,
+            a.primary_style as art_style,
             NULL as negative_prompt,
             NULL as parameters,
-            NULL as tags,
+            GROUP_CONCAT(DISTINCT t.tag) as tags,
             NULL as rating,
             NULL as notes
         FROM prompts p
         LEFT JOIN art_styles a ON p.id = a.prompt_id
+        LEFT JOIN main_tags t ON p.id = t.prompt_id
         WHERE p.id = ?
+        GROUP BY p.id
     """,
         (next_id,),
     ).fetchone()
@@ -227,8 +247,9 @@ async def update_prompt(
             "UPDATE prompts SET model_used = ? WHERE id = ?", (prompt.model, prompt_id)
         )
 
-    # Update category (art_style)
-    if prompt.category is not None:
+    # Update art_style (using art_style field primarily, fallback to category)
+    if prompt.art_style is not None or prompt.category is not None:
+        art_style_value = prompt.art_style if prompt.art_style is not None else prompt.category
         # Check if art_style entry exists
         exists = db.execute(
             "SELECT 1 FROM art_styles WHERE prompt_id = ?", (prompt_id,)
@@ -236,17 +257,31 @@ async def update_prompt(
         if exists:
             db.execute(
                 "UPDATE art_styles SET primary_style = ? WHERE prompt_id = ?",
-                (prompt.category, prompt_id),
+                (art_style_value, prompt_id),
             )
         else:
             db.execute(
                 "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
-                (prompt_id, prompt.category),
+                (prompt_id, art_style_value),
             )
+    
+    # Update tags
+    if prompt.tags is not None:
+        # Delete existing tags
+        db.execute("DELETE FROM main_tags WHERE prompt_id = ?", (prompt_id,))
+        
+        # Insert new tags
+        if prompt.tags:
+            tags_list = [tag.strip() for tag in prompt.tags.split(',') if tag.strip()]
+            for tag in tags_list:
+                db.execute(
+                    "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
+                    (prompt_id, tag),
+                )
 
     db.commit()
 
-    # Return updated prompt with mapping
+    # Return updated prompt with mapping including tags and art_style
     row = db.execute(
         """
         SELECT 
@@ -257,14 +292,17 @@ async def update_prompt(
             p.processed_at as updated_at,
             p.created_by,
             a.primary_style as category,
+            a.primary_style as art_style,
             NULL as negative_prompt,
             NULL as parameters,
-            NULL as tags,
+            GROUP_CONCAT(DISTINCT t.tag) as tags,
             NULL as rating,
             NULL as notes
         FROM prompts p
         LEFT JOIN art_styles a ON p.id = a.prompt_id
+        LEFT JOIN main_tags t ON p.id = t.prompt_id
         WHERE p.id = ?
+        GROUP BY p.id
     """,
         (prompt_id,),
     ).fetchone()
