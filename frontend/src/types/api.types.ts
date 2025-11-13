@@ -88,6 +88,7 @@ export interface SearchFilters {
 
 export interface ComplexSearchParams {
   text?: string;
+  tags?: string;  // Comma-separated tags
   nsfw_level?: string;
   number_of_people?: number;
   art_style?: string;

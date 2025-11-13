@@ -135,6 +135,9 @@ export const SearchPage = () => {
         // Text search in prompt content
         if (searchText) params.text = searchText;
         
+        // Tag search
+        if (searchTag) params.tags = searchTag;
+        
         // Other filters
         if (nsfwLevel) params.nsfw_level = nsfwLevel;
         if (artStyle) params.art_style = artStyle;

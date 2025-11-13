@@ -1,0 +1,233 @@
+{
+  "app": {
+    "title": "DiffusionPrompt",
+    "subtitle": "Système de Catalogage de Prompts"
+  },
+  "nav": {
+    "dashboard": "Tableau de Bord",
+    "prompts": "Prompts",
+    "search": "Recherche",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "login": {
+    "title": "Connexion",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "usernamePlaceholder": "Entrez votre nom d'utilisateur",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "submit": "Se connecter",
+    "loggingIn": "Connexion en cours...",
+    "demoCredentials": "Identifiants de démonstration:",
+    "backendApi": "API Backend: http://localhost:8000"
+  },
+  "dashboard": {
+    "title": "Tableau de Bord",
+    "subtitle": "Vue d'ensemble du système de catalogage",
+    "totalPrompts": "Total des Prompts",
+    "artStyles": "Styles Artistiques",
+    "tags": "Étiquettes",
+    "nsfwCategories": "Catégories NSFW",
+    "topTags": "Étiquettes Populaires",
+    "topStyles": "Styles les Plus Utilisés",
+    "nsfwDistribution": "Distribution NSFW",
+    "quickActions": "Actions Rapides",
+    "viewAllPrompts": "Voir Tous les Prompts",
+    "createNewPrompt": "Créer un Nouveau Prompt",
+    "loadingStats": "Chargement des statistiques...",
+    "clickToViewAll": "Cliquez pour tout voir",
+    "modals": {
+      "allArtStyles": "Tous les Styles Artistiques",
+      "allTags": "Toutes les Étiquettes",
+      "allNsfwCategories": "Toutes les Catégories NSFW",
+      "count": "Nombre",
+      "style": "Style",
+      "tag": "Étiquette",
+      "category": "Catégorie"
+    },
+    "charts": {
+      "nsfwTitle": "Distribution NSFW",
+      "tagsTitle": "Top 10 Étiquettes",
+      "stylesTitle": "Top 10 Styles Artistiques"
+    }
+  },
+  "prompts": {
+    "title": "Prompts",
+    "totalPrompts": "prompts au total",
+    "newPrompt": "Nouveau Prompt",
+    "loading": "Chargement des prompts...",
+    "noResults": "Aucun prompt trouvé",
+    "actions": {
+      "view": "Voir",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "export": {
+      "json": "JSON",
+      "csv": "CSV",
+      "successJson": "Exporté avec succès en JSON",
+      "successCsv": "Exporté avec succès en CSV"
+    },
+    "pagination": {
+      "previous": "Précédent",
+      "next": "Suivant"
+    }
+  },
+  "promptForm": {
+    "createTitle": "Créer un Nouveau Prompt",
+    "editTitle": "Modifier le Prompt",
+    "fields": {
+      "text": "Texte du Prompt",
+      "textPlaceholder": "Entrez le prompt...",
+      "textRequired": "Le texte du prompt est requis",
+      "negativePrompt": "Prompt Négatif",
+      "negativePromptPlaceholder": "Prompt négatif (optionnel)...",
+      "model": "Modèle",
+      "modelPlaceholder": "stable-diffusion-v1.5",
+      "category": "Catégorie",
+      "categoryPlaceholder": "paysage, portrait, etc.",
+      "tags": "Étiquettes",
+      "tagsPlaceholder": "tag1, tag2, tag3",
+      "tagsHelp": "Séparez les étiquettes par des virgules",
+      "rating": "Évaluation",
+      "notes": "Notes",
+      "notesPlaceholder": "Notes supplémentaires (optionnel)..."
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "create": "Créer",
+      "update": "Mettre à jour"
+    },
+    "messages": {
+      "created": "Prompt créé avec succès",
+      "updated": "Prompt mis à jour avec succès",
+      "createError": "Erreur lors de la création du prompt",
+      "updateError": "Erreur lors de la mise à jour du prompt"
+    }
+  },
+  "promptDetail": {
+    "title": "Prompt",
+    "copy": "Copier",
+    "sections": {
+      "promptText": "Texte du Prompt",
+      "negativePrompt": "Prompt Négatif",
+      "tags": "Étiquettes",
+      "parameters": "Paramètres",
+      "notes": "Notes"
+    },
+    "metadata": {
+      "created": "Créé",
+      "updated": "Mis à jour"
+    },
+    "actions": {
+      "close": "Fermer",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    }
+  },
+  "deleteConfirm": {
+    "title": "Supprimer le Prompt",
+    "message": "Êtes-vous sûr de vouloir supprimer le prompt",
+    "warning": "Cette action ne peut pas être annulée.",
+    "confirm": "Supprimer",
+    "cancel": "Annuler",
+    "success": "Prompt supprimé avec succès",
+    "error": "Erreur lors de la suppression du prompt",
+    "deleting": "Traitement..."
+  },
+  "search": {
+    "title": "Recherche Avancée",
+    "subtitle": "Filtrer les prompts par plusieurs critères",
+    "placeholder": "Rechercher des prompts...",
+    "filters": {
+      "nsfwLevel": "Niveau NSFW",
+      "artStyle": "Style Artistique",
+      "numberOfPeople": "Nombre de Personnes",
+      "peoplePlaceholder": "Ex: 1, 2, 3...",
+      "textSearch": "Recherche dans le Texte du Prompt",
+      "textPlaceholder": "Rechercher des mots dans le prompt...",
+      "textHelp": "Rechercher n'importe quel mot ou phrase dans le texte du prompt",
+      "tagSearch": "Recherche par Étiquette",
+      "tagPlaceholder": "Recherche par étiquette (ex: 1girl, anime, etc)...",
+      "tagHelp": "Rechercher des prompts contenant une étiquette spécifique. Plusieurs étiquettes séparées par virgule.",
+      "all": "Tous"
+    },
+    "actions": {
+      "search": "Rechercher",
+      "clear": "Effacer les Filtres",
+      "searching": "Recherche..."
+    },
+    "results": {
+      "total": "résultats au total",
+      "page": "Page",
+      "showing": "Affichage",
+      "of": "sur",
+      "noResults": "Aucun Résultat",
+      "noResultsMessage": "Aucun résultat trouvé avec les filtres sélectionnés",
+      "tryDifferent": "Essayez différents critères de recherche",
+      "selectFilters": "Sélectionnez des filtres et cliquez sur Rechercher",
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "chips": {
+      "nsfw": "NSFW",
+      "style": "Style",
+      "people": "Personnes",
+      "text": "Texte",
+      "tag": "Étiquette"
+    },
+    "activeFilters": "filtre actif",
+    "activeFiltersPlural": "filtres actifs",
+    "messages": {
+      "noResults": "Aucun résultat trouvé",
+      "foundResults": "{{count}} résultats trouvés au total",
+      "tagSearch": "Aucun prompt trouvé avec l'étiquette",
+      "tagSearchSuccess": "{{count}} prompts trouvés avec l'étiquette",
+      "error": "Erreur de recherche"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Personnalisez vos préférences de tableau de bord",
+    "loading": "Chargement des paramètres...",
+    "display": {
+      "title": "Préférences d'Affichage",
+      "showUnspecified": "Afficher \"non spécifié\" par défaut",
+      "showUnspecifiedDesc": "Afficher les styles artistiques marqués comme \"non spécifié\" dans le tableau de bord et les graphiques"
+    },
+    "blacklist": {
+      "title": "Liste Noire d'Étiquettes",
+      "description": "Exclure les étiquettes génériques du tableau de bord pour se concentrer sur des informations plus pertinentes",
+      "addPlaceholder": "Tapez une étiquette à exclure...",
+      "add": "Ajouter",
+      "noTags": "Aucune étiquette exclue"
+    },
+    "actions": {
+      "save": "Enregistrer les Modifications",
+      "saving": "Enregistrement...",
+      "reset": "Réinitialiser aux Valeurs par Défaut"
+    },
+    "messages": {
+      "saved": "Préférences enregistrées avec succès",
+      "saveError": "Erreur lors de l'enregistrement des préférences"
+    }
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "search": "Rechercher",
+    "export": "Exporter",
+    "import": "Importer",
+    "more": "plus"
+  }
+}

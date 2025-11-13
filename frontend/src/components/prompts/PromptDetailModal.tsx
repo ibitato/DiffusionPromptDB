@@ -3,9 +3,7 @@
  * Full view of a prompt with all its information
  */
 
-import { useState } from 'react';
 import { Modal } from '../ui/Modal';
-import { ConfirmModal } from '../ui/Modal';
 import { Prompt } from '../../types/api.types';
 import { motion } from 'framer-motion';
 
@@ -26,8 +24,6 @@ export const PromptDetailModal = ({
   onDelete,
   canModify = false,
 }: PromptDetailModalProps) => {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
   if (!prompt) return null;
 
   const formatDate = (dateString: string) => {
@@ -47,13 +43,7 @@ export const PromptDetailModal = ({
   };
 
   const handleDelete = () => {
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = () => {
     onDelete(prompt);
-    setShowDeleteConfirm(false);
-    onClose();
   };
 
   const copyToClipboard = (text: string) => {
@@ -272,17 +262,6 @@ export const PromptDetailModal = ({
           </motion.div>
         </div>
       </Modal>
-
-      {/* Delete Confirmation */}
-      <ConfirmModal
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={confirmDelete}
-        title="Eliminar Prompt"
-        message={`¿Estás seguro de que deseas eliminar el prompt #${prompt.id}?`}
-        confirmText="Eliminar"
-        cancelText="Cancelar"
-      />
     </>
   );
 };

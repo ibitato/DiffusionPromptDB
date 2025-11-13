@@ -75,6 +75,11 @@ export const PromptsPage = () => {
   };
 
   const handleDelete = (prompt: Prompt) => {
+    // Close detail modal first if it's open
+    if (isDetailModalOpen) {
+      setIsDetailModalOpen(false);
+      setPromptToView(null);
+    }
     setPromptToDelete(prompt);
     setIsDeleteModalOpen(true);
   };
