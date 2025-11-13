@@ -17,7 +17,8 @@ export const LanguageToggle = () => {
 
   const languages = [
     { code: 'es', label: 'ES', flag: '🇪🇸' },
-    { code: 'en', label: 'EN', flag: '🇬🇧' },
+    { code: 'en-US', label: 'EN', flag: '🇺🇸' },
+    { code: 'en-GB', label: 'EN', flag: '🇬🇧' },
     { code: 'fr', label: 'FR', flag: '🇫🇷' },
     { code: 'de', label: 'DE', flag: '🇩🇪' },
   ];
