@@ -92,6 +92,8 @@
       "tagsPlaceholder": "Tag1, Tag2, Tag3",
       "tagsHelp": "Tags mit Kommas trennen",
       "rating": "Bewertung",
+      "parameters": "Parameter",
+      "parametersPlaceholder": "Generierungsparameter (JSON-Format)...",
       "notes": "Notizen",
       "notesPlaceholder": "Zusätzliche Notizen (optional)..."
     },

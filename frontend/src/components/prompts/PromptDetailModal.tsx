@@ -76,16 +76,6 @@ export const PromptDetailModal = ({
                 🎨 {prompt.art_style}
               </motion.span>
             )}
-            {prompt.model && (
-              <motion.span
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 }}
-                className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm font-medium"
-              >
-                🤖 {prompt.model}
-              </motion.span>
-            )}
             {prompt.rating && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}

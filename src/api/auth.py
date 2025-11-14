@@ -123,6 +123,28 @@ def optional_auth(
     return None  # Public access
 
 
+def get_current_user_optional(token: Optional[str] = Security(bearer_scheme)) -> Optional[dict]:
+    """
+    Get current user from JWT token if provided, otherwise return None.
+    Used for endpoints that work both authenticated and unauthenticated.
+
+    Returns:
+        User info from token if authenticated, None otherwise
+    """
+    if not token:
+        return None
+    
+    try:
+        payload = jwt.decode(
+            token.credentials,
+            settings.jwt_secret_key,
+            algorithms=[settings.jwt_algorithm],
+        )
+        return payload
+    except JWTError:
+        return None
+
+
 def verify_admin(auth: dict = Security(verify_token)) -> dict:
     """
     Verify that the user is an admin.

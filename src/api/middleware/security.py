@@ -37,9 +37,11 @@ async def add_security_headers(request: Request, call_next: Callable) -> Respons
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     
-    # HSTS - Only in production with HTTPS
-    # In production, uncomment this line:
-    # response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+    # HSTS - Force HTTPS (enabled for production security)
+    # Max age: 1 year (31536000 seconds)
+    # includeSubDomains: Apply to all subdomains
+    # preload: Eligible for browser HSTS preload lists
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
     
     # Content Security Policy - Adjust based on your needs
     csp_directives = [

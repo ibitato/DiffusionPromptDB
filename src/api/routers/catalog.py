@@ -16,6 +16,26 @@ from ..config import settings
 router = APIRouter()
 
 
+def escape_like_pattern(text: str) -> str:
+    """
+    Escape special LIKE wildcards to prevent injection and overly broad searches.
+    
+    Escapes:
+    - \ (backslash) -> \\
+    - % (percent) -> \%
+    - _ (underscore) -> \_
+    
+    Args:
+        text: User input text for LIKE pattern
+        
+    Returns:
+        Escaped text safe for LIKE queries
+    """
+    if not text:
+        return text
+    return text.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+
+
 def get_catalog_db():
     """Get catalog database connection."""
     db_path = Path(settings.catalog_db_path)
@@ -106,10 +126,13 @@ async def search_by_style(
     api_key: str = Depends(verify_api_key),
 ):
     """
-    Search prompts by art style.
+    Search prompts by art style (with LIKE pattern escaping).
 
     Requires: API Key
     """
+    # Escape wildcards to prevent LIKE injection
+    safe_style = escape_like_pattern(style)
+    
     results = db.execute(
         """
         SELECT p.id, p.original_prompt, a.primary_style
@@ -118,7 +141,7 @@ async def search_by_style(
         WHERE a.primary_style LIKE ?
         LIMIT ?
     """,
-        (f"%{style}%", limit),
+        (f"%{safe_style}%", limit),
     ).fetchall()
 
     return {"total": len(results), "results": [dict(row) for row in results]}

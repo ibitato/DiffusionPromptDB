@@ -94,6 +94,7 @@ export interface ComplexSearchParams {
   nsfw_level?: string;
   number_of_people?: number;
   art_style?: string;
+  my_prompts?: boolean;  // Filter to only show user's own prompts
   limit?: number;
   offset?: number;
 }

@@ -1,0 +1,20 @@
+# Data files
+data/
+results/
+
+# Config files with credentials
+config.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+
+# Logs
+*.log
+
+# Backups
+*.backup_*

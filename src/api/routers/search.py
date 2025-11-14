@@ -9,11 +9,32 @@ import sqlite3
 from pathlib import Path
 from typing import Optional
 
-from ..auth import verify_api_key
+from ..auth import optional_auth, verify_api_key
+from fastapi import Header
 from ..config import settings
 from .catalog import get_catalog_db
 
 router = APIRouter()
+
+
+def escape_like_pattern(text: str) -> str:
+    """
+    Escape special LIKE wildcards to prevent injection and overly broad searches.
+    
+    Escapes:
+    - \ (backslash) -> \\
+    - % (percent) -> \%
+    - _ (underscore) -> \_
+    
+    Args:
+        text: User input text for LIKE pattern
+        
+    Returns:
+        Escaped text safe for LIKE queries
+    """
+    if not text:
+        return text
+    return text.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
 
 
 @router.get("/complex")
@@ -24,10 +45,11 @@ async def complex_search(
     number_of_people: Optional[int] = Query(None),
     art_style: Optional[str] = Query(None),
     indoor_outdoor: Optional[str] = Query(None),
+    my_prompts: Optional[bool] = Query(None, description="Filter to only show user's own prompts"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: sqlite3.Connection = Depends(get_catalog_db),
-    api_key: str = Depends(verify_api_key),
+    auth_info: Optional[dict] = Depends(optional_auth),
 ):
     """
     Complex search with multiple filters including text and tags search.
@@ -37,12 +59,13 @@ async def complex_search(
 
     Requires: API Key
     """
-    # Modified to return full data including tags, nsfw_level, art_style
+    # Modified to return full data including tags, nsfw_level, art_style, created_by
     # Using the actual database structure
     query = """
         SELECT DISTINCT 
             p.id, 
             p.original_prompt,
+            p.created_by,
             nc.level as nsfw_level,
             ast.primary_style as art_style,
             ch.number_of_people,
@@ -57,19 +80,21 @@ async def complex_search(
     conditions = []
     params = []
 
-    # Text search in prompt content
+    # Text search in prompt content (escaped to prevent LIKE injection)
     if text:
+        safe_text = escape_like_pattern(text)
         conditions.append("p.original_prompt LIKE ?")
-        params.append(f"%{text}%")
+        params.append(f"%{safe_text}%")
     
-    # Tags search - can be multiple tags separated by comma
+    # Tags search - can be multiple tags separated by comma (escaped)
     if tags:
         tag_list = [t.strip() for t in tags.split(',') if t.strip()]
         for i, tag in enumerate(tag_list):
             alias = f"tf{i}"  # Changed alias to avoid conflict with left join
+            safe_tag = escape_like_pattern(tag)
             joins.append(f"INNER JOIN main_tags {alias} ON p.id = {alias}.prompt_id")
             conditions.append(f"{alias}.tag LIKE ?")
-            params.append(f"%{tag}%")
+            params.append(f"%{safe_tag}%")
 
     if nsfw_level:
         conditions.append("nc.level = ?")
@@ -80,21 +105,36 @@ async def complex_search(
         params.append(number_of_people)
 
     if art_style:
+        safe_art_style = escape_like_pattern(art_style)
         conditions.append("ast.primary_style LIKE ?")
-        params.append(f"%{art_style}%")
+        params.append(f"%{safe_art_style}%")
 
     if indoor_outdoor:
         joins.append("INNER JOIN settings s ON p.id = s.prompt_id")
         conditions.append("s.indoor_outdoor = ?")
         params.append(indoor_outdoor)
+    
+    # My prompts only filter - only show user's own prompts
+    print(f"DEBUG: my_prompts={my_prompts}, auth_info={auth_info}")  # Debug
+    if my_prompts:
+        if auth_info:
+            user_id = auth_info.get("user_id")
+            if user_id:
+                conditions.append("p.created_by = ?")
+                params.append(user_id)
+                print(f"DEBUG: ✅ Filtering by user_id={user_id}")  # Debug log
+            else:
+                print(f"DEBUG: ⚠️  auth_info exists but no user_id: {auth_info}")
+        else:
+            print(f"DEBUG: ⚠️  my_prompts=true but auth_info is None")
 
     if joins:
         query += " " + " ".join(joins)
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
     
-    # Add GROUP BY for aggregation
-    query += " GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people"
+    # Add GROUP BY for aggregation - include created_by
+    query += " GROUP BY p.id, p.original_prompt, p.created_by, nc.level, ast.primary_style, ch.number_of_people"
 
     # Get total count first - need to include necessary LEFT JOINs
     count_query = f"""
@@ -148,7 +188,8 @@ async def search_by_tag(
     tags = [t.strip() for t in tag.split(',') if t.strip()]
     
     if len(tags) == 1:
-        # Single tag search - with full data
+        # Single tag search - with full data (escaped)
+        safe_tag = escape_like_pattern(tags[0])
         query = """
             SELECT DISTINCT 
                 p.id, 
@@ -166,7 +207,7 @@ async def search_by_tag(
             WHERE t.tag LIKE ?
             GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people
         """
-        params = [f"%{tags[0]}%"]
+        params = [f"%{safe_tag}%"]
         
         # Get total count
         count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")
@@ -202,7 +243,8 @@ async def search_by_tag(
         query += " WHERE " + " AND ".join(conditions)
         query += " GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people"
         
-        params = [f"%{t}%" for t in tags]
+        # Escape each tag for LIKE pattern
+        params = [f"%{escape_like_pattern(t)}%" for t in tags]
         
         # Get total count
         count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")

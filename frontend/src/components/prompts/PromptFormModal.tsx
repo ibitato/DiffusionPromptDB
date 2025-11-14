@@ -110,9 +110,8 @@ export const PromptFormModal = ({
     },
   });
 
-  // Watch the text field to see if it's being populated
-  const watchText = watch('text');
-  console.log('Current text value in form:', watchText);
+  // Watch the rating value to show selected star
+  const currentRating = watch('rating');
 
   /**
    * Load art styles for dropdown
@@ -263,9 +262,6 @@ export const PromptFormModal = ({
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-400">
-            {t('promptForm.fields.artStyleHelp') || 'Selecciona un estilo de arte de la lista'}
-          </p>
         </div>
 
         {/* Tags */}
@@ -283,7 +279,6 @@ export const PromptFormModal = ({
             placeholder={t('promptForm.fields.tagsPlaceholder')}
             disabled={isLoading}
           />
-          <p className="mt-1 text-xs text-gray-400">{t('promptForm.fields.tagsHelp')}</p>
         </div>
 
         {/* Rating */}
@@ -305,7 +300,9 @@ export const PromptFormModal = ({
                   disabled={isLoading}
                 />
                 <svg
-                  className="w-8 h-8 text-yellow-400 hover:scale-110 transition-transform"
+                  className={`w-8 h-8 hover:scale-110 transition-transform ${
+                    Number(currentRating) >= value ? 'text-yellow-400' : 'text-gray-600'
+                  }`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -314,6 +311,23 @@ export const PromptFormModal = ({
               </label>
             ))}
           </div>
+        </div>
+
+        {/* Parameters */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            <span className="flex items-center gap-1">
+              <span>⚙️</span>
+              <span>{t('promptForm.fields.parameters')}</span>
+            </span>
+          </label>
+          <textarea
+            {...register('parameters')}
+            rows={2}
+            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent resize-none font-mono text-sm"
+            placeholder={t('promptForm.fields.parametersPlaceholder')}
+            disabled={isLoading}
+          />
         </div>
 
         {/* Notes */}

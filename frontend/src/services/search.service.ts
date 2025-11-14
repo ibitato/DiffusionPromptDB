@@ -21,6 +21,7 @@ export const searchService = {
         searchParams.append('number_of_people', params.number_of_people.toString());
       }
       if (params.art_style) searchParams.append('art_style', params.art_style);
+      if (params.my_prompts) searchParams.append('my_prompts', 'true');
       if (params.limit) searchParams.append('limit', params.limit.toString());
       if (params.offset) searchParams.append('offset', params.offset.toString());
 
