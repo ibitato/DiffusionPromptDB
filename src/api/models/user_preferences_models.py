@@ -12,11 +12,15 @@ class UserPreferences(BaseModel):
     """User preferences model."""
 
     user_id: int
-    show_unspecified: bool = Field(default=True, description="Show 'unspecified' art styles in dashboard")
-    my_prompts_only: bool = Field(default=False, description="Show only my prompts by default")
+    show_unspecified: bool = Field(
+        default=True, description="Show 'unspecified' art styles in dashboard"
+    )
+    my_prompts_only: bool = Field(
+        default=False, description="Show only my prompts by default"
+    )
     excluded_tags: List[str] = Field(
         default=["high quality", "masterpiece", "best quality"],
-        description="Tags to exclude from dashboard visualizations"
+        description="Tags to exclude from dashboard visualizations",
     )
 
 

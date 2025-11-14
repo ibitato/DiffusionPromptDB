@@ -18,7 +18,9 @@ class PromptBase(BaseModel):
     parameters: Optional[str] = Field(None, description="Generation parameters (JSON)")
     tags: Optional[str] = Field(None, description="Comma-separated tags")
     category: Optional[str] = Field(None, description="Category classification")
-    art_style: Optional[str] = Field(None, description="Art style (anime, realistic, etc.)")
+    art_style: Optional[str] = Field(
+        None, description="Art style (anime, realistic, etc.)"
+    )
     rating: Optional[int] = Field(None, ge=1, le=5, description="Rating 1-5")
     notes: Optional[str] = Field(None, description="Additional notes")
 
@@ -49,7 +51,9 @@ class PromptResponse(PromptBase):
     id: int
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[int] = Field(None, description="User ID of creator (NULL for preloaded)")
+    created_by: Optional[int] = Field(
+        None, description="User ID of creator (NULL for preloaded)"
+    )
 
     class Config:
         from_attributes = True

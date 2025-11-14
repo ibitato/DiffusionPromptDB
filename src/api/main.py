@@ -74,6 +74,7 @@ app.add_middleware(
     allow_headers=settings.cors_allow_headers,  # Allowed request headers
 )
 
+
 # Add security headers middleware
 # Implements OWASP recommended security headers
 @app.middleware("http")
@@ -81,24 +82,37 @@ async def security_headers_middleware(request: Request, call_next):
     """Apply security headers to all responses."""
     return await add_security_headers(request, call_next)
 
+
 # Register API routers with versioned prefixes
 # Each router handles a specific domain of the application
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])  # Authentication endpoints
-app.include_router(prompts.router, prefix="/api/v1/prompts", tags=["prompts"])  # Prompt CRUD operations
-app.include_router(catalog.router, prefix="/api/v1/catalog", tags=["catalog"])  # Catalog browsing
-app.include_router(search.router, prefix="/api/v1/search", tags=["search"])  # Search functionality
-app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])  # Admin operations
-app.include_router(preferences.router, prefix="/api/v1/user", tags=["user"])  # User preferences
+app.include_router(
+    auth.router, prefix="/api/v1/auth", tags=["auth"]
+)  # Authentication endpoints
+app.include_router(
+    prompts.router, prefix="/api/v1/prompts", tags=["prompts"]
+)  # Prompt CRUD operations
+app.include_router(
+    catalog.router, prefix="/api/v1/catalog", tags=["catalog"]
+)  # Catalog browsing
+app.include_router(
+    search.router, prefix="/api/v1/search", tags=["search"]
+)  # Search functionality
+app.include_router(
+    admin.router, prefix="/api/v1/admin", tags=["admin"]
+)  # Admin operations
+app.include_router(
+    preferences.router, prefix="/api/v1/user", tags=["user"]
+)  # User preferences
 
 
 @app.get("/", tags=["root"])
 async def root():
     """
     Root endpoint providing API information and navigation.
-    
+
     Returns:
         dict: API metadata including name, version, and available endpoints
-        
+
     Example Response:
         {
             "name": "DiffusionPromptDB API",
@@ -124,16 +138,16 @@ async def root():
 async def health_check(request: Request):
     """
     Health check endpoint for monitoring API status.
-    
+
     Args:
         request (Request): FastAPI request object (required for rate limiting)
-    
+
     Returns:
         dict: Health status, timestamp, and environment
-        
+
     Rate Limit:
         10 requests per minute (to prevent abuse)
-        
+
     Example Response:
         {
             "status": "healthy",
@@ -144,7 +158,7 @@ async def health_check(request: Request):
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "environment": os.getenv("ENVIRONMENT", "development"),
-        "version": settings.app_version
+        "version": settings.app_version,
     }
 
 
@@ -152,17 +166,17 @@ async def health_check(request: Request):
 async def global_exception_handler(request: Request, exc: Exception):
     """
     Global exception handler for unhandled errors.
-    
+
     Catches all unhandled exceptions, logs them for debugging,
     and returns a generic error response to prevent information leakage.
-    
+
     Args:
         request (Request): The request that caused the exception
         exc (Exception): The unhandled exception
-        
+
     Returns:
         JSONResponse: Generic error response with 500 status code
-        
+
     Side Effects:
         - Logs full exception details to application logs
         - Increments error metrics (if configured)
@@ -174,10 +188,10 @@ async def global_exception_handler(request: Request, exc: Exception):
 if __name__ == "__main__":
     """
     Development server entry point.
-    
+
     Starts the Uvicorn ASGI server with hot-reload for development.
     For production, use: uvicorn src.api.main:app --host 0.0.0.0 --port 8000
-    
+
     Server Configuration:
         - Host: Configured via settings (default: 0.0.0.0)
         - Port: Configured via settings (default: 8000)

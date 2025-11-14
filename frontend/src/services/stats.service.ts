@@ -37,7 +37,10 @@ export const statsService = {
    * Get available filters
    * Public endpoint - no auth required
    */
-  getFilters: async (): Promise<{ nsfw_levels: string[]; art_styles: Array<{ style: string; count: number }> }> => {
+  getFilters: async (): Promise<{
+    nsfw_levels: string[];
+    art_styles: Array<{ style: string; count: number }>;
+  }> => {
     try {
       const response = await api.get('/admin/filters');
       return response.data;

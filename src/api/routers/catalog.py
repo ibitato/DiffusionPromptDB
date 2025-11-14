@@ -33,7 +33,7 @@ def escape_like_pattern(text: str) -> str:
     """
     if not text:
         return text
-    return text.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 def get_catalog_db():
@@ -132,7 +132,7 @@ async def search_by_style(
     """
     # Escape wildcards to prevent LIKE injection
     safe_style = escape_like_pattern(style)
-    
+
     results = db.execute(
         """
         SELECT p.id, p.original_prompt, a.primary_style

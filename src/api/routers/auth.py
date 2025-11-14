@@ -52,7 +52,7 @@ USERS_DB = {
 async def login(request: Request, credentials: LoginRequest):
     """
     Login endpoint - authenticate user and return JWT token.
-    
+
     Uses bcrypt for secure password verification.
     Rate limited to 5 attempts per minute to prevent brute force attacks.
 
@@ -69,7 +69,7 @@ async def login(request: Request, credentials: LoginRequest):
     """
     # Get user from database
     user = USERS_DB.get(credentials.username)
-    
+
     if not user:
         # Log failed login attempt
         logger.warning(f"Login attempt with unknown username: {credentials.username}")
@@ -88,7 +88,7 @@ async def login(request: Request, credentials: LoginRequest):
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Log successful login
     logger.info(f"Successful login for user: {credentials.username}")
 

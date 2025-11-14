@@ -10,7 +10,9 @@ export const searchService = {
   /**
    * Complex search with multiple filters
    */
-  complexSearch: async (params: ComplexSearchParams): Promise<{ total: number; results: CatalogPrompt[] }> => {
+  complexSearch: async (
+    params: ComplexSearchParams
+  ): Promise<{ total: number; results: CatalogPrompt[] }> => {
     try {
       const searchParams = new URLSearchParams();
 
@@ -66,7 +68,11 @@ export const searchService = {
   /**
    * Search by tag with pagination
    */
-  searchByTag: async (tag: string, limit: number = 20, offset: number = 0): Promise<{ total: number; results: CatalogPrompt[] }> => {
+  searchByTag: async (
+    tag: string,
+    limit: number = 20,
+    offset: number = 0
+  ): Promise<{ total: number; results: CatalogPrompt[] }> => {
     try {
       const response = await api.get<{ total: number; results: CatalogPrompt[] }>(
         `/search/tags/${tag}?limit=${limit}&offset=${offset}`

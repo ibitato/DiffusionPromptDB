@@ -69,23 +69,27 @@ async def get_statistics(
     """
     ):
         stats["top_art_styles"].append({"style": row[0], "count": row[1]})
-    
+
     # Total unique art styles count
-    stats["total_art_styles"] = len(db.execute(
-        """
+    stats["total_art_styles"] = len(
+        db.execute(
+            """
         SELECT DISTINCT primary_style 
         FROM art_styles 
         WHERE primary_style IS NOT NULL
     """
-    ).fetchall())
-    
+        ).fetchall()
+    )
+
     # Total unique tags count
-    stats["total_tags"] = len(db.execute(
-        """
+    stats["total_tags"] = len(
+        db.execute(
+            """
         SELECT DISTINCT tag 
         FROM main_tags
     """
-    ).fetchall())
+        ).fetchall()
+    )
 
     # Character distribution
     stats["character_distribution"] = {}

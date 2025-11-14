@@ -1,10 +1,10 @@
 /**
  * PromptFormModal Component
- * 
+ *
  * @description Modal dialog for creating and editing prompts.
  * Provides a comprehensive form with validation, internationalization,
  * and real-time feedback. Supports both create and edit modes.
- * 
+ *
  * @component
  * @example
  * ```tsx
@@ -14,7 +14,7 @@
  *   onClose={() => setIsModalOpen(false)}
  *   onSubmit={handleCreatePrompt}
  * />
- * 
+ *
  * // Edit mode
  * <PromptFormModal
  *   isOpen={isModalOpen}
@@ -41,23 +41,23 @@ import { statsService } from '../../services/stats.service';
 interface PromptFormModalProps {
   /** Controls modal visibility */
   isOpen: boolean;
-  
+
   /** Callback function triggered when modal closes */
   onClose: () => void;
-  
+
   /** Async callback for form submission */
   onSubmit: (data: CreatePromptRequest) => Promise<void>;
-  
+
   /** Optional prompt data for edit mode */
   prompt?: Prompt | null;
-  
+
   /** Loading state to disable form interactions */
   isLoading?: boolean;
 }
 
 /**
  * PromptFormModal functional component
- * 
+ *
  * @param {PromptFormModalProps} props - Component props
  * @returns {JSX.Element} Rendered modal with prompt form
  */
@@ -71,10 +71,10 @@ export const PromptFormModal = ({
   const { t } = useTranslation();
   const [artStyles, setArtStyles] = useState<Array<{ style: string; count: number }>>([]);
   const [isLoadingStyles, setIsLoadingStyles] = useState(true);
-  
+
   // Debug log to see what we receive
   console.log('PromptFormModal rendered with prompt:', prompt);
-  
+
   /**
    * React Hook Form configuration
    * Provides form state management, validation, and submission handling
@@ -87,27 +87,29 @@ export const PromptFormModal = ({
     watch,
     formState: { errors },
   } = useForm<CreatePromptRequest>({
-    defaultValues: prompt ? {
-      text: prompt.text || '',
-      negative_prompt: prompt.negative_prompt || '',
-      model: prompt.model || '',
-      category: prompt.category || '',
-      art_style: prompt.art_style || '',
-      tags: prompt.tags || '',
-      rating: prompt.rating || 5,
-      notes: prompt.notes || '',
-      parameters: prompt.parameters || '',
-    } : {
-      text: '',
-      negative_prompt: '',
-      model: '',
-      category: '',
-      art_style: '',
-      tags: '',
-      rating: 5,
-      notes: '',
-      parameters: '',
-    },
+    defaultValues: prompt
+      ? {
+          text: prompt.text || '',
+          negative_prompt: prompt.negative_prompt || '',
+          model: prompt.model || '',
+          category: prompt.category || '',
+          art_style: prompt.art_style || '',
+          tags: prompt.tags || '',
+          rating: prompt.rating || 5,
+          notes: prompt.notes || '',
+          parameters: prompt.parameters || '',
+        }
+      : {
+          text: '',
+          negative_prompt: '',
+          model: '',
+          category: '',
+          art_style: '',
+          tags: '',
+          rating: 5,
+          notes: '',
+          parameters: '',
+        },
   });
 
   // Watch the rating value to show selected star
@@ -127,7 +129,7 @@ export const PromptFormModal = ({
         setIsLoadingStyles(false);
       }
     };
-    
+
     if (isOpen) {
       loadArtStyles();
     }
@@ -142,7 +144,7 @@ export const PromptFormModal = ({
     if (prompt && isOpen) {
       // Edit mode: populate form with existing prompt data
       console.log('useEffect - Setting values for prompt:', prompt);
-      
+
       // Reset the entire form with new values
       const formData = {
         text: prompt.text || '',
@@ -155,7 +157,7 @@ export const PromptFormModal = ({
         notes: prompt.notes || '',
         parameters: prompt.parameters || '',
       };
-      
+
       console.log('Form data to set:', formData);
       reset(formData);
     } else if (!prompt && isOpen) {
@@ -179,7 +181,7 @@ export const PromptFormModal = ({
    * Handles form submission
    * @param {CreatePromptRequest} data - Form data
    * @returns {Promise<void>}
-   * 
+   *
    * @description
    * - Submits form data to parent component
    * - Resets form after successful submission
@@ -215,7 +217,9 @@ export const PromptFormModal = ({
 
         {/* Negative Prompt */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">{t('promptForm.fields.negativePrompt')}</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            {t('promptForm.fields.negativePrompt')}
+          </label>
           <textarea
             {...register('negative_prompt')}
             rows={3}

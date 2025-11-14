@@ -39,7 +39,7 @@ export const SearchPage = () => {
   const [searchText, setSearchText] = useState('');
   const [searchTag, setSearchTag] = useState('');
   const [myPromptsOnly, setMyPromptsOnly] = useState(false);
-  
+
   // Modal states
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null); // Separate state for editing
@@ -77,7 +77,7 @@ export const SearchPage = () => {
     if (textParam) {
       setSearchText(textParam);
     }
-    
+
     // Check for tag search (legacy)
     const tag = searchParams.get('tag');
     if (tag && !textParam) {
@@ -97,23 +97,23 @@ export const SearchPage = () => {
       setIsLoadingFilters(false);
     }
   };
-  
+
   // Auto-search when searchText changes from URL parameter
   useEffect(() => {
     if (searchText && !hasSearched) {
       performSearch(1);
     }
   }, [searchText]);
-  
+
   const performTagSearch = async (tag: string) => {
     setIsLoading(true);
     setHasSearched(true);
-    
+
     try {
       const response = await searchService.searchByTag(tag, 20, 0);
       setResults(response.results);
       setAllResultsCount(response.total);
-      
+
       if (response.results.length === 0) {
         toast.info(`No se encontraron prompts con el tag "${tag}"`);
       } else {
@@ -135,17 +135,24 @@ export const SearchPage = () => {
 
     try {
       // If searching by tag only AND not filtering by my_prompts, use simple tag search endpoint
-      if (searchTag && !searchText && !nsfwLevel && !artStyle && !numberOfPeople && !myPromptsOnly) {
+      if (
+        searchTag &&
+        !searchText &&
+        !nsfwLevel &&
+        !artStyle &&
+        !numberOfPeople &&
+        !myPromptsOnly
+      ) {
         const response = await searchService.searchByTag(
-          searchTag, 
-          pageSize, 
+          searchTag,
+          pageSize,
           (page - 1) * pageSize
         );
-        
+
         setResults(response.results);
         setTotalResults(response.results.length);
         setAllResultsCount(response.total);
-        
+
         if (response.total === 0) {
           toast.info(`No se encontraron prompts con el tag "${searchTag}"`);
         } else {
@@ -157,21 +164,21 @@ export const SearchPage = () => {
 
         // Text search in prompt content
         if (searchText) params.text = searchText;
-        
+
         // Tag search
         if (searchTag) params.tags = searchTag;
-        
+
         // Other filters
         if (nsfwLevel) params.nsfw_level = nsfwLevel;
         if (artStyle) params.art_style = artStyle;
         if (numberOfPeople) params.number_of_people = parseInt(numberOfPeople);
-        
+
         // My prompts only filter
         if (myPromptsOnly && user) {
           params.my_prompts = true;
           console.log('Sending my_prompts=true filter'); // Debug log
         }
-        
+
         // Pagination
         params.limit = pageSize;
         params.offset = (page - 1) * pageSize;
@@ -209,7 +216,14 @@ export const SearchPage = () => {
     setCurrentPage(1);
   };
 
-  const activeFiltersCount = [nsfwLevel, artStyle, numberOfPeople, searchText, searchTag, myPromptsOnly].filter(Boolean).length;
+  const activeFiltersCount = [
+    nsfwLevel,
+    artStyle,
+    numberOfPeople,
+    searchText,
+    searchTag,
+    myPromptsOnly,
+  ].filter(Boolean).length;
 
   // Convert CatalogPrompt to full Prompt for modal with rich data
   const convertToPrompt = (catalogPrompt: CatalogPrompt): Prompt => {
@@ -218,49 +232,53 @@ export const SearchPage = () => {
     if (catalogPrompt.number_of_people) {
       notes += `Number of People: ${catalogPrompt.number_of_people}\n`;
     }
-    
+
     // Create a rich category string combining available metadata
     const categoryParts = [];
     if (catalogPrompt.nsfw_level) {
-      categoryParts.push(catalogPrompt.nsfw_level.charAt(0).toUpperCase() + catalogPrompt.nsfw_level.slice(1));
+      categoryParts.push(
+        catalogPrompt.nsfw_level.charAt(0).toUpperCase() + catalogPrompt.nsfw_level.slice(1)
+      );
     }
     if (catalogPrompt.art_style) {
-      categoryParts.push(catalogPrompt.art_style.charAt(0).toUpperCase() + catalogPrompt.art_style.slice(1));
+      categoryParts.push(
+        catalogPrompt.art_style.charAt(0).toUpperCase() + catalogPrompt.art_style.slice(1)
+      );
     }
     const category = categoryParts.join(' - ');
-    
+
     return {
       id: catalogPrompt.id,
       text: catalogPrompt.original_prompt,
-      negative_prompt: '',  // Not available in CatalogPrompt
-      model: '',  // Not available in CatalogPrompt  
-      category: catalogPrompt.nsfw_level ? 
-        catalogPrompt.nsfw_level.charAt(0).toUpperCase() + catalogPrompt.nsfw_level.slice(1) : 
-        '',  // Use NSFW level as main category
+      negative_prompt: '', // Not available in CatalogPrompt
+      model: '', // Not available in CatalogPrompt
+      category: catalogPrompt.nsfw_level
+        ? catalogPrompt.nsfw_level.charAt(0).toUpperCase() + catalogPrompt.nsfw_level.slice(1)
+        : '', // Use NSFW level as main category
       art_style: catalogPrompt.art_style || '',
       tags: catalogPrompt.tags ? catalogPrompt.tags.join(', ') : '',
-      rating: undefined,  // Not available in CatalogPrompt
-      notes: notes.trim(),  // Include metadata in notes
-      parameters: '',  // Not available in CatalogPrompt
-      created_at: new Date().toISOString(),  // Not available in CatalogPrompt
-      updated_at: new Date().toISOString(),  // Not available in CatalogPrompt
-      created_by: null,  // Not available in CatalogPrompt - treat as preloaded for safety
+      rating: undefined, // Not available in CatalogPrompt
+      notes: notes.trim(), // Include metadata in notes
+      parameters: '', // Not available in CatalogPrompt
+      created_at: new Date().toISOString(), // Not available in CatalogPrompt
+      updated_at: new Date().toISOString(), // Not available in CatalogPrompt
+      created_by: null, // Not available in CatalogPrompt - treat as preloaded for safety
     };
   };
 
   // Check if user can edit/delete a prompt
   const canModify = (prompt: Prompt): boolean => {
     if (!user) return false;
-    
+
     // Admins can modify everything
     if (isAdmin) return true;
-    
+
     // For catalog prompts (created_by is null), only admins can modify
     // For user prompts, check ownership
     if (prompt.created_by === null) {
       return isAdmin; // Only admins can modify catalog prompts
     }
-    
+
     // User can modify their own prompts
     return prompt.created_by === user.id;
   };
@@ -288,33 +306,33 @@ export const SearchPage = () => {
       console.error('No prompt selected for editing');
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       console.log('Updating prompt:', editingPrompt.id, data); // Debug log
       const updatedPrompt = await promptsService.updatePrompt(editingPrompt.id, data);
       toast.success(t('promptForm.messages.updated'));
-      
+
       // Update the prompt in results
-      const updatedResults = results.map(r => 
-        r.id === editingPrompt.id 
-          ? { 
-              ...r, 
+      const updatedResults = results.map((r) =>
+        r.id === editingPrompt.id
+          ? {
+              ...r,
               original_prompt: updatedPrompt.text,
               art_style: data.art_style || r.art_style,
-              tags: data.tags ? data.tags.split(',').map(t => t.trim()) : r.tags
+              tags: data.tags ? data.tags.split(',').map((t) => t.trim()) : r.tags,
             }
           : r
       );
       setResults(updatedResults);
-      
+
       setIsFormModalOpen(false);
       setEditingPrompt(null);
       setSelectedPrompt(null);
     } catch (err) {
       console.error('Error updating prompt:', err); // Debug log
       const message = err instanceof Error ? err.message : 'Failed to update prompt';
-      
+
       // Check if it's a permission error
       if (message.includes('403') || message.includes('Forbidden')) {
         toast.error('No tienes permisos para editar este prompt');
@@ -337,18 +355,18 @@ export const SearchPage = () => {
       console.log('Deleting prompt:', promptToDelete.id); // Debug log
       await promptsService.deletePrompt(promptToDelete.id);
       toast.success(t('deleteConfirm.success'));
-      
+
       // Remove from results
-      setResults(results.filter(r => r.id !== promptToDelete.id));
-      setTotalResults(prev => Math.max(0, prev - 1));
-      setAllResultsCount(prev => Math.max(0, prev - 1));
-      
+      setResults(results.filter((r) => r.id !== promptToDelete.id));
+      setTotalResults((prev) => Math.max(0, prev - 1));
+      setAllResultsCount((prev) => Math.max(0, prev - 1));
+
       setIsDeleteModalOpen(false);
       setPromptToDelete(null);
     } catch (err) {
       console.error('Error deleting prompt:', err); // Debug log
       const message = err instanceof Error ? err.message : 'Failed to delete prompt';
-      
+
       // Check if it's a permission error
       if (message.includes('403') || message.includes('Forbidden')) {
         toast.error('No tienes permisos para eliminar este prompt');
@@ -377,7 +395,9 @@ export const SearchPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* NSFW Level Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">{t('search.filters.nsfwLevel')}</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                {t('search.filters.nsfwLevel')}
+              </label>
               <select
                 value={nsfwLevel}
                 onChange={(e) => setNsfwLevel(e.target.value)}
@@ -394,7 +414,9 @@ export const SearchPage = () => {
 
             {/* Art Style Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">{t('search.filters.artStyle')}</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                {t('search.filters.artStyle')}
+              </label>
               <select
                 value={artStyle}
                 onChange={(e) => setArtStyle(e.target.value)}
@@ -425,7 +447,7 @@ export const SearchPage = () => {
               />
             </div>
           </div>
-          
+
           {/* Text Search */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -438,11 +460,9 @@ export const SearchPage = () => {
               placeholder={t('search.filters.textPlaceholder')}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              {t('search.filters.textHelp')}
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{t('search.filters.textHelp')}</p>
           </div>
-          
+
           {/* Tag Search */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -455,9 +475,7 @@ export const SearchPage = () => {
               placeholder={t('search.filters.tagPlaceholder')}
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              {t('search.filters.tagHelp')}
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{t('search.filters.tagHelp')}</p>
           </div>
 
           {/* My Prompts Only Checkbox */}
@@ -470,9 +488,7 @@ export const SearchPage = () => {
                   onChange={(e) => setMyPromptsOnly(e.target.checked)}
                   className="w-5 h-5 bg-slate-700 border border-slate-600 rounded text-violet-600 focus:ring-2 focus:ring-violet-600"
                 />
-                <span className="text-sm font-medium text-gray-300">
-                  📝 Solo mis prompts
-                </span>
+                <span className="text-sm font-medium text-gray-300">📝 Solo mis prompts</span>
               </label>
             </div>
           )}
@@ -509,7 +525,10 @@ export const SearchPage = () => {
 
             {activeFiltersCount > 0 && (
               <span className="text-sm text-gray-400">
-                {activeFiltersCount} {activeFiltersCount === 1 ? t('search.activeFilters') : t('search.activeFiltersPlural')}
+                {activeFiltersCount}{' '}
+                {activeFiltersCount === 1
+                  ? t('search.activeFilters')
+                  : t('search.activeFiltersPlural')}
               </span>
             )}
           </div>
@@ -581,15 +600,23 @@ export const SearchPage = () => {
               <h3 className="text-xl font-semibold text-white">
                 {results.length > 0 ? (
                   <>
-                    {allResultsCount > 0 && <span className="text-violet-400">{allResultsCount} {t('search.results.total')}</span>}
+                    {allResultsCount > 0 && (
+                      <span className="text-violet-400">
+                        {allResultsCount} {t('search.results.total')}
+                      </span>
+                    )}
                     {allResultsCount > 0 && ' - '}
                     {t('search.results.page')} {currentPage}
                   </>
-                ) : t('search.results.noResults')}
+                ) : (
+                  t('search.results.noResults')
+                )}
               </h3>
               {results.length > 0 && (
                 <span className="text-sm text-gray-400">
-                  {t('search.results.showing')} {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, ((currentPage - 1) * pageSize) + results.length)} {t('search.results.of')} {allResultsCount}
+                  {t('search.results.showing')} {(currentPage - 1) * pageSize + 1} -{' '}
+                  {Math.min(currentPage * pageSize, (currentPage - 1) * pageSize + results.length)}{' '}
+                  {t('search.results.of')} {allResultsCount}
                 </span>
               )}
             </div>
@@ -597,80 +624,82 @@ export const SearchPage = () => {
             {/* Results Grid */}
             {results.length > 0 ? (
               <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {results.map((result, index) => (
-                  <div
-                    key={result.id || index}
-                    onClick={() => {
-                      const fullPrompt = convertToPrompt(result);
-                      setSelectedPrompt(fullPrompt);
-                      setIsDetailModalOpen(true);
-                    }}
-                    className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-violet-600 hover:shadow-lg transition-all cursor-pointer transform hover:scale-[1.02]"
-                  >
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="text-lg font-semibold text-white">Prompt #{result.id}</h4>
-                        {result.nsfw_level && (
-                          <span className="px-2 py-1 bg-orange-600/20 text-orange-400 text-xs rounded-full">
-                            {result.nsfw_level}
-                          </span>
-                        )}
-                        {result.art_style && (
-                          <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full">
-                            {result.art_style}
-                          </span>
-                        )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {results.map((result, index) => (
+                    <div
+                      key={result.id || index}
+                      onClick={() => {
+                        const fullPrompt = convertToPrompt(result);
+                        setSelectedPrompt(fullPrompt);
+                        setIsDetailModalOpen(true);
+                      }}
+                      className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-violet-600 hover:shadow-lg transition-all cursor-pointer transform hover:scale-[1.02]"
+                    >
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-lg font-semibold text-white">Prompt #{result.id}</h4>
+                          {result.nsfw_level && (
+                            <span className="px-2 py-1 bg-orange-600/20 text-orange-400 text-xs rounded-full">
+                              {result.nsfw_level}
+                            </span>
+                          )}
+                          {result.art_style && (
+                            <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full">
+                              {result.art_style}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-gray-300 text-sm leading-relaxed">
+                          {result.original_prompt.substring(0, 200)}
+                          {result.original_prompt.length > 200 && '...'}
+                        </p>
                       </div>
-                      <p className="text-gray-300 text-sm leading-relaxed">
-                        {result.original_prompt.substring(0, 200)}
-                        {result.original_prompt.length > 200 && '...'}
-                      </p>
-                    </div>
 
-                    {result.tags && result.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {result.tags.slice(0, 5).map((tag, i) => (
-                          <span
-                            key={i}
-                            className="px-2 py-1 bg-slate-700 text-gray-300 text-xs rounded"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {result.tags.length > 5 && (
-                          <span className="px-2 py-1 bg-slate-700 text-gray-400 text-xs rounded">
-                            +{result.tags.length - 5} más
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              {/* Pagination */}
-              {results.length === pageSize && (
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => performSearch(currentPage - 1)}
-                    disabled={currentPage === 1 || isLoading}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-                  >
-                    {t('search.results.previous')}
-                  </button>
-                  
-                  <span className="text-gray-400 px-4">{t('search.results.page')} {currentPage}</span>
-                  
-                  <button
-                    onClick={() => performSearch(currentPage + 1)}
-                    disabled={results.length < pageSize || isLoading}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-                  >
-                    {t('search.results.next')}
-                  </button>
+                      {result.tags && result.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {result.tags.slice(0, 5).map((tag, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-1 bg-slate-700 text-gray-300 text-xs rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {result.tags.length > 5 && (
+                            <span className="px-2 py-1 bg-slate-700 text-gray-400 text-xs rounded">
+                              +{result.tags.length - 5} más
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              )}
+
+                {/* Pagination */}
+                {results.length === pageSize && (
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => performSearch(currentPage - 1)}
+                      disabled={currentPage === 1 || isLoading}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                    >
+                      {t('search.results.previous')}
+                    </button>
+
+                    <span className="text-gray-400 px-4">
+                      {t('search.results.page')} {currentPage}
+                    </span>
+
+                    <button
+                      onClick={() => performSearch(currentPage + 1)}
+                      disabled={results.length < pageSize || isLoading}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                    >
+                      {t('search.results.next')}
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-center py-12">
@@ -687,12 +716,8 @@ export const SearchPage = () => {
                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p className="text-gray-400 text-lg">
-                  {t('search.results.noResultsMessage')}
-                </p>
-                <p className="text-gray-500 text-sm mt-2">
-                  {t('search.results.tryDifferent')}
-                </p>
+                <p className="text-gray-400 text-lg">{t('search.results.noResultsMessage')}</p>
+                <p className="text-gray-500 text-sm mt-2">{t('search.results.tryDifferent')}</p>
               </div>
             )}
           </>
@@ -715,7 +740,7 @@ export const SearchPage = () => {
           </div>
         )}
       </main>
-      
+
       {/* Detail Modal */}
       {selectedPrompt && (
         <PromptDetailModal
