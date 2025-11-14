@@ -1,121 +1,90 @@
-/**
- * API Configuration
- * Axios instance configured for the backend API
- */
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+} from 'axios';
 
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+const DEFAULT_PROD_API_URL = 'https://www.diffusionprompt.net/api/v1';
+const DEFAULT_DEV_API_URL = 'http://localhost:8000/api/v1';
 
-// API Base URL - Force HTTPS in production, HTTP in development
-// Simplified logic to avoid any configuration issues
-const API_BASE_URL = (() => {
-  // If running on localhost, use development URL
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const shouldForceHttps = (): boolean =>
+  typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+const sanitizeUrlProtocol = (url: string): string => {
+  if (shouldForceHttps()) {
+    return url.replace(/^http:\/\//i, 'https://');
   }
-  
-  // For any other hostname (production), force HTTPS
-  // This ensures we ALWAYS use HTTPS in production, regardless of any config
-  return `https://${window.location.hostname}/api/v1`;
-})();
+  return url;
+};
 
-// Debug logging (will be removed in production build by most minifiers)
-if (typeof console !== 'undefined' && console.log) {
-  console.log('[API Config]', {
-    hostname: window.location.hostname,
-    protocol: window.location.protocol,
-    apiUrl: API_BASE_URL,
-    mode: import.meta.env.MODE,
-    viteApiUrl: import.meta.env.VITE_API_URL
-  });
-}
+const resolveApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL?.trim();
+  if (envUrl) {
+    return sanitizeUrlProtocol(envUrl);
+  }
 
-// Create axios instance
+  if (typeof window !== 'undefined') {
+    const protocol = shouldForceHttps() ? 'https:' : window.location.protocol;
+    return `${protocol}//${window.location.host}/api/v1`;
+  }
+
+  // Fallbacks for non-browser contexts (tests/build scripts)
+  if (import.meta.env.DEV) {
+    return DEFAULT_DEV_API_URL;
+  }
+
+  return DEFAULT_PROD_API_URL;
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
+
+console.log('[API Base URL]', API_BASE_URL);
+
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    Pragma: 'no-cache',
   },
-  timeout: 10000, // 10 seconds
+  timeout: 10000,
 });
 
-// Request interceptor - Add JWT token AND API key to requests
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('auth_token');
-    const apiKey = import.meta.env.VITE_API_KEY || 'REDACTED_API_KEY';
+    const apiKey = 'REDACTED_API_KEY';
 
     if (config.headers) {
-      // Always add API key for catalog/search endpoints
       config.headers['X-API-Key'] = apiKey;
-
-      // Add JWT token if available (for write operations)
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
 
+    console.log('[API Request]', config.method?.toUpperCase(), config.url);
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor - Handle errors globally
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error: AxiosError) => {
-    // Handle 401 Unauthorized - token expired
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
-
-    // Handle 403 Forbidden
-    if (error.response?.status === 403) {
-      console.error('Access forbidden');
-    }
-
-    // Handle 429 Rate Limit
-    if (error.response?.status === 429) {
-      console.error('Rate limit exceeded. Please try again later.');
-    }
-
-    // Handle 500 Server Error
-    if (error.response?.status === 500) {
-      console.error('Server error. Please try again later.');
-    }
-
     return Promise.reject(error);
   }
 );
 
-// Helper function to handle API errors
 export const handleApiError = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
-    // Server responded with error
     if (error.response?.data?.detail) {
       return error.response.data.detail;
     }
-
-    // Request timeout
-    if (error.code === 'ECONNABORTED') {
-      return 'Request timeout. Please try again.';
-    }
-
-    // Network error
-    if (error.message === 'Network Error') {
-      return 'Network error. Please check your connection.';
-    }
-
     return error.message;
   }
-
   return 'An unexpected error occurred';
 };
 
