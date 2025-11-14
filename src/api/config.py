@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     # Database (unified - catalog DB with 10,386 prompts, located in api/database/)
     prompts_db_path: str = "database/prompts_catalog.db"
     catalog_db_path: str = "database/prompts_catalog.db"
+    users_db_path: str = "../data/users.db"
 
     # Security
     api_keys: List[str] = ["demo-read-key-12345"]  # Change in production!
