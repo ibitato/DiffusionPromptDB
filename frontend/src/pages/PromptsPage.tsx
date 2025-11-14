@@ -13,6 +13,7 @@ import { PromptDetailModal } from '../components/prompts/PromptDetailModal';
 import { useToast } from '../components/ui/Toast';
 import { useAuthStore } from '../store/authStore';
 import { promptsService } from '../services/prompts.service';
+import { preferencesService } from '../services/preferences.service';
 import { Prompt, CreatePromptRequest } from '../types/api.types';
 import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
 
@@ -24,6 +25,7 @@ export const PromptsPage = () => {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPrompts, setTotalPrompts] = useState(0);
+  const [myPromptsOnly, setMyPromptsOnly] = useState(false);
   const pageSize = 20;
 
   const isAdmin = user?.role === 'admin';
@@ -40,13 +42,28 @@ export const PromptsPage = () => {
   const toast = useToast();
 
   useEffect(() => {
+    loadPreferences();
+  }, []);
+
+  useEffect(() => {
     loadPrompts();
-  }, [currentPage]);
+  }, [currentPage, myPromptsOnly]);
+
+  const loadPreferences = async () => {
+    try {
+      const prefs = await preferencesService.getPreferences();
+      setMyPromptsOnly(prefs.my_prompts_only);
+    } catch (err) {
+      console.error('Error loading preferences', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadPrompts = async () => {
     setIsLoading(true);
     try {
-      const data = await promptsService.getPrompts(currentPage, pageSize);
+      const data = await promptsService.getPrompts(currentPage, pageSize, myPromptsOnly);
       setPrompts(data.results);
       setTotalPrompts(data.total);
       setError('');
@@ -252,6 +269,23 @@ export const PromptsPage = () => {
             </button>
           </div>
         </div>
+
+        {/* My Prompts Only Checkbox */}
+        {user && (
+          <div className="mb-6">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={myPromptsOnly}
+                onChange={(e) => setMyPromptsOnly(e.target.checked)}
+                className="w-5 h-5 bg-slate-700 border border-slate-600 rounded text-violet-600 focus:ring-2 focus:ring-violet-600"
+              />
+              <span className="text-sm font-medium text-gray-300">
+                📝 Solo mis prompts
+              </span>
+            </label>
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading ? (
