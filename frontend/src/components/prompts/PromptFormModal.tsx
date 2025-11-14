@@ -26,12 +26,13 @@
  * ```
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../ui/Modal';
 import { Loading } from '../ui/Loading';
 import { CreatePromptRequest, Prompt } from '../../types/api.types';
+import { statsService } from '../../services/stats.service';
 
 /**
  * Props for the PromptFormModal component
@@ -68,6 +69,8 @@ export const PromptFormModal = ({
   isLoading = false,
 }: PromptFormModalProps) => {
   const { t } = useTranslation();
+  const [artStyles, setArtStyles] = useState<Array<{ style: string; count: number }>>([]);
+  const [isLoadingStyles, setIsLoadingStyles] = useState(true);
   
   // Debug log to see what we receive
   console.log('PromptFormModal rendered with prompt:', prompt);
@@ -110,6 +113,26 @@ export const PromptFormModal = ({
   // Watch the text field to see if it's being populated
   const watchText = watch('text');
   console.log('Current text value in form:', watchText);
+
+  /**
+   * Load art styles for dropdown
+   */
+  useEffect(() => {
+    const loadArtStyles = async () => {
+      try {
+        const filters = await statsService.getFilters();
+        setArtStyles(filters.art_styles);
+      } catch (err) {
+        console.error('Failed to load art styles:', err);
+      } finally {
+        setIsLoadingStyles(false);
+      }
+    };
+    
+    if (isOpen) {
+      loadArtStyles();
+    }
+  }, [isOpen]);
 
   /**
    * Effect to reset form when prompt prop changes
@@ -203,42 +226,24 @@ export const PromptFormModal = ({
           />
         </div>
 
-        {/* Model and Category */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <span className="flex items-center gap-1">
-                <span>🤖</span>
-                <span>{t('promptForm.fields.model')}</span>
-              </span>
-            </label>
-            <input
-              {...register('model')}
-              type="text"
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
-              placeholder={t('promptForm.fields.modelPlaceholder')}
-              disabled={isLoading}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <span className="flex items-center gap-1">
-                <span>📁</span>
-                <span>{t('promptForm.fields.category')}</span>
-              </span>
-            </label>
-            <input
-              {...register('category')}
-              type="text"
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
-              placeholder={t('promptForm.fields.categoryPlaceholder')}
-              disabled={isLoading}
-            />
-          </div>
+        {/* Category - single full width field now */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            <span className="flex items-center gap-1">
+              <span>📁</span>
+              <span>{t('promptForm.fields.category')}</span>
+            </span>
+          </label>
+          <input
+            {...register('category')}
+            type="text"
+            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
+            placeholder={t('promptForm.fields.categoryPlaceholder')}
+            disabled={isLoading}
+          />
         </div>
 
-        {/* Art Style */}
+        {/* Art Style - Dropdown */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             <span className="flex items-center gap-1">
@@ -246,14 +251,21 @@ export const PromptFormModal = ({
               <span>{t('promptForm.fields.artStyle')}</span>
             </span>
           </label>
-          <input
+          <select
             {...register('art_style')}
-            type="text"
-            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
-            placeholder={t('promptForm.fields.artStylePlaceholder')}
-            disabled={isLoading}
-          />
-          <p className="mt-1 text-xs text-gray-400">{t('promptForm.fields.artStyle')}</p>
+            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
+            disabled={isLoading || isLoadingStyles}
+          >
+            <option value="">{t('promptForm.fields.artStylePlaceholder')}</option>
+            {artStyles.map((item) => (
+              <option key={item.style} value={item.style}>
+                {item.style.charAt(0).toUpperCase() + item.style.slice(1)} ({item.count})
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-400">
+            {t('promptForm.fields.artStyleHelp') || 'Selecciona un estilo de arte de la lista'}
+          </p>
         </div>
 
         {/* Tags */}
