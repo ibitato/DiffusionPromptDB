@@ -83,7 +83,6 @@ export const PromptFormModal = ({
     register,
     handleSubmit,
     reset,
-    setValue,
     watch,
     formState: { errors },
   } = useForm<CreatePromptRequest>({
