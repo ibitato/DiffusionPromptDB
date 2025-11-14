@@ -69,6 +69,9 @@ export const PromptFormModal = ({
 }: PromptFormModalProps) => {
   const { t } = useTranslation();
   
+  // Debug log to see what we receive
+  console.log('PromptFormModal rendered with prompt:', prompt);
+  
   /**
    * React Hook Form configuration
    * Provides form state management, validation, and submission handling
@@ -77,9 +80,21 @@ export const PromptFormModal = ({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<CreatePromptRequest>({
-    defaultValues: prompt || {
+    defaultValues: prompt ? {
+      text: prompt.text || '',
+      negative_prompt: prompt.negative_prompt || '',
+      model: prompt.model || '',
+      category: prompt.category || '',
+      art_style: prompt.art_style || '',
+      tags: prompt.tags || '',
+      rating: prompt.rating || 5,
+      notes: prompt.notes || '',
+      parameters: prompt.parameters || '',
+    } : {
       text: '',
       negative_prompt: '',
       model: '',
@@ -88,8 +103,13 @@ export const PromptFormModal = ({
       tags: '',
       rating: 5,
       notes: '',
+      parameters: '',
     },
   });
+
+  // Watch the text field to see if it's being populated
+  const watchText = watch('text');
+  console.log('Current text value in form:', watchText);
 
   /**
    * Effect to reset form when prompt prop changes
@@ -97,11 +117,28 @@ export const PromptFormModal = ({
    * or cleared in create mode
    */
   useEffect(() => {
-    if (prompt) {
+    if (prompt && isOpen) {
       // Edit mode: populate form with existing prompt data
-      reset(prompt);
-    } else {
+      console.log('useEffect - Setting values for prompt:', prompt);
+      
+      // Reset the entire form with new values
+      const formData = {
+        text: prompt.text || '',
+        negative_prompt: prompt.negative_prompt || '',
+        model: prompt.model || '',
+        category: prompt.category || '',
+        art_style: prompt.art_style || '',
+        tags: prompt.tags || '',
+        rating: prompt.rating || 5,
+        notes: prompt.notes || '',
+        parameters: prompt.parameters || '',
+      };
+      
+      console.log('Form data to set:', formData);
+      reset(formData);
+    } else if (!prompt && isOpen) {
       // Create mode: clear form with default values
+      console.log('useEffect - Clearing form for create mode');
       reset({
         text: '',
         negative_prompt: '',
@@ -111,9 +148,10 @@ export const PromptFormModal = ({
         tags: '',
         rating: 5,
         notes: '',
+        parameters: '',
       });
     }
-  }, [prompt, reset]);
+  }, [prompt, reset, isOpen]);
 
   /**
    * Handles form submission
