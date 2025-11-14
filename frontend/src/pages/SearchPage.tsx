@@ -40,6 +40,7 @@ export const SearchPage = () => {
   
   // Modal states
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
+  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null); // Separate state for editing
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -231,16 +232,30 @@ export const SearchPage = () => {
   // Check if user can edit/delete a prompt
   const canModify = (prompt: Prompt): boolean => {
     if (!user) return false;
-    if (isAdmin) return true; // Admin can modify everything
-    // Since CatalogPrompt doesn't have created_by info, we can't determine ownership
-    // Only allow admins to modify prompts from search results for safety
-    return false;
+    
+    // Admins can modify everything
+    if (isAdmin) return true;
+    
+    // For catalog prompts (created_by is null), only admins can modify
+    // For user prompts, check ownership
+    if (prompt.created_by === null) {
+      return isAdmin; // Only admins can modify catalog prompts
+    }
+    
+    // User can modify their own prompts
+    return prompt.created_by === user.id;
   };
 
   const handleEdit = (prompt: Prompt) => {
-    setSelectedPrompt(prompt);
+    console.log('Editing prompt:', prompt); // Debug log
+    // Set the editing prompt separately
+    setEditingPrompt(prompt);
+    // Close detail modal
     setIsDetailModalOpen(false);
-    setIsFormModalOpen(true);
+    // Open form modal after a brief delay to ensure proper transition
+    setTimeout(() => {
+      setIsFormModalOpen(true);
+    }, 50);
   };
 
   const handleDelete = (prompt: Prompt) => {
@@ -250,20 +265,24 @@ export const SearchPage = () => {
   };
 
   const handleFormSubmit = async (data: CreatePromptRequest) => {
-    if (!selectedPrompt) return;
+    if (!editingPrompt) {
+      console.error('No prompt selected for editing');
+      return;
+    }
     
     setIsSubmitting(true);
     try {
-      const updatedPrompt = await promptsService.updatePrompt(selectedPrompt.id, data);
+      console.log('Updating prompt:', editingPrompt.id, data); // Debug log
+      const updatedPrompt = await promptsService.updatePrompt(editingPrompt.id, data);
       toast.success(t('promptForm.messages.updated'));
       
       // Update the prompt in results
       const updatedResults = results.map(r => 
-        r.id === selectedPrompt.id 
+        r.id === editingPrompt.id 
           ? { 
               ...r, 
               original_prompt: updatedPrompt.text,
-              art_style: data.art_style,
+              art_style: data.art_style || r.art_style,
               tags: data.tags ? data.tags.split(',').map(t => t.trim()) : r.tags
             }
           : r
@@ -271,33 +290,52 @@ export const SearchPage = () => {
       setResults(updatedResults);
       
       setIsFormModalOpen(false);
+      setEditingPrompt(null);
       setSelectedPrompt(null);
     } catch (err) {
+      console.error('Error updating prompt:', err); // Debug log
       const message = err instanceof Error ? err.message : 'Failed to update prompt';
-      toast.error(message);
+      
+      // Check if it's a permission error
+      if (message.includes('403') || message.includes('Forbidden')) {
+        toast.error('No tienes permisos para editar este prompt');
+      } else {
+        toast.error(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const confirmDelete = async () => {
-    if (!promptToDelete) return;
+    if (!promptToDelete) {
+      console.error('No prompt selected for deletion');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
+      console.log('Deleting prompt:', promptToDelete.id); // Debug log
       await promptsService.deletePrompt(promptToDelete.id);
       toast.success(t('deleteConfirm.success'));
       
       // Remove from results
       setResults(results.filter(r => r.id !== promptToDelete.id));
-      setTotalResults(prev => prev - 1);
-      setAllResultsCount(prev => prev - 1);
+      setTotalResults(prev => Math.max(0, prev - 1));
+      setAllResultsCount(prev => Math.max(0, prev - 1));
       
       setIsDeleteModalOpen(false);
       setPromptToDelete(null);
     } catch (err) {
+      console.error('Error deleting prompt:', err); // Debug log
       const message = err instanceof Error ? err.message : 'Failed to delete prompt';
-      toast.error(message);
+      
+      // Check if it's a permission error
+      if (message.includes('403') || message.includes('Forbidden')) {
+        toast.error('No tienes permisos para eliminar este prompt');
+      } else {
+        toast.error(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -650,16 +688,18 @@ export const SearchPage = () => {
       )}
 
       {/* Form Modal for Editing */}
-      <PromptFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => {
-          setIsFormModalOpen(false);
-          setSelectedPrompt(null);
-        }}
-        onSubmit={handleFormSubmit}
-        prompt={selectedPrompt}
-        isLoading={isSubmitting}
-      />
+      {editingPrompt && (
+        <PromptFormModal
+          isOpen={isFormModalOpen}
+          onClose={() => {
+            setIsFormModalOpen(false);
+            setEditingPrompt(null);
+          }}
+          onSubmit={handleFormSubmit}
+          prompt={editingPrompt}
+          isLoading={isSubmitting}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal
