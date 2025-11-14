@@ -92,6 +92,8 @@
       "tagsPlaceholder": "tag1, tag2, tag3",
       "tagsHelp": "Separar tags con comas",
       "rating": "Rating",
+      "parameters": "Parámetros",
+      "parametersPlaceholder": "Parámetros de generación (formato JSON)...",
       "notes": "Notes",
       "notesPlaceholder": "Notas adicionales (opcional)..."
     },

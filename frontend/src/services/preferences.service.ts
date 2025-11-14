@@ -8,11 +8,13 @@ import api, { handleApiError } from './api';
 export interface UserPreferences {
   user_id: number;
   show_unspecified: boolean;
+  my_prompts_only: boolean;
   excluded_tags: string[];
 }
 
 export interface UpdatePreferences {
   show_unspecified?: boolean;
+  my_prompts_only?: boolean;
   excluded_tags?: string[];
 }
 

@@ -92,6 +92,8 @@
       "tagsPlaceholder": "tag1, tag2, tag3",
       "tagsHelp": "Séparez les étiquettes par des virgules",
       "rating": "Évaluation",
+      "parameters": "Paramètres",
+      "parametersPlaceholder": "Paramètres de génération (format JSON)...",
       "notes": "Notes",
       "notesPlaceholder": "Notes supplémentaires (optionnel)..."
     },

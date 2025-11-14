@@ -41,7 +41,7 @@ export const promptsService = {
   getPrompts: async (
     page: number = 1,
     pageSize: number = 20,
-    category?: string
+    myPromptsOnly?: boolean
   ): Promise<PaginatedResponse<Prompt>> => {
     try {
       const params = new URLSearchParams({
@@ -50,8 +50,8 @@ export const promptsService = {
         _t: Date.now().toString(), // Add timestamp to prevent caching
       });
 
-      if (category) {
-        params.append('category', category);
+      if (myPromptsOnly) {
+        params.append('my_prompts', 'true');
       }
 
       const response = await api.get<PaginatedResponse<Prompt>>(`/prompts?${params.toString()}`);
