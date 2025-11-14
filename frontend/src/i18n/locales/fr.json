@@ -43,7 +43,14 @@
       "count": "Nombre",
       "style": "Style",
       "tag": "Étiquette",
-      "category": "Catégorie"
+      "category": "Catégorie",
+      "showing": "Affichage",
+      "of": "sur",
+      "showingTop": "Affichage du Top {{count}} sur",
+      "topOf": "Top {{count}} sur"
+    },
+    "display": {
+      "showUnspecified": "Afficher \"non spécifié\""
     },
     "charts": {
       "nsfwTitle": "Distribution NSFW",
@@ -198,7 +205,9 @@
     "display": {
       "title": "Préférences d'Affichage",
       "showUnspecified": "Afficher \"non spécifié\" par défaut",
-      "showUnspecifiedDesc": "Afficher les styles artistiques marqués comme \"non spécifié\" dans le tableau de bord et les graphiques"
+      "showUnspecifiedDesc": "Afficher les styles artistiques marqués comme \"non spécifié\" dans le tableau de bord et les graphiques",
+      "myPromptsOnly": "Afficher uniquement mes prompts par défaut",
+      "myPromptsOnlyDesc": "Afficher uniquement mes prompts lors du chargement des pages Prompts et Recherche"
     },
     "blacklist": {
       "title": "Liste Noire d'Étiquettes",

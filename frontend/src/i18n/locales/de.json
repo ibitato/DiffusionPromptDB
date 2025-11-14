@@ -43,7 +43,14 @@
       "count": "Anzahl",
       "style": "Stil",
       "tag": "Tag",
-      "category": "Kategorie"
+      "category": "Kategorie",
+      "showing": "Anzeige",
+      "of": "von",
+      "showingTop": "Zeige Top {{count}} von",
+      "topOf": "Top {{count}} von"
+    },
+    "display": {
+      "showUnspecified": "\"Nicht spezifiziert\" anzeigen"
     },
     "charts": {
       "nsfwTitle": "NSFW-Verteilung",
@@ -198,7 +205,9 @@
     "display": {
       "title": "Anzeigeeinstellungen",
       "showUnspecified": "\"Nicht spezifiziert\" standardmäßig anzeigen",
-      "showUnspecifiedDesc": "Kunststile, die als \"nicht spezifiziert\" markiert sind, im Dashboard und in Diagrammen anzeigen"
+      "showUnspecifiedDesc": "Kunststile, die als \"nicht spezifiziert\" markiert sind, im Dashboard und in Diagrammen anzeigen",
+      "myPromptsOnly": "Standardmäßig nur meine Prompts anzeigen",
+      "myPromptsOnlyDesc": "Nur meine Prompts beim Laden der Seiten Prompts und Suche anzeigen"
     },
     "blacklist": {
       "title": "Tag-Blacklist",
