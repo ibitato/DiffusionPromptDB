@@ -28,12 +28,12 @@ export const useToastStore = create<ToastStore>((set) => ({
       toasts: [...state.toasts, { id, type, message }],
     }));
 
-    // Auto remove after 5 seconds
+    // Auto remove after 12 seconds (increased for better visibility)
     setTimeout(() => {
       set((state) => ({
         toasts: state.toasts.filter((t) => t.id !== id),
       }));
-    }, 5000);
+    }, 12000);
   },
   removeToast: (id) =>
     set((state) => ({
@@ -74,7 +74,7 @@ interface ToastItemProps {
 
 const ToastItem = ({ toast, onClose }: ToastItemProps) => {
   useEffect(() => {
-    const timer = setTimeout(onClose, 5000);
+    const timer = setTimeout(onClose, 12000);
     return () => clearTimeout(timer);
   }, [onClose]);
 

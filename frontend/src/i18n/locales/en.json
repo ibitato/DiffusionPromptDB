@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "DiffusionPrompt",
-    "subtitle": "Prompt Cataloging System"
+    "subtitle": "Prompt Cataloging System (Stable Diffusion)"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -86,6 +86,8 @@
       "modelPlaceholder": "stable-diffusion-v1.5",
       "category": "Category",
       "categoryPlaceholder": "landscape, portrait, etc.",
+      "artStyle": "Art Style",
+      "artStylePlaceholder": "anime, realistic, cartoon, digital art, etc.",
       "tags": "Tags",
       "tagsPlaceholder": "tag1, tag2, tag3",
       "tagsHelp": "Separate tags with commas",
@@ -139,6 +141,7 @@
     "title": "Advanced Search",
     "subtitle": "Filter prompts by multiple criteria",
     "placeholder": "Search prompts...",
+    "searchBarPlaceholder": "Search prompts...",
     "filters": {
       "nsfwLevel": "NSFW Level",
       "artStyle": "Art Style",
@@ -228,6 +231,13 @@
     "search": "Search",
     "export": "Export",
     "import": "Import",
-    "more": "more"
+    "more": "more",
+    "errors": {
+      "loadingPreferences": "Error loading preferences",
+      "loadingArtStyles": "Error loading art styles",
+      "loadingTags": "Error loading tags",
+      "loadingFilters": "Error loading filters",
+      "savingPreferences": "Error saving preferences"
+    }
   }
 }

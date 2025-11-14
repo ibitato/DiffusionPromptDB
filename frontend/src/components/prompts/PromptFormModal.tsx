@@ -1,22 +1,65 @@
 /**
- * Prompt Form Modal
- * Modal for creating/editing prompts
+ * PromptFormModal Component
+ * 
+ * @description Modal dialog for creating and editing prompts.
+ * Provides a comprehensive form with validation, internationalization,
+ * and real-time feedback. Supports both create and edit modes.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * // Create mode
+ * <PromptFormModal
+ *   isOpen={isModalOpen}
+ *   onClose={() => setIsModalOpen(false)}
+ *   onSubmit={handleCreatePrompt}
+ * />
+ * 
+ * // Edit mode
+ * <PromptFormModal
+ *   isOpen={isModalOpen}
+ *   onClose={() => setIsModalOpen(false)}
+ *   onSubmit={handleUpdatePrompt}
+ *   prompt={existingPrompt}
+ *   isLoading={isSaving}
+ * />
+ * ```
  */
 
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Modal } from '../ui/Modal';
 import { Loading } from '../ui/Loading';
 import { CreatePromptRequest, Prompt } from '../../types/api.types';
 
+/**
+ * Props for the PromptFormModal component
+ * @interface PromptFormModalProps
+ */
 interface PromptFormModalProps {
+  /** Controls modal visibility */
   isOpen: boolean;
+  
+  /** Callback function triggered when modal closes */
   onClose: () => void;
+  
+  /** Async callback for form submission */
   onSubmit: (data: CreatePromptRequest) => Promise<void>;
+  
+  /** Optional prompt data for edit mode */
   prompt?: Prompt | null;
+  
+  /** Loading state to disable form interactions */
   isLoading?: boolean;
 }
 
+/**
+ * PromptFormModal functional component
+ * 
+ * @param {PromptFormModalProps} props - Component props
+ * @returns {JSX.Element} Rendered modal with prompt form
+ */
 export const PromptFormModal = ({
   isOpen,
   onClose,
@@ -24,6 +67,12 @@ export const PromptFormModal = ({
   prompt,
   isLoading = false,
 }: PromptFormModalProps) => {
+  const { t } = useTranslation();
+  
+  /**
+   * React Hook Form configuration
+   * Provides form state management, validation, and submission handling
+   */
   const {
     register,
     handleSubmit,
@@ -42,11 +91,17 @@ export const PromptFormModal = ({
     },
   });
 
-  // Reset form when prompt changes
+  /**
+   * Effect to reset form when prompt prop changes
+   * Ensures form is populated with correct data in edit mode
+   * or cleared in create mode
+   */
   useEffect(() => {
     if (prompt) {
+      // Edit mode: populate form with existing prompt data
       reset(prompt);
     } else {
+      // Create mode: clear form with default values
       reset({
         text: '',
         negative_prompt: '',
@@ -60,6 +115,16 @@ export const PromptFormModal = ({
     }
   }, [prompt, reset]);
 
+  /**
+   * Handles form submission
+   * @param {CreatePromptRequest} data - Form data
+   * @returns {Promise<void>}
+   * 
+   * @description
+   * - Submits form data to parent component
+   * - Resets form after successful submission
+   * - Parent handles success/error states
+   */
   const handleFormSubmit = async (data: CreatePromptRequest) => {
     await onSubmit(data);
     reset();
@@ -69,20 +134,20 @@ export const PromptFormModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={prompt ? 'Editar Prompt' : 'Crear Nuevo Prompt'}
+      title={prompt ? t('promptForm.editTitle') : t('promptForm.createTitle')}
       size="lg"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         {/* Prompt Text */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Prompt Text <span className="text-red-400">*</span>
+            {t('promptForm.fields.text')} <span className="text-red-400">*</span>
           </label>
           <textarea
-            {...register('text', { required: 'El texto del prompt es requerido' })}
+            {...register('text', { required: t('promptForm.fields.textRequired') })}
             rows={4}
             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent resize-none"
-            placeholder="Ingresa el prompt..."
+            placeholder={t('promptForm.fields.textPlaceholder')}
             disabled={isLoading}
           />
           {errors.text && <p className="mt-1 text-sm text-red-400">{errors.text.message}</p>}
@@ -90,12 +155,12 @@ export const PromptFormModal = ({
 
         {/* Negative Prompt */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Negative Prompt</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">{t('promptForm.fields.negativePrompt')}</label>
           <textarea
             {...register('negative_prompt')}
             rows={3}
             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent resize-none"
-            placeholder="Prompt negativo (opcional)..."
+            placeholder={t('promptForm.fields.negativePromptPlaceholder')}
             disabled={isLoading}
           />
         </div>
@@ -106,14 +171,14 @@ export const PromptFormModal = ({
             <label className="block text-sm font-medium text-gray-300 mb-2">
               <span className="flex items-center gap-1">
                 <span>🤖</span>
-                <span>Model</span>
+                <span>{t('promptForm.fields.model')}</span>
               </span>
             </label>
             <input
               {...register('model')}
               type="text"
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
-              placeholder="stable-diffusion-v1.5"
+              placeholder={t('promptForm.fields.modelPlaceholder')}
               disabled={isLoading}
             />
           </div>
@@ -122,14 +187,14 @@ export const PromptFormModal = ({
             <label className="block text-sm font-medium text-gray-300 mb-2">
               <span className="flex items-center gap-1">
                 <span>📁</span>
-                <span>Category</span>
+                <span>{t('promptForm.fields.category')}</span>
               </span>
             </label>
             <input
               {...register('category')}
               type="text"
               className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
-              placeholder="landscape, portrait, etc."
+              placeholder={t('promptForm.fields.categoryPlaceholder')}
               disabled={isLoading}
             />
           </div>
@@ -140,17 +205,17 @@ export const PromptFormModal = ({
           <label className="block text-sm font-medium text-gray-300 mb-2">
             <span className="flex items-center gap-1">
               <span>🎨</span>
-              <span>Art Style</span>
+              <span>{t('promptForm.fields.artStyle')}</span>
             </span>
           </label>
           <input
             {...register('art_style')}
             type="text"
             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
-            placeholder="anime, realistic, cartoon, digital art, etc."
+            placeholder={t('promptForm.fields.artStylePlaceholder')}
             disabled={isLoading}
           />
-          <p className="mt-1 text-xs text-gray-400">Estilo artístico del prompt</p>
+          <p className="mt-1 text-xs text-gray-400">{t('promptForm.fields.artStyle')}</p>
         </div>
 
         {/* Tags */}
@@ -158,17 +223,17 @@ export const PromptFormModal = ({
           <label className="block text-sm font-medium text-gray-300 mb-2">
             <span className="flex items-center gap-1">
               <span>🏷️</span>
-              <span>Tags</span>
+              <span>{t('promptForm.fields.tags')}</span>
             </span>
           </label>
           <input
             {...register('tags')}
             type="text"
             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
-            placeholder="tag1, tag2, tag3"
+            placeholder={t('promptForm.fields.tagsPlaceholder')}
             disabled={isLoading}
           />
-          <p className="mt-1 text-xs text-gray-400">Separar tags con comas</p>
+          <p className="mt-1 text-xs text-gray-400">{t('promptForm.fields.tagsHelp')}</p>
         </div>
 
         {/* Rating */}
@@ -176,7 +241,7 @@ export const PromptFormModal = ({
           <label className="block text-sm font-medium text-gray-300 mb-2">
             <span className="flex items-center gap-1">
               <span>⭐</span>
-              <span>Rating</span>
+              <span>{t('promptForm.fields.rating')}</span>
             </span>
           </label>
           <div className="flex items-center gap-2">
@@ -206,14 +271,14 @@ export const PromptFormModal = ({
           <label className="block text-sm font-medium text-gray-300 mb-2">
             <span className="flex items-center gap-1">
               <span>📝</span>
-              <span>Notes</span>
+              <span>{t('promptForm.fields.notes')}</span>
             </span>
           </label>
           <textarea
             {...register('notes')}
             rows={2}
             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent resize-none"
-            placeholder="Notas adicionales (opcional)..."
+            placeholder={t('promptForm.fields.notesPlaceholder')}
             disabled={isLoading}
           />
         </div>
@@ -226,7 +291,7 @@ export const PromptFormModal = ({
             disabled={isLoading}
             className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-lg transition-colors"
           >
-            Cancelar
+            {t('promptForm.actions.cancel')}
           </button>
           <button
             type="submit"
@@ -234,7 +299,7 @@ export const PromptFormModal = ({
             className="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-2"
           >
             {isLoading && <Loading size="sm" />}
-            {prompt ? 'Actualizar' : 'Crear'}
+            {prompt ? t('promptForm.actions.update') : t('promptForm.actions.create')}
           </button>
         </div>
       </form>

@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "DiffusionPrompt",
-    "subtitle": "Système de Catalogage de Prompts"
+    "subtitle": "Système de Catalogage de Prompts (Stable Diffusion)"
   },
   "nav": {
     "dashboard": "Tableau de Bord",
@@ -86,6 +86,8 @@
       "modelPlaceholder": "stable-diffusion-v1.5",
       "category": "Catégorie",
       "categoryPlaceholder": "paysage, portrait, etc.",
+      "artStyle": "Style Artistique",
+      "artStylePlaceholder": "anime, réaliste, cartoon, art numérique, etc.",
       "tags": "Étiquettes",
       "tagsPlaceholder": "tag1, tag2, tag3",
       "tagsHelp": "Séparez les étiquettes par des virgules",
@@ -139,6 +141,7 @@
     "title": "Recherche Avancée",
     "subtitle": "Filtrer les prompts par plusieurs critères",
     "placeholder": "Rechercher des prompts...",
+    "searchBarPlaceholder": "Rechercher des prompts...",
     "filters": {
       "nsfwLevel": "Niveau NSFW",
       "artStyle": "Style Artistique",
@@ -228,6 +231,13 @@
     "search": "Rechercher",
     "export": "Exporter",
     "import": "Importer",
-    "more": "plus"
+    "more": "plus",
+    "errors": {
+      "loadingPreferences": "Erreur lors du chargement des préférences",
+      "loadingArtStyles": "Erreur lors du chargement des styles artistiques",
+      "loadingTags": "Erreur lors du chargement des étiquettes",
+      "loadingFilters": "Erreur lors du chargement des filtres",
+      "savingPreferences": "Erreur lors de l'enregistrement des préférences"
+    }
   }
 }

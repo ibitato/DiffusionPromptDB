@@ -8,14 +8,19 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
+import { ConfirmModal } from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
 import { PromptDetailModal } from '../components/prompts/PromptDetailModal';
+import { PromptFormModal } from '../components/prompts/PromptFormModal';
 import { searchService } from '../services/search.service';
 import { statsService } from '../services/stats.service';
-import { CatalogPrompt, Prompt } from '../types/api.types';
+import { promptsService } from '../services/prompts.service';
+import { useAuthStore } from '../store/authStore';
+import { CatalogPrompt, Prompt, CreatePromptRequest } from '../types/api.types';
 
 export const SearchPage = () => {
   const { t } = useTranslation();
+  const { user } = useAuthStore();
   const [searchParams] = useSearchParams();
   const [results, setResults] = useState<CatalogPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,15 +38,20 @@ export const SearchPage = () => {
   const [searchText, setSearchText] = useState('');
   const [searchTag, setSearchTag] = useState('');
   
-  // Detail modal
+  // Modal states
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [promptToDelete, setPromptToDelete] = useState<Prompt | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Available filter options (loaded from database)
   const [nsfwLevels, setNsfwLevels] = useState<string[]>([]);
   const [artStyles, setArtStyles] = useState<Array<{ style: string; count: number }>>([]);
 
   const toast = useToast();
+  const isAdmin = user?.role === 'admin';
 
   // Load available filters on mount
   useEffect(() => {
@@ -68,8 +78,8 @@ export const SearchPage = () => {
       setNsfwLevels(filters.nsfw_levels);
       setArtStyles(filters.art_styles);
     } catch (err) {
-      console.error('Error loading filters:', err);
-      toast.error('Error al cargar los filtros');
+      console.error(t('common.errors.loadingFilters'), err);
+      toast.error(t('common.errors.loadingFilters'));
     } finally {
       setIsLoadingFilters(false);
     }
@@ -180,6 +190,118 @@ export const SearchPage = () => {
   };
 
   const activeFiltersCount = [nsfwLevel, artStyle, numberOfPeople, searchText, searchTag].filter(Boolean).length;
+
+  // Convert CatalogPrompt to full Prompt for modal with rich data
+  const convertToPrompt = (catalogPrompt: CatalogPrompt): Prompt => {
+    // Build notes from available metadata
+    let notes = '';
+    if (catalogPrompt.number_of_people) {
+      notes += `Number of People: ${catalogPrompt.number_of_people}\n`;
+    }
+    
+    // Create a rich category string combining available metadata
+    const categoryParts = [];
+    if (catalogPrompt.nsfw_level) {
+      categoryParts.push(catalogPrompt.nsfw_level.charAt(0).toUpperCase() + catalogPrompt.nsfw_level.slice(1));
+    }
+    if (catalogPrompt.art_style) {
+      categoryParts.push(catalogPrompt.art_style.charAt(0).toUpperCase() + catalogPrompt.art_style.slice(1));
+    }
+    const category = categoryParts.join(' - ');
+    
+    return {
+      id: catalogPrompt.id,
+      text: catalogPrompt.original_prompt,
+      negative_prompt: '',  // Not available in CatalogPrompt
+      model: '',  // Not available in CatalogPrompt  
+      category: catalogPrompt.nsfw_level ? 
+        catalogPrompt.nsfw_level.charAt(0).toUpperCase() + catalogPrompt.nsfw_level.slice(1) : 
+        '',  // Use NSFW level as main category
+      art_style: catalogPrompt.art_style || '',
+      tags: catalogPrompt.tags ? catalogPrompt.tags.join(', ') : '',
+      rating: undefined,  // Not available in CatalogPrompt
+      notes: notes.trim(),  // Include metadata in notes
+      parameters: '',  // Not available in CatalogPrompt
+      created_at: new Date().toISOString(),  // Not available in CatalogPrompt
+      updated_at: new Date().toISOString(),  // Not available in CatalogPrompt
+      created_by: null,  // Not available in CatalogPrompt - treat as preloaded for safety
+    };
+  };
+
+  // Check if user can edit/delete a prompt
+  const canModify = (prompt: Prompt): boolean => {
+    if (!user) return false;
+    if (isAdmin) return true; // Admin can modify everything
+    // Since CatalogPrompt doesn't have created_by info, we can't determine ownership
+    // Only allow admins to modify prompts from search results for safety
+    return false;
+  };
+
+  const handleEdit = (prompt: Prompt) => {
+    setSelectedPrompt(prompt);
+    setIsDetailModalOpen(false);
+    setIsFormModalOpen(true);
+  };
+
+  const handleDelete = (prompt: Prompt) => {
+    setPromptToDelete(prompt);
+    setIsDetailModalOpen(false);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleFormSubmit = async (data: CreatePromptRequest) => {
+    if (!selectedPrompt) return;
+    
+    setIsSubmitting(true);
+    try {
+      const updatedPrompt = await promptsService.updatePrompt(selectedPrompt.id, data);
+      toast.success(t('promptForm.messages.updated'));
+      
+      // Update the prompt in results
+      const updatedResults = results.map(r => 
+        r.id === selectedPrompt.id 
+          ? { 
+              ...r, 
+              original_prompt: updatedPrompt.text,
+              art_style: data.art_style,
+              tags: data.tags ? data.tags.split(',').map(t => t.trim()) : r.tags
+            }
+          : r
+      );
+      setResults(updatedResults);
+      
+      setIsFormModalOpen(false);
+      setSelectedPrompt(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to update prompt';
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!promptToDelete) return;
+
+    setIsSubmitting(true);
+    try {
+      await promptsService.deletePrompt(promptToDelete.id);
+      toast.success(t('deleteConfirm.success'));
+      
+      // Remove from results
+      setResults(results.filter(r => r.id !== promptToDelete.id));
+      setTotalResults(prev => prev - 1);
+      setAllResultsCount(prev => prev - 1);
+      
+      setIsDeleteModalOpen(false);
+      setPromptToDelete(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete prompt';
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -398,13 +520,8 @@ export const SearchPage = () => {
                   <div
                     key={result.id || index}
                     onClick={() => {
-                      const promptForModal: Prompt = {
-                        id: result.id,
-                        text: result.original_prompt,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString(),
-                      } as Prompt;
-                      setSelectedPrompt(promptForModal);
+                      const fullPrompt = convertToPrompt(result);
+                      setSelectedPrompt(fullPrompt);
                       setIsDetailModalOpen(true);
                     }}
                     className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-violet-600 hover:shadow-lg transition-all cursor-pointer transform hover:scale-[1.02]"
@@ -526,10 +643,38 @@ export const SearchPage = () => {
             setSelectedPrompt(null);
           }}
           prompt={selectedPrompt}
-          onEdit={() => {}}
-          onDelete={() => {}}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          canModify={canModify(selectedPrompt)}
         />
       )}
+
+      {/* Form Modal for Editing */}
+      <PromptFormModal
+        isOpen={isFormModalOpen}
+        onClose={() => {
+          setIsFormModalOpen(false);
+          setSelectedPrompt(null);
+        }}
+        onSubmit={handleFormSubmit}
+        prompt={selectedPrompt}
+        isLoading={isSubmitting}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setPromptToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title={t('deleteConfirm.title')}
+        message={`${t('deleteConfirm.message')} #${promptToDelete?.id}? ${t('deleteConfirm.warning')}`}
+        confirmText={t('deleteConfirm.confirm')}
+        cancelText={t('deleteConfirm.cancel')}
+        isLoading={isSubmitting}
+      />
     </div>
   );
 };

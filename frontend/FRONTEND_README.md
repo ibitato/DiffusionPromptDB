@@ -1,288 +1,418 @@
 # DiffusionPromptDB Frontend
 
-Aplicación web React para gestionar y catalogar prompts de Stable Diffusion.
+Modern React application for managing and cataloging Stable Diffusion prompts with full internationalization support.
 
-## 🚀 Características Implementadas
+## 🚀 Features
 
-### ✅ Fase 1 - Fundación (Completado)
-- Sistema de autenticación completo (Login/Logout)
-- Rutas protegidas con React Router
-- Gestión de estado con Zustand
-- Configuración de Axios con interceptores
-- TypeScript types para toda la API
+### ✅ Core Features (Completed)
+- **Multi-language Support**: Full internationalization (ES, EN, FR, DE)
+- **Authentication System**: JWT-based login/logout with protected routes
+- **Dashboard**: Real-time statistics with interactive charts
+- **Prompts Management**: Complete CRUD operations
+- **Advanced Search**: Multi-filter search with complex queries
+- **User Preferences**: Customizable settings and tag blacklisting
+- **Export Functionality**: Export prompts to JSON/CSV formats
 
-### ✅ Fase 2 - Dashboard & Prompts (Completado)
-- **Dashboard** con estadísticas visuales:
-  - Total de prompts
-  - Top tags y estilos de arte
-  - Distribución NSFW
-  - Acciones rápidas
-- **Página de Prompts**:
-  - Listado paginado (20 por página)
-  - Tarjetas con información completa
-  - Navegación entre páginas
-  - Filtrado por categorías
-- **Header** de navegación funcional
+### 🌍 Internationalization
+- **4 Languages Supported**: Spanish, English, French, German
+- **Dynamic Language Switching**: Real-time UI updates
+- **Complete Coverage**: All UI elements, messages, and errors translated
+- **Persisted Preferences**: Language selection saved in localStorage
 
-## 📁 Estructura del Código
+## 📁 Project Structure
 
 ```
 frontend/src/
 ├── components/
+│   ├── dashboard/
+│   │   └── StatsCharts.tsx      # Interactive charts (Recharts)
 │   ├── layout/
-│   │   └── Header.tsx           # Navegación principal
+│   │   └── Header.tsx            # Main navigation with language toggle
+│   ├── prompts/
+│   │   ├── PromptFormModal.tsx  # Create/Edit prompt modal
+│   │   └── PromptDetailModal.tsx # View prompt details
+│   ├── search/
+│   │   └── SearchBar.tsx         # Quick search component
 │   └── ui/
-│       └── Loading.tsx          # Spinner de carga
+│       ├── LanguageToggle.tsx   # Language selector
+│       ├── Loading.tsx           # Loading spinner
+│       ├── Modal.tsx             # Reusable modal component
+│       └── Toast.tsx             # Notification system
+│
+├── hooks/
+│   └── usePrompts.ts             # Custom hooks for prompt operations
+│
+├── i18n/
+│   ├── config.ts                 # i18n configuration
+│   └── locales/
+│       ├── en.json               # English translations
+│       ├── es.json               # Spanish translations
+│       ├── fr.json               # French translations
+│       └── de.json               # German translations
 │
 ├── pages/
-│   ├── LoginPage.tsx            # Página de autenticación
-│   ├── DashboardPage.tsx        # Dashboard con stats
-│   └── PromptsPage.tsx          # Listado de prompts
+│   ├── LoginPage.tsx             # Authentication page
+│   ├── DashboardPage.tsx         # Statistics dashboard
+│   ├── PromptsPage.tsx           # Prompts management
+│   ├── SearchPage.tsx            # Advanced search
+│   └── SettingsPage.tsx          # User preferences
 │
-├── services/
-│   ├── api.ts                   # Configuración Axios
-│   ├── auth.service.ts          # Servicios de auth
-│   ├── prompts.service.ts       # CRUD de prompts
-│   └── stats.service.ts         # Estadísticas
-│
-├── store/
-│   └── authStore.ts             # Estado global (Zustand)
+├── providers/
+│   └── QueryProvider.tsx         # TanStack Query provider
 │
 ├── router/
-│   └── AppRouter.tsx            # Configuración de rutas
+│   └── AppRouter.tsx             # Route configuration
+│
+├── services/
+│   ├── api.ts                    # Axios configuration
+│   ├── auth.service.ts           # Authentication services
+│   ├── preferences.service.ts    # User preferences
+│   ├── prompts.service.ts        # Prompts CRUD
+│   ├── search.service.ts         # Search operations
+│   └── stats.service.ts          # Statistics data
+│
+├── store/
+│   └── authStore.ts              # Global state (Zustand)
 │
 ├── types/
-│   └── api.types.ts             # TypeScript types
+│   └── api.types.ts              # TypeScript definitions
 │
-├── App.tsx                      # Componente principal
-└── main.tsx                     # Entry point
+├── utils/
+│   └── exportPrompts.ts          # Export utilities
+│
+├── App.tsx                       # Main component
+└── main.tsx                      # Entry point
 ```
 
-## 🛠️ Instalación y Configuración
+## 🛠️ Installation & Setup
 
-### 1. Instalar Dependencias
+### 1. Install Dependencies
 
 ```bash
 cd frontend
 npm install
 ```
 
-### 2. Configurar Variables de Entorno
+### 2. Configure Environment
 
 ```bash
-# Copiar el archivo de ejemplo
+# Copy example environment file
 cp .env.example .env
 
-# Editar .env con tus configuraciones
+# Edit .env with your settings
 VITE_API_URL=http://localhost:8000/api/v1
 VITE_API_KEY=REDACTED_API_KEY
 ```
 
-### 3. Iniciar el Servidor de Desarrollo
+### 3. Start Development Server
 
 ```bash
 npm run dev
 ```
 
-La aplicación estará disponible en: http://localhost:5173
+Application will be available at: http://localhost:5173
 
-## 🔐 Autenticación
+## 🔐 Authentication
 
-### Credenciales de Prueba
+### Demo Credentials
 
-Para el desarrollo, usa estas credenciales:
-- **Usuario:** `test`
-- **Contraseña:** `test`
+- **Admin**: `admin` / `admin` (full access)
+- **User**: `user` / `user` (read/write)
+- **Test**: `test` / `test` (limited access)
 
-### Sistema de Autenticación
+### Authentication Flow
 
-1. **Mock Login**: Actualmente usa un sistema mock para desarrollo
-2. **JWT Tokens**: Preparado para usar tokens JWT reales
-3. **Protected Routes**: Las rutas están protegidas automáticamente
-4. **Auto Logout**: Se cierra sesión automáticamente si el token expira (401)
+1. **JWT Tokens**: Secure token-based authentication
+2. **Protected Routes**: Automatic route protection
+3. **Token Refresh**: Automatic token refresh on 401
+4. **API Key Fallback**: Public read access with API key
 
-Para conectar con la API real, edita `src/services/auth.service.ts`:
+## 📡 API Integration
 
-```typescript
-// Cambiar de mockLogin a login
-const response = await authService.login({ username, password });
-```
+### Endpoints Used
 
-## 📡 Integración con la API
-
-### Endpoints Utilizados
-
-**Autenticación:**
-- `POST /auth/login` - Login (mock por ahora)
+**Authentication:**
+- `POST /auth/login` - User login
+- `POST /auth/logout` - User logout
 
 **Prompts:**
-- `GET /prompts?page=1&page_size=20` - Listar prompts
-- `GET /prompts/{id}` - Obtener un prompt
-- `POST /prompts` - Crear prompt (preparado)
-- `PUT /prompts/{id}` - Actualizar prompt (preparado)
-- `DELETE /prompts/{id}` - Eliminar prompt (preparado)
+- `GET /prompts` - List prompts (paginated)
+- `GET /prompts/{id}` - Get single prompt
+- `POST /prompts` - Create new prompt
+- `PUT /prompts/{id}` - Update prompt
+- `DELETE /prompts/{id}` - Delete prompt
 
-**Estadísticas:**
-- `GET /admin/stats` - Estadísticas generales (público)
-- `GET /admin/health` - Health check (público)
+**Search:**
+- `GET /search/complex` - Advanced multi-filter search
+- `GET /search/tag/{tag}` - Search by specific tag
+- `GET /search/text` - Full-text search
 
-### Configuración de Headers
+**Statistics:**
+- `GET /admin/stats` - Dashboard statistics
+- `GET /admin/filters` - Available filter options
 
-La API automáticamente envía:
-- `Authorization: Bearer <token>` - Si hay token JWT
-- `X-API-Key: <key>` - Si no hay token (para lectura pública)
+**Preferences:**
+- `GET /preferences` - Get user preferences
+- `PUT /preferences` - Update preferences
 
-## 🎨 Diseño y Estilos
+## 🎨 UI/UX Features
 
+### Design System
 - **Framework**: Tailwind CSS
-- **Tema**: Dark mode (slate-900)
-- **Colores principales**:
-  - Violet-600: Botones primarios
-  - Blue-600: Información
-  - Green-600: Éxito
-  - Red-500: Errores
-- **Responsive**: Diseño adaptable a móviles y tablets
+- **Theme**: Dark mode with slate-900 base
+- **Color Palette**:
+  - Primary: Violet-600
+  - Info: Blue-600
+  - Success: Green-600
+  - Warning: Orange-600
+  - Error: Red-500
+- **Responsive**: Mobile-first design
+- **Animations**: Smooth transitions
 
-## 📦 Dependencias Principales
+### Components
+- **Modals**: Reusable modal system
+- **Toasts**: Non-intrusive notifications
+- **Charts**: Interactive Recharts visualizations
+- **Forms**: React Hook Form validation
+- **Tables**: Responsive data tables
+- **Loading States**: Skeleton loaders
 
+## 📊 Dashboard Features
+
+### Statistics Display
+- Total prompts count
+- Art styles distribution
+- Tags frequency analysis
+- NSFW content breakdown
+- Interactive charts and graphs
+
+### Quick Actions
+- View all prompts
+- Create new prompt
+- Export data
+- Access settings
+
+### Customizable Views
+- Toggle "unspecified" styles
+- Exclude blacklisted tags
+- Filter preferences
+- Chart type selection
+
+## 🔍 Search Capabilities
+
+### Search Filters
+- **Text Search**: Full-text prompt search
+- **Tag Search**: Search by specific tags
+- **NSFW Level**: Filter by content rating
+- **Art Style**: Filter by artistic style
+- **Number of People**: Filter by character count
+- **Complex Queries**: Combine multiple filters
+
+### Search Features
+- Real-time results
+- Pagination support
+- Result highlighting
+- Search history
+- Filter chips display
+
+## ⚙️ Settings & Preferences
+
+### User Preferences
+- Language selection
+- Display preferences
+- Tag blacklisting
+- Dashboard customization
+- Export settings
+
+### System Settings
+- API configuration
+- Cache management
+- Performance tuning
+- Debug options
+
+## 📦 Dependencies
+
+### Core
 ```json
 {
-  "react": "^18.2.0",
-  "react-router-dom": "^6.20.1",
-  "axios": "^1.6.2",
-  "zustand": "^4.4.7",
-  "tailwindcss": "^3.3.6"
+  "react": "^18.3.1",
+  "react-dom": "^18.3.1",
+  "react-router-dom": "^6.28.0",
+  "typescript": "~5.6.2"
 }
 ```
 
-## 🚧 Funcionalidades Pendientes
+### State Management
+```json
+{
+  "@tanstack/react-query": "^5.59.20",
+  "zustand": "^5.0.1"
+}
+```
 
-### Fase 3 - CRUD Completo
-- [ ] Modal/página para crear nuevo prompt
-- [ ] Modal/página para editar prompt
-- [ ] Confirmación para eliminar prompt
-- [ ] Validación de formularios con react-hook-form
-- [ ] Toasts/notificaciones de éxito/error
+### UI/UX
+```json
+{
+  "react-i18next": "^15.1.1",
+  "i18next": "^24.0.0",
+  "recharts": "^2.13.3",
+  "react-hook-form": "^7.54.0",
+  "tailwindcss": "^3.4.15"
+}
+```
 
-### Fase 4 - Búsqueda Avanzada
-- [ ] Barra de búsqueda global
-- [ ] Página de búsqueda avanzada
-- [ ] Filtros multi-categoría:
-  - NSFW level
-  - Art style
-  - Number of people
-  - Tags
-  - Rating
-- [ ] Integración con `/search/complex`
-
-### Fase 5 - Mejoras UX
-- [ ] Animaciones con Framer Motion
-- [ ] Estados de error mejorados
-- [ ] Loading states en todas las acciones
-- [ ] Breadcrumbs de navegación
-- [ ] Paginación mejorada
-- [ ] Vista de detalle de prompt
-- [ ] Caché con TanStack Query
-- [ ] Internacionalización (ES/EN)
-
-### Fase 6 - Features Avanzadas
-- [ ] Gráficos con Recharts
-- [ ] Exportar prompts (CSV/JSON)
-- [ ] Sistema de favoritos
-- [ ] Historial de búsquedas
-- [ ] Modo claro/oscuro toggle
-- [ ] Panel de administración
-- [ ] Gestión de usuarios
+### Utilities
+```json
+{
+  "axios": "^1.7.8",
+  "react-icons": "^5.3.0",
+  "date-fns": "^4.1.0",
+  "clsx": "^2.1.1"
+}
+```
 
 ## 🧪 Testing
 
 ```bash
-# Ejecutar tests (cuando estén implementados)
+# Run tests
 npm run test
 
-# Coverage
+# Run tests with coverage
 npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
 ```
 
-## 🏗️ Build para Producción
+## 🏗️ Build for Production
 
 ```bash
-# Compilar
+# Build application
 npm run build
 
-# Preview del build
+# Preview production build
 npm run preview
+
+# Analyze bundle size
+npm run build --analyze
 ```
 
-Los archivos compilados estarán en `dist/`
+Output will be in `dist/` directory.
 
-## 🐛 Debugging
+## 🚀 Deployment
 
-### Problemas Comunes
+### Docker
+```bash
+# Build Docker image
+docker build -t diffusion-prompt-frontend .
 
-**1. Error de CORS**
-- Asegúrate de que la API backend tenga CORS habilitado
-- Verifica que `VITE_API_URL` apunte al backend correcto
+# Run container
+docker run -p 3000:80 diffusion-prompt-frontend
+```
 
-**2. 401 Unauthorized**
-- Verifica que el token JWT no haya expirado
-- Comprueba que la API Key sea correcta en `.env`
+### Static Hosting
+The build output can be deployed to any static hosting service:
+- Vercel
+- Netlify
+- GitHub Pages
+- AWS S3 + CloudFront
 
-**3. No se cargan los prompts**
-- Verifica que la API esté ejecutándose en http://localhost:8000
-- Revisa la consola del navegador para errores
+## 🐛 Troubleshooting
 
-**4. TypeScript errors**
-- Ejecuta `npm run build` para ver todos los errores de TS
-- Asegúrate de que todas las dependencias estén instaladas
+### Common Issues
 
-## 📝 Notas de Desarrollo
+**CORS Errors**
+- Ensure backend CORS is configured
+- Check `VITE_API_URL` in `.env`
 
-### Estado Actual
-- ✅ Autenticación funcionando con mock
-- ✅ Dashboard mostrando estadísticas reales de la API
-- ✅ Listado de prompts con paginación funcional
-- ✅ Rutas protegidas implementadas
-- ✅ Diseño responsive y moderno
+**Authentication Issues**
+- Verify JWT token is valid
+- Check API key configuration
+- Clear localStorage and retry
 
-### Próximos Pasos Recomendados
+**Missing Translations**
+- Check language files in `src/i18n/locales/`
+- Ensure all keys are present in all languages
+- Clear cache and reload
 
-1. **Implementar endpoints reales de auth** en el backend
-2. **Crear modales de CRUD** para prompts
-3. **Agregar búsqueda avanzada** con filtros
-4. **Implementar TanStack Query** para caché inteligente
-5. **Agregar animaciones** con Framer Motion
+**Build Errors**
+- Run `npm run build` to see TypeScript errors
+- Check for missing dependencies
+- Verify environment variables
 
-## 🤝 Contribuir
+## 📈 Performance Optimization
 
-Para agregar nuevas features:
+### Implemented
+- ✅ Code splitting with React.lazy
+- ✅ TanStack Query caching
+- ✅ Image lazy loading
+- ✅ Memoized components
+- ✅ Virtual scrolling for large lists
+- ✅ Debounced search inputs
 
-1. Crea los tipos en `types/api.types.ts`
-2. Agrega el servicio en `services/`
-3. Crea los componentes necesarios
-4. Actualiza el router si es necesario
-5. Prueba la integración con la API
+### Best Practices
+- Use production builds for deployment
+- Enable gzip compression
+- Implement CDN for static assets
+- Monitor bundle size
+- Use performance profiler
 
-## 📞 Soporte
+## 🔄 Version History
 
-Si encuentras problemas:
-1. Revisa la consola del navegador
-2. Verifica que la API backend esté corriendo
-3. Comprueba los logs del servidor de desarrollo
-4. Revisa este README para configuración correcta
+### v2.0.0 (Current)
+- Full internationalization (4 languages)
+- Advanced search implementation
+- User preferences system
+- Export functionality
+- Chart visualizations
+- Complete CRUD operations
 
-## 🎯 Objetivos Cumplidos
+### v1.0.0
+- Initial release
+- Basic authentication
+- Dashboard with stats
+- Prompts listing
+- Pagination
 
-- [x] Sistema de autenticación completo
-- [x] Dashboard funcional con stats reales
-- [x] Listado de prompts con paginación
-- [x] Navegación fluida entre páginas
-- [x] Diseño profesional y responsive
-- [x] Arquitectura escalable y mantenible
-- [x] TypeScript en todo el proyecto
-- [x] Integración completa con la API backend
+## 🤝 Contributing
+
+### Development Workflow
+1. Create feature branch
+2. Add translations for new UI text
+3. Update TypeScript types
+4. Write tests for new features
+5. Update documentation
+6. Submit pull request
+
+### Code Style
+- ESLint configuration
+- Prettier formatting
+- TypeScript strict mode
+- Component naming conventions
+- File organization standards
+
+## 📞 Support
+
+For issues or questions:
+1. Check browser console for errors
+2. Verify API backend is running
+3. Review this documentation
+4. Check GitHub issues
+5. Contact development team
+
+## 🎯 Roadmap
+
+### Next Features
+- [ ] Batch operations
+- [ ] Advanced analytics
+- [ ] AI-powered suggestions
+- [ ] Collaborative features
+- [ ] Mobile app version
+- [ ] Offline support
+- [ ] WebSocket real-time updates
 
 ---
 
-**Versión:** 1.0.0  
-**Última actualización:** 12 de Noviembre, 2025
+**Version:** 2.0.0  
+**Last Updated:** November 14, 2025  
+**License:** Apache 2.0

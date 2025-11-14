@@ -140,16 +140,17 @@ See [API README](src/api/README.md) and [Authentication Setup](AUTHENTICATION_SE
 
 ### 4️⃣ Frontend Web Application 🌐
 
-**Modern React application for managing prompts.**
+**Modern React application for managing prompts with full internationalization.**
 
 - **React 18 + TypeScript**: Modern frontend with full type safety
-- **Authentication**: JWT-based login system
-- **CRUD Interface**: Create, read, update, delete prompts
-- **Advanced Search**: Multi-filter search with NSFW, style, characters
-- **Data Export**: Export to JSON/CSV
-- **Visualizations**: Charts with Recharts (NSFW distribution, top tags, art styles)
-- **Internationalization**: Spanish and English (160+ strings)
-- **Responsive Design**: Works on desktop and mobile
+- **Multi-language Support**: Full i18n in 4 languages (ES, EN, FR, DE)
+- **Authentication**: JWT-based login system with protected routes
+- **CRUD Interface**: Complete prompt management with modals
+- **Advanced Search**: Multi-filter search with complex queries
+- **User Preferences**: Customizable settings with tag blacklisting
+- **Data Export**: Export prompts to JSON/CSV formats
+- **Interactive Charts**: Recharts visualizations for stats
+- **Responsive Design**: Mobile-first, works on all devices
 - **Performance**: TanStack Query for intelligent caching
 
 ```bash
@@ -168,7 +169,15 @@ npm run dev
 # Login: test/test, admin/admin, or user/user
 ```
 
-See [Frontend README](frontend/FRONTEND_README.md) for complete guide.
+**Features:**
+- 🌍 **4 Languages**: Spanish, English, French, German
+- 📊 **Dashboard**: Real-time statistics with interactive charts
+- 🔍 **Advanced Search**: Text, tags, NSFW level, art style filters
+- ⚙️ **Settings**: User preferences and display customization
+- 📱 **Responsive**: Works on desktop, tablet, and mobile
+- 🎨 **Dark Theme**: Modern dark mode interface
+
+See [Frontend README](frontend/FRONTEND_README.md) and [I18N Guide](frontend/I18N_GUIDE.md) for complete documentation.
 
 ## Project Structure
 
@@ -405,6 +414,23 @@ Contributions are welcome! Please ensure:
 - Documentation is updated
 
 ## Version History
+
+- **2.0.0** (Current - November 2024)
+  - Full internationalization support (4 languages)
+  - Complete frontend application with React 18
+  - Advanced search and filtering capabilities
+  - User preferences and settings system
+  - Interactive data visualizations
+  - Export functionality (JSON/CSV)
+  - JWT authentication system
+  - Comprehensive documentation updates
+
+- **1.5.0** (October 2024)
+  - Batch Analyzer with AWS Bedrock integration
+  - SQLite Catalog Database with 10,388 prompts
+  - REST API with FastAPI
+  - Authentication system
+  - Rate limiting
 
 - **0.1.0** (Initial Release)
   - SQLite database with prompts table

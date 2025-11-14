@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "DiffusionPrompt",
-    "subtitle": "Sistema de Catalogación de Prompts"
+    "subtitle": "Sistema de Catalogación de Prompts (Stable Diffusion)"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -14,7 +14,7 @@
     "title": "Iniciar Sesión",
     "username": "Usuario",
     "password": "Contraseña",
-    "usernamePlace": "Ingresa tu usuario",
+    "usernamePlaceholder": "Ingresa tu usuario",
     "passwordPlaceholder": "Ingresa tu contraseña",
     "submit": "Iniciar Sesión",
     "loggingIn": "Iniciando sesión...",
@@ -86,6 +86,8 @@
       "modelPlaceholder": "stable-diffusion-v1.5",
       "category": "Category",
       "categoryPlaceholder": "landscape, portrait, etc.",
+      "artStyle": "Estilo de Arte",
+      "artStylePlaceholder": "anime, realistic, cartoon, digital art, etc.",
       "tags": "Tags",
       "tagsPlaceholder": "tag1, tag2, tag3",
       "tagsHelp": "Separar tags con comas",
@@ -139,6 +141,7 @@
     "title": "Búsqueda Avanzada",
     "subtitle": "Filtra prompts por múltiples criterios",
     "placeholder": "Buscar prompts...",
+    "searchBarPlaceholder": "Buscar prompts...",
     "filters": {
       "nsfwLevel": "Nivel NSFW",
       "artStyle": "Estilo de Arte",
@@ -228,6 +231,13 @@
     "search": "Buscar",
     "export": "Exportar",
     "import": "Importar",
-    "more": "más"
+    "more": "más",
+    "errors": {
+      "loadingPreferences": "Error al cargar preferencias",
+      "loadingArtStyles": "Error al cargar estilos de arte",
+      "loadingTags": "Error al cargar tags",
+      "loadingFilters": "Error al cargar los filtros",
+      "savingPreferences": "Error al guardar preferencias"
+    }
   }
 }

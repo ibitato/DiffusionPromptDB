@@ -23,10 +23,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: false,  // Changed from true to false to prevent initial loading
 
   // Initialize auth from localStorage
   initAuth: () => {
+    set({ isLoading: true });  // Set loading here when actually checking
     const token = localStorage.getItem('auth_token');
     const userStr = localStorage.getItem('user');
 
