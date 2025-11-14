@@ -5,8 +5,12 @@
 
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-// API Base URL - can be overridden by environment variable
-const API_BASE_URL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}/api/v1`;
+// API Base URL - defaults to same protocol/hostname as the frontend
+// Only override with VITE_API_URL in development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.MODE === 'production' 
+    ? `${window.location.protocol}//${window.location.hostname}/api/v1`
+    : 'http://localhost:8000/api/v1');
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
