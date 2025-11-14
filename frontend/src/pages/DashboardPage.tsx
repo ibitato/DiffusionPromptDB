@@ -294,11 +294,11 @@ export const DashboardPage = () => {
                     onChange={(e) => setShowUnspecified(e.target.checked)}
                     className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
                   />
-                  <span className="text-xs text-gray-400">Mostrar "unspecified"</span>
+                  <span className="text-xs text-gray-400">{t('dashboard.display.showUnspecified')}</span>
                 </label>
               </div>
               <span className="text-xs text-gray-500 bg-slate-700 px-2 py-1 rounded">
-                Mostrando 5 de {filterUnspecified(stats?.top_art_styles || []).length}
+                {t('dashboard.modals.showing')} 5 {t('dashboard.modals.of')} {filterUnspecified(stats?.top_art_styles || []).length}
               </span>
             </div>
             <div className="space-y-3">
@@ -395,7 +395,7 @@ export const DashboardPage = () => {
               onChange={(e) => setShowUnspecified(e.target.checked)}
               className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-300">Mostrar "unspecified"</span>
+            <span className="text-sm text-gray-300">{t('dashboard.display.showUnspecified')}</span>
           </label>
         </div>
         <div className="max-h-96 overflow-y-auto">
@@ -439,7 +439,7 @@ export const DashboardPage = () => {
       <Modal
         isOpen={showTagsModal}
         onClose={() => setShowTagsModal(false)}
-        title={`${t('dashboard.modals.allTags')} (Mostrando Top 200 de ${stats?.total_tags || 0})`}
+        title={`${t('dashboard.modals.allTags')} (${t('dashboard.modals.showingTop', { count: 200 })} ${stats?.total_tags || 0})`}
         size="lg"
       >
         <div className="max-h-96 overflow-y-auto">

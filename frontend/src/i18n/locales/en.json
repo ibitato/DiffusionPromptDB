@@ -43,7 +43,14 @@
       "count": "Count",
       "style": "Style",
       "tag": "Tag",
-      "category": "Category"
+      "category": "Category",
+      "showing": "Showing",
+      "of": "of",
+      "showingTop": "Showing Top {{count}} of",
+      "topOf": "Top {{count}} of"
+    },
+    "display": {
+      "showUnspecified": "Show \"unspecified\""
     },
     "charts": {
       "nsfwTitle": "NSFW Distribution",
@@ -198,7 +205,9 @@
     "display": {
       "title": "Display Preferences",
       "showUnspecified": "Show \"unspecified\" by default",
-      "showUnspecifiedDesc": "Display art styles marked as \"unspecified\" in dashboard and charts"
+      "showUnspecifiedDesc": "Display art styles marked as \"unspecified\" in dashboard and charts",
+      "myPromptsOnly": "Show only my prompts by default",
+      "myPromptsOnlyDesc": "Show only my prompts when loading Prompts and Search pages"
     },
     "blacklist": {
       "title": "Tag Blacklist",

@@ -126,9 +126,9 @@ export const SettingsPage = () => {
               {/* My Prompts Only Toggle */}
               <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg">
                 <div>
-                  <h4 className="text-white font-medium">Solo mis prompts por defecto</h4>
+                  <h4 className="text-white font-medium">{t('settings.display.myPromptsOnly')}</h4>
                   <p className="text-sm text-gray-400 mt-1">
-                    Mostrar solo mis prompts al cargar las páginas de Prompts y Búsqueda
+                    {t('settings.display.myPromptsOnlyDesc')}
                   </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
