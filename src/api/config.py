@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # Server
     host: str = "0.0.0.0"
     port: int = 8000
-    reload: bool = False
+    reload: bool = False  # Set to True for development, False for production
 
     # Database (unified - catalog DB with 10,386 prompts, located in api/database/)
     prompts_db_path: str = "database/prompts_catalog.db"
@@ -63,6 +63,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"  # Ignore extra environment variables
 
 
 # Global settings instance

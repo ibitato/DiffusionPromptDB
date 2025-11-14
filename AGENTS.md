@@ -378,13 +378,44 @@ The API is built with FastAPI and includes:
 ### Running the API
 
 ```bash
-# Development server
+# Development server with hot-reloading (RECOMMENDED FOR DEVELOPMENT)
 cd src/api
-python main.py
+python start_server.py
+# This will automatically enable hot-reloading when reload=True in config.py
 
-# Or using uvicorn directly
+# Or using uvicorn directly with hot-reloading
 uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Production server (without hot-reloading)
+uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 ```
+
+#### Hot-Reloading Configuration
+
+The backend supports automatic hot-reloading for development, similar to the frontend:
+
+1. **Automatic Reload**: When `reload=True` in `src/api/config.py`, the server will automatically restart when you modify any Python file.
+
+2. **Configuration**: Edit `src/api/config.py`:
+   ```python
+   # For development (hot-reloading enabled)
+   reload: bool = True
+   
+   # For production (hot-reloading disabled)
+   reload: bool = False
+   ```
+
+3. **Benefits**:
+   - No need to manually restart the server after code changes
+   - Faster development cycle
+   - Immediate feedback on changes
+   - Automatic error recovery
+
+4. **Important Notes**:
+   - Hot-reloading should ONLY be used in development
+   - For production, set `reload=False` in config.py
+   - Hot-reloading may slightly increase memory usage
+   - File saves trigger automatic restarts
 
 ### API Endpoints
 
@@ -500,11 +531,11 @@ cd frontend && npm install  # Frontend dependencies
 make check              # Backend formatting and linting
 make check-frontend     # Frontend formatting and linting
 
-# 3. Run both servers for development
-# Terminal 1: Backend
-cd src/api && python main.py
+# 3. Run both servers for development (both with hot-reloading)
+# Terminal 1: Backend with hot-reloading
+cd src/api && python start_server.py
 
-# Terminal 2: Frontend
+# Terminal 2: Frontend with hot-reloading
 cd frontend && npm run dev
 
 # 4. Test full stack
@@ -649,5 +680,10 @@ For questions about this project, contact: ibitato@gmail.com
 
 ---
 
-**Last Updated**: November 13, 2025  
-**Version**: 1.1
+**Last Updated**: November 14, 2025  
+**Version**: 1.2
+
+### Changelog
+
+- v1.2 (2025-11-14): Added hot-reloading documentation for backend development
+- v1.1 (2025-11-13): Initial comprehensive documentation

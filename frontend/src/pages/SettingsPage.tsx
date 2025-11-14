@@ -31,8 +31,8 @@ export const SettingsPage = () => {
       setShowUnspecified(prefs.show_unspecified);
       setExcludedTags(prefs.excluded_tags);
     } catch (err) {
-      console.error('Error loading preferences:', err);
-      toast.error('Error al cargar preferencias');
+      console.error(t('common.errors.loadingPreferences'), err);
+      toast.error(t('common.errors.loadingPreferences'));
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +48,7 @@ export const SettingsPage = () => {
       setPreferences(updated);
       toast.success(t('settings.messages.saved'));
     } catch (err) {
-      console.error('Error saving preferences:', err);
+      console.error(t('common.errors.savingPreferences'), err);
       toast.error(t('settings.messages.saveError'));
     } finally {
       setIsSaving(false);

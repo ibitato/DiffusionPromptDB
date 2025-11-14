@@ -23,7 +23,7 @@ export const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError(''); // Clear any previous errors
     setIsLoading(true);
 
     try {
@@ -33,8 +33,17 @@ export const LoginPage = () => {
       setAuth(response.user, response.access_token);
       navigate('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      // Show error directly on the page
+      console.error('Login error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      
+      // Set error to display on page
+      setError(errorMessage);
+      
+      // Clear password for security but keep username
+      setPassword('');
     } finally {
+      // Always stop loading indicator
       setIsLoading(false);
     }
   };
@@ -42,8 +51,8 @@ export const LoginPage = () => {
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8">
-        {/* Language Toggle - Top Right */}
-        <div className="flex justify-end">
+        {/* Language Toggle - Centered */}
+        <div className="flex justify-center mb-4">
           <LanguageToggle />
         </div>
 
@@ -95,7 +104,7 @@ export const LoginPage = () => {
             {/* Error Message */}
             {error && (
               <div className="bg-red-500/10 border border-red-500 rounded-lg p-3">
-                <p className="text-red-400 text-sm">{error}</p>
+                <p className="text-red-400 text-sm font-medium">{error}</p>
               </div>
             )}
 
@@ -115,20 +124,6 @@ export const LoginPage = () => {
               )}
             </button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500 rounded-lg">
-            <p className="text-blue-400 text-sm font-medium mb-1">{t('login.demoCredentials')}</p>
-            <p className="text-blue-300 text-sm">
-              {t('login.username')}: <strong>test</strong> / {t('login.password')}:{' '}
-              <strong>test</strong>
-            </p>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-gray-500 text-sm">
-          <p>{t('login.backendApi')}</p>
         </div>
       </div>
     </div>

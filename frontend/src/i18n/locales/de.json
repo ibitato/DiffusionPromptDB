@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "DiffusionPrompt",
-    "subtitle": "Prompt-Katalogisierungssystem"
+    "subtitle": "Prompt-Katalogisierungssystem (Stable Diffusion)"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -86,6 +86,8 @@
       "modelPlaceholder": "stable-diffusion-v1.5",
       "category": "Kategorie",
       "categoryPlaceholder": "Landschaft, Porträt, usw.",
+      "artStyle": "Kunststil",
+      "artStylePlaceholder": "Anime, realistisch, Cartoon, digitale Kunst, usw.",
       "tags": "Tags",
       "tagsPlaceholder": "Tag1, Tag2, Tag3",
       "tagsHelp": "Tags mit Kommas trennen",
@@ -139,6 +141,7 @@
     "title": "Erweiterte Suche",
     "subtitle": "Prompts nach mehreren Kriterien filtern",
     "placeholder": "Prompts suchen...",
+    "searchBarPlaceholder": "Prompts suchen...",
     "filters": {
       "nsfwLevel": "NSFW-Level",
       "artStyle": "Kunststil",
@@ -228,6 +231,13 @@
     "search": "Suchen",
     "export": "Exportieren",
     "import": "Importieren",
-    "more": "mehr"
+    "more": "mehr",
+    "errors": {
+      "loadingPreferences": "Fehler beim Laden der Einstellungen",
+      "loadingArtStyles": "Fehler beim Laden der Kunststile",
+      "loadingTags": "Fehler beim Laden der Tags",
+      "loadingFilters": "Fehler beim Laden der Filter",
+      "savingPreferences": "Fehler beim Speichern der Einstellungen"
+    }
   }
 }

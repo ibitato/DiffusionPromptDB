@@ -40,7 +40,7 @@ export const DashboardPage = () => {
       setShowUnspecified(prefs.show_unspecified);
       setExcludedTags(prefs.excluded_tags);
     } catch (err) {
-      console.error('Error loading preferences:', err);
+      console.error(t('common.errors.loadingPreferences'), err);
       // Use defaults if preferences not available
       setShowUnspecified(true);
       setExcludedTags(['high quality', 'masterpiece', 'best quality']);
@@ -74,7 +74,7 @@ export const DashboardPage = () => {
       const filters = await statsService.getFilters();
       setAllArtStyles(filters.art_styles);
     } catch (err) {
-      console.error('Error loading all art styles:', err);
+      console.error(t('common.errors.loadingArtStyles'), err);
     }
   };
 
@@ -96,7 +96,7 @@ export const DashboardPage = () => {
         .sort((a, b) => b.count - a.count);
       setAllTags(sortedTags);
     } catch (err) {
-      console.error('Error loading all tags:', err);
+      console.error(t('common.errors.loadingTags'), err);
     }
   };
 

@@ -37,7 +37,22 @@ async def complex_search(
 
     Requires: API Key
     """
-    query = "SELECT DISTINCT p.id, p.original_prompt FROM prompts p"
+    # Modified to return full data including tags, nsfw_level, art_style
+    # Using the actual database structure
+    query = """
+        SELECT DISTINCT 
+            p.id, 
+            p.original_prompt,
+            nc.level as nsfw_level,
+            ast.primary_style as art_style,
+            ch.number_of_people,
+            GROUP_CONCAT(DISTINCT mt.tag) as tags
+        FROM prompts p
+        LEFT JOIN nsfw_content nc ON p.id = nc.prompt_id
+        LEFT JOIN art_styles ast ON p.id = ast.prompt_id
+        LEFT JOIN characters ch ON p.id = ch.prompt_id
+        LEFT JOIN main_tags mt ON p.id = mt.prompt_id
+    """
     joins = []
     conditions = []
     params = []
@@ -51,28 +66,25 @@ async def complex_search(
     if tags:
         tag_list = [t.strip() for t in tags.split(',') if t.strip()]
         for i, tag in enumerate(tag_list):
-            alias = f"t{i}"
-            joins.append(f"JOIN main_tags {alias} ON p.id = {alias}.prompt_id")
+            alias = f"tf{i}"  # Changed alias to avoid conflict with left join
+            joins.append(f"INNER JOIN main_tags {alias} ON p.id = {alias}.prompt_id")
             conditions.append(f"{alias}.tag LIKE ?")
             params.append(f"%{tag}%")
 
     if nsfw_level:
-        joins.append("JOIN nsfw_content n ON p.id = n.prompt_id")
-        conditions.append("n.level = ?")
+        conditions.append("nc.level = ?")
         params.append(nsfw_level)
 
     if number_of_people is not None:
-        joins.append("JOIN characters c ON p.id = c.prompt_id")
-        conditions.append("c.number_of_people = ?")
+        conditions.append("ch.number_of_people = ?")
         params.append(number_of_people)
 
     if art_style:
-        joins.append("JOIN art_styles a ON p.id = a.prompt_id")
-        conditions.append("a.primary_style LIKE ?")
+        conditions.append("ast.primary_style LIKE ?")
         params.append(f"%{art_style}%")
 
     if indoor_outdoor:
-        joins.append("JOIN settings s ON p.id = s.prompt_id")
+        joins.append("INNER JOIN settings s ON p.id = s.prompt_id")
         conditions.append("s.indoor_outdoor = ?")
         params.append(indoor_outdoor)
 
@@ -80,9 +92,23 @@ async def complex_search(
         query += " " + " ".join(joins)
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
+    
+    # Add GROUP BY for aggregation
+    query += " GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people"
 
-    # Get total count first (without LIMIT/OFFSET)
-    count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")
+    # Get total count first - need to include necessary LEFT JOINs
+    count_query = f"""
+        SELECT COUNT(DISTINCT p.id) 
+        FROM prompts p
+        LEFT JOIN nsfw_content nc ON p.id = nc.prompt_id
+        LEFT JOIN art_styles ast ON p.id = ast.prompt_id
+        LEFT JOIN characters ch ON p.id = ch.prompt_id
+        LEFT JOIN main_tags mt ON p.id = mt.prompt_id
+    """
+    if joins:
+        count_query += " " + " ".join(joins)
+    if conditions:
+        count_query += " WHERE " + " AND ".join(conditions)
     total_count = db.execute(count_query, params).fetchone()[0]
     
     # Add pagination to main query
@@ -91,8 +117,19 @@ async def complex_search(
     
     # Get paginated results
     results = db.execute(query, params).fetchall()
+    
+    # Process results to format tags properly
+    formatted_results = []
+    for row in results:
+        result = dict(row)
+        # Convert comma-separated tags string to array
+        if result.get('tags'):
+            result['tags'] = result['tags'].split(',')
+        else:
+            result['tags'] = []
+        formatted_results.append(result)
 
-    return {"total": total_count, "results": [dict(row) for row in results]}
+    return {"total": total_count, "results": formatted_results}
 
 
 @router.get("/tags/{tag}")
@@ -111,12 +148,23 @@ async def search_by_tag(
     tags = [t.strip() for t in tag.split(',') if t.strip()]
     
     if len(tags) == 1:
-        # Single tag search
+        # Single tag search - with full data
         query = """
-            SELECT DISTINCT p.id, p.original_prompt
+            SELECT DISTINCT 
+                p.id, 
+                p.original_prompt,
+                nc.level as nsfw_level,
+                ast.primary_style as art_style,
+                ch.number_of_people,
+                GROUP_CONCAT(DISTINCT mt.tag) as tags
             FROM prompts p
             JOIN main_tags t ON p.id = t.prompt_id
+            LEFT JOIN nsfw_content nc ON p.id = nc.prompt_id
+            LEFT JOIN art_styles ast ON p.id = ast.prompt_id
+            LEFT JOIN characters ch ON p.id = ch.prompt_id
+            LEFT JOIN main_tags mt ON p.id = mt.prompt_id
             WHERE t.tag LIKE ?
+            GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people
         """
         params = [f"%{tags[0]}%"]
         
@@ -129,13 +177,30 @@ async def search_by_tag(
         params.extend([limit, offset])
         results = db.execute(query, params).fetchall()
     else:
-        # Multiple tags search - must have ALL tags (AND logic)
-        query = "SELECT DISTINCT p.id, p.original_prompt FROM prompts p"
+        # Multiple tags search - must have ALL tags (AND logic) - with full data
+        query = """
+            SELECT DISTINCT 
+                p.id, 
+                p.original_prompt,
+                nc.level as nsfw_level,
+                ast.primary_style as art_style,
+                ch.number_of_people,
+                GROUP_CONCAT(DISTINCT mt.tag) as tags
+            FROM prompts p
+        """
         for i in range(len(tags)):
             query += f" JOIN main_tags t{i} ON p.id = t{i}.prompt_id"
         
+        query += """
+            LEFT JOIN nsfw_content nc ON p.id = nc.prompt_id
+            LEFT JOIN art_styles ast ON p.id = ast.prompt_id
+            LEFT JOIN characters ch ON p.id = ch.prompt_id
+            LEFT JOIN main_tags mt ON p.id = mt.prompt_id
+        """
+        
         conditions = [f"t{i}.tag LIKE ?" for i in range(len(tags))]
         query += " WHERE " + " AND ".join(conditions)
+        query += " GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people"
         
         params = [f"%{t}%" for t in tags]
         
@@ -148,4 +213,15 @@ async def search_by_tag(
         params.extend([limit, offset])
         results = db.execute(query, params).fetchall()
 
-    return {"total": total_count, "results": [dict(row) for row in results]}
+    # Process results to format tags properly
+    formatted_results = []
+    for row in results:
+        result = dict(row)
+        # Convert comma-separated tags string to array
+        if result.get('tags'):
+            result['tags'] = result['tags'].split(',')
+        else:
+            result['tags'] = []
+        formatted_results.append(result)
+
+    return {"total": total_count, "results": formatted_results}
