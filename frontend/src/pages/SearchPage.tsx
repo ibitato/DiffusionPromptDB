@@ -15,6 +15,7 @@ import { PromptFormModal } from '../components/prompts/PromptFormModal';
 import { searchService } from '../services/search.service';
 import { statsService } from '../services/stats.service';
 import { promptsService } from '../services/prompts.service';
+import { preferencesService } from '../services/preferences.service';
 import { useAuthStore } from '../store/authStore';
 import { CatalogPrompt, Prompt, CreatePromptRequest } from '../types/api.types';
 
@@ -37,6 +38,7 @@ export const SearchPage = () => {
   const [numberOfPeople, setNumberOfPeople] = useState('');
   const [searchText, setSearchText] = useState('');
   const [searchTag, setSearchTag] = useState('');
+  const [myPromptsOnly, setMyPromptsOnly] = useState(false);
   
   // Modal states
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
@@ -54,10 +56,20 @@ export const SearchPage = () => {
   const toast = useToast();
   const isAdmin = user?.role === 'admin';
 
-  // Load available filters on mount
+  // Load user preferences and available filters on mount
   useEffect(() => {
+    loadPreferences();
     loadFilters();
   }, []);
+
+  const loadPreferences = async () => {
+    try {
+      const prefs = await preferencesService.getPreferences();
+      setMyPromptsOnly(prefs.my_prompts_only);
+    } catch (err) {
+      console.error('Error loading preferences', err);
+    }
+  };
 
   useEffect(() => {
     // Check for text search from SearchBar
@@ -122,8 +134,8 @@ export const SearchPage = () => {
     setCurrentPage(page);
 
     try {
-      // If searching by tag only, use tag search endpoint
-      if (searchTag && !searchText && !nsfwLevel && !artStyle && !numberOfPeople) {
+      // If searching by tag only AND not filtering by my_prompts, use simple tag search endpoint
+      if (searchTag && !searchText && !nsfwLevel && !artStyle && !numberOfPeople && !myPromptsOnly) {
         const response = await searchService.searchByTag(
           searchTag, 
           pageSize, 
@@ -153,6 +165,12 @@ export const SearchPage = () => {
         if (nsfwLevel) params.nsfw_level = nsfwLevel;
         if (artStyle) params.art_style = artStyle;
         if (numberOfPeople) params.number_of_people = parseInt(numberOfPeople);
+        
+        // My prompts only filter
+        if (myPromptsOnly && user) {
+          params.my_prompts = true;
+          console.log('Sending my_prompts=true filter'); // Debug log
+        }
         
         // Pagination
         params.limit = pageSize;
@@ -185,12 +203,13 @@ export const SearchPage = () => {
     setNumberOfPeople('');
     setSearchText('');
     setSearchTag('');
+    setMyPromptsOnly(false);
     setResults([]);
     setHasSearched(false);
     setCurrentPage(1);
   };
 
-  const activeFiltersCount = [nsfwLevel, artStyle, numberOfPeople, searchText, searchTag].filter(Boolean).length;
+  const activeFiltersCount = [nsfwLevel, artStyle, numberOfPeople, searchText, searchTag, myPromptsOnly].filter(Boolean).length;
 
   // Convert CatalogPrompt to full Prompt for modal with rich data
   const convertToPrompt = (catalogPrompt: CatalogPrompt): Prompt => {
@@ -441,6 +460,23 @@ export const SearchPage = () => {
             </p>
           </div>
 
+          {/* My Prompts Only Checkbox */}
+          {user && (
+            <div className="mb-6">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={myPromptsOnly}
+                  onChange={(e) => setMyPromptsOnly(e.target.checked)}
+                  className="w-5 h-5 bg-slate-700 border border-slate-600 rounded text-violet-600 focus:ring-2 focus:ring-violet-600"
+                />
+                <span className="text-sm font-medium text-gray-300">
+                  📝 Solo mis prompts
+                </span>
+              </label>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -517,6 +553,14 @@ export const SearchPage = () => {
                 <span className="px-3 py-1 bg-indigo-600/20 text-indigo-400 rounded-full text-sm flex items-center gap-2">
                   {t('search.chips.tag')}: "{searchTag}"
                   <button onClick={() => setSearchTag('')} className="hover:text-indigo-300">
+                    ×
+                  </button>
+                </span>
+              )}
+              {myPromptsOnly && (
+                <span className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm flex items-center gap-2">
+                  📝 Solo mis prompts
+                  <button onClick={() => setMyPromptsOnly(false)} className="hover:text-purple-300">
                     ×
                   </button>
                 </span>
