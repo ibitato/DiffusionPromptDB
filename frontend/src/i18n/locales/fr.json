@@ -19,7 +19,7 @@
     "submit": "Se connecter",
     "loggingIn": "Connexion en cours...",
     "demoCredentials": "Identifiants de démonstration:",
-    "backendApi": "API Backend: http://localhost:8000"
+    "backendApi": "API Backend: https://www.diffusionprompt.net/api/v1"
   },
   "dashboard": {
     "title": "Tableau de Bord",

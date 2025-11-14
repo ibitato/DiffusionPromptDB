@@ -19,7 +19,7 @@
     "submit": "Login",
     "loggingIn": "Logging in...",
     "demoCredentials": "Demo credentials:",
-    "backendApi": "Backend API: http://localhost:8000"
+    "backendApi": "Backend API: https://www.diffusionprompt.net/api/v1"
   },
   "dashboard": {
     "title": "Dashboard",
