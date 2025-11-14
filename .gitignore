@@ -80,3 +80,9 @@ json_data/*.jsonl
 
 # Batch Analyzer databases
 src/batch_analyzer/prompts_catalog.db
+
+# Deployment - Sensitive info
+deploy/README.md
+deploy/server_setup.sh
+deploy/.env
+deploy/secrets.txt
