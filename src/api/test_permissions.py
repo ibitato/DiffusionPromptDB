@@ -1,4 +1,5 @@
 """Test permissions system"""
+
 import requests
 import json
 
@@ -11,8 +12,7 @@ print("=" * 70)
 # 1. Login as test user
 print("\n1. Login as test user...")
 response = requests.post(
-    f"{BASE_URL}/auth/login",
-    json={"username": "test", "password": "test"}
+    f"{BASE_URL}/auth/login", json={"username": "test", "password": "test"}
 )
 if response.status_code == 200:
     test_token = response.json()["access_token"]
@@ -25,8 +25,7 @@ else:
 # 2. Try to delete a preloaded prompt (should fail)
 print("\n2. Try to delete preloaded prompt #3 (should fail)...")
 response = requests.delete(
-    f"{BASE_URL}/prompts/3",
-    headers={"Authorization": f"Bearer {test_token}"}
+    f"{BASE_URL}/prompts/3", headers={"Authorization": f"Bearer {test_token}"}
 )
 if response.status_code == 403:
     print(f"✅ Correctly blocked: {response.json()['detail']}")
@@ -40,12 +39,12 @@ print("\n3. Try to create a prompt as regular user (should succeed)...")
 response = requests.post(
     f"{BASE_URL}/prompts/",
     headers={"Authorization": f"Bearer {test_token}"},
-    json={"text": "Test prompt by regular user"}
+    json={"text": "Test prompt by regular user"},
 )
 if response.status_code == 201:
     created_prompt = response.json()
     print(f"✅ User can create their own prompts (ID: {created_prompt['id']})")
-    user_prompt_id = created_prompt['id']
+    user_prompt_id = created_prompt["id"]
 else:
     print(f"❌ User blocked from creating: {response.status_code} - {response.text}")
     user_prompt_id = None
@@ -56,7 +55,7 @@ if user_prompt_id:
     response = requests.put(
         f"{BASE_URL}/prompts/{user_prompt_id}",
         headers={"Authorization": f"Bearer {test_token}"},
-        json={"text": "Updated by owner"}
+        json={"text": "Updated by owner"},
     )
     if response.status_code == 200:
         print("✅ User can edit their own prompts")
@@ -68,7 +67,7 @@ if user_prompt_id:
     print(f"\n3c. Try to delete own prompt #{user_prompt_id} (should succeed)...")
     response = requests.delete(
         f"{BASE_URL}/prompts/{user_prompt_id}",
-        headers={"Authorization": f"Bearer {test_token}"}
+        headers={"Authorization": f"Bearer {test_token}"},
     )
     if response.status_code == 204:
         print("✅ User can delete their own prompts")
@@ -78,8 +77,7 @@ if user_prompt_id:
 # 4. Login as admin
 print("\n4. Login as admin user...")
 response = requests.post(
-    f"{BASE_URL}/auth/login",
-    json={"username": "admin", "password": "admin"}
+    f"{BASE_URL}/auth/login", json={"username": "admin", "password": "admin"}
 )
 if response.status_code == 200:
     admin_token = response.json()["access_token"]
@@ -94,7 +92,7 @@ print("\n5. Try to update preloaded prompt #2 as admin (should succeed)...")
 response = requests.put(
     f"{BASE_URL}/prompts/2",
     headers={"Authorization": f"Bearer {admin_token}"},
-    json={"text": "Updated by admin"}
+    json={"text": "Updated by admin"},
 )
 if response.status_code == 200:
     print("✅ Admin can modify preloaded prompts")

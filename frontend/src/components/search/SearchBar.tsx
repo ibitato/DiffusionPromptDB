@@ -1,16 +1,16 @@
 /**
  * SearchBar Component
- * 
+ *
  * @description Quick search bar component for the header navigation.
  * Provides instant search functionality with internationalization support.
  * Can either trigger a custom onSearch callback or navigate to the search page.
- * 
+ *
  * @component
  * @example
  * ```tsx
  * // With custom search handler
  * <SearchBar onSearch={(query) => handleSearch(query)} />
- * 
+ *
  * // Without handler (navigates to search page)
  * <SearchBar />
  * ```
@@ -44,7 +44,7 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
    * Handles form submission for search
    * @param {React.FormEvent} e - Form event
    * @returns {Promise<void>}
-   * 
+   *
    * @description
    * - Prevents default form submission
    * - Validates query is not empty

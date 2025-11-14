@@ -34,7 +34,7 @@ def escape_like_pattern(text: str) -> str:
     """
     if not text:
         return text
-    return text.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 @router.get("/complex")
@@ -45,7 +45,9 @@ async def complex_search(
     number_of_people: Optional[int] = Query(None),
     art_style: Optional[str] = Query(None),
     indoor_outdoor: Optional[str] = Query(None),
-    my_prompts: Optional[bool] = Query(None, description="Filter to only show user's own prompts"),
+    my_prompts: Optional[bool] = Query(
+        None, description="Filter to only show user's own prompts"
+    ),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: sqlite3.Connection = Depends(get_catalog_db),
@@ -53,7 +55,7 @@ async def complex_search(
 ):
     """
     Complex search with multiple filters including text and tags search.
-    
+
     Text search looks in original_prompt field.
     Tags can be comma-separated for multiple tag search.
 
@@ -85,10 +87,10 @@ async def complex_search(
         safe_text = escape_like_pattern(text)
         conditions.append("p.original_prompt LIKE ?")
         params.append(f"%{safe_text}%")
-    
+
     # Tags search - can be multiple tags separated by comma (escaped)
     if tags:
-        tag_list = [t.strip() for t in tags.split(',') if t.strip()]
+        tag_list = [t.strip() for t in tags.split(",") if t.strip()]
         for i, tag in enumerate(tag_list):
             alias = f"tf{i}"  # Changed alias to avoid conflict with left join
             safe_tag = escape_like_pattern(tag)
@@ -113,7 +115,7 @@ async def complex_search(
         joins.append("INNER JOIN settings s ON p.id = s.prompt_id")
         conditions.append("s.indoor_outdoor = ?")
         params.append(indoor_outdoor)
-    
+
     # My prompts only filter - only show user's own prompts
     print(f"DEBUG: my_prompts={my_prompts}, auth_info={auth_info}")  # Debug
     if my_prompts:
@@ -132,7 +134,7 @@ async def complex_search(
         query += " " + " ".join(joins)
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
-    
+
     # Add GROUP BY for aggregation - include created_by
     query += " GROUP BY p.id, p.original_prompt, p.created_by, nc.level, ast.primary_style, ch.number_of_people"
 
@@ -150,23 +152,23 @@ async def complex_search(
     if conditions:
         count_query += " WHERE " + " AND ".join(conditions)
     total_count = db.execute(count_query, params).fetchone()[0]
-    
+
     # Add pagination to main query
     query += f" LIMIT ? OFFSET ?"
     params.extend([limit, offset])
-    
+
     # Get paginated results
     results = db.execute(query, params).fetchall()
-    
+
     # Process results to format tags properly
     formatted_results = []
     for row in results:
         result = dict(row)
         # Convert comma-separated tags string to array
-        if result.get('tags'):
-            result['tags'] = result['tags'].split(',')
+        if result.get("tags"):
+            result["tags"] = result["tags"].split(",")
         else:
-            result['tags'] = []
+            result["tags"] = []
         formatted_results.append(result)
 
     return {"total": total_count, "results": formatted_results}
@@ -185,8 +187,8 @@ async def search_by_tag(
     Multiple tags can be separated by comma (e.g. "nude,solo")
     """
     # Split tags by comma and clean whitespace
-    tags = [t.strip() for t in tag.split(',') if t.strip()]
-    
+    tags = [t.strip() for t in tag.split(",") if t.strip()]
+
     if len(tags) == 1:
         # Single tag search - with full data (escaped)
         safe_tag = escape_like_pattern(tags[0])
@@ -208,11 +210,13 @@ async def search_by_tag(
             GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people
         """
         params = [f"%{safe_tag}%"]
-        
+
         # Get total count
-        count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")
+        count_query = query.replace(
+            "SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)"
+        )
         total_count = db.execute(count_query, params).fetchone()[0]
-        
+
         # Add pagination
         query += " LIMIT ? OFFSET ?"
         params.extend([limit, offset])
@@ -231,25 +235,27 @@ async def search_by_tag(
         """
         for i in range(len(tags)):
             query += f" JOIN main_tags t{i} ON p.id = t{i}.prompt_id"
-        
+
         query += """
             LEFT JOIN nsfw_content nc ON p.id = nc.prompt_id
             LEFT JOIN art_styles ast ON p.id = ast.prompt_id
             LEFT JOIN characters ch ON p.id = ch.prompt_id
             LEFT JOIN main_tags mt ON p.id = mt.prompt_id
         """
-        
+
         conditions = [f"t{i}.tag LIKE ?" for i in range(len(tags))]
         query += " WHERE " + " AND ".join(conditions)
         query += " GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people"
-        
+
         # Escape each tag for LIKE pattern
         params = [f"%{escape_like_pattern(t)}%" for t in tags]
-        
+
         # Get total count
-        count_query = query.replace("SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)")
+        count_query = query.replace(
+            "SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)"
+        )
         total_count = db.execute(count_query, params).fetchone()[0]
-        
+
         # Add pagination
         query += " LIMIT ? OFFSET ?"
         params.extend([limit, offset])
@@ -260,10 +266,10 @@ async def search_by_tag(
     for row in results:
         result = dict(row)
         # Convert comma-separated tags string to array
-        if result.get('tags'):
-            result['tags'] = result['tags'].split(',')
+        if result.get("tags"):
+            result["tags"] = result["tags"].split(",")
         else:
-            result['tags'] = []
+            result["tags"] = []
         formatted_results.append(result)
 
     return {"total": total_count, "results": formatted_results}

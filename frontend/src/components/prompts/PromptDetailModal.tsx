@@ -233,11 +233,11 @@ export const PromptDetailModal = ({
             </div>
             {prompt.created_by !== undefined && (
               <div className="col-span-2">
-                <p className="text-xs text-gray-400 mb-1">
-                  👤 Created by
-                </p>
+                <p className="text-xs text-gray-400 mb-1">👤 Created by</p>
                 <p className="text-sm text-gray-200">
-                  {prompt.created_by === null ? 'System (Preloaded)' : `User ID: ${prompt.created_by}`}
+                  {prompt.created_by === null
+                    ? 'System (Preloaded)'
+                    : `User ID: ${prompt.created_by}`}
                 </p>
               </div>
             )}

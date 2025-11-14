@@ -1,6 +1,7 @@
 """
 Verifica el estado actual de la BBDD de producción
 """
+
 import sqlite3
 
 DB_PATH = "src/api/database/prompts_catalog.db"
@@ -17,7 +18,9 @@ cursor.execute("SELECT COUNT(*) FROM art_styles")
 total = cursor.fetchone()[0]
 
 # Unspecified
-cursor.execute("SELECT COUNT(*) FROM art_styles WHERE LOWER(primary_style) = 'unspecified'")
+cursor.execute(
+    "SELECT COUNT(*) FROM art_styles WHERE LOWER(primary_style) = 'unspecified'"
+)
 unspecified = cursor.fetchone()[0]
 
 # Catalogados

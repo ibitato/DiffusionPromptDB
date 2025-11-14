@@ -61,12 +61,12 @@ export const DashboardPage = () => {
   // Filter function to exclude unspecified
   const filterUnspecified = (styles: Array<{ style: string; count: number }>) => {
     if (showUnspecified) return styles;
-    return styles.filter(s => s.style.toLowerCase() !== 'unspecified');
+    return styles.filter((s) => s.style.toLowerCase() !== 'unspecified');
   };
 
   // Filter function to exclude blacklisted tags
   const filterBlacklistedTags = (tags: Array<{ tag: string; count: number }>) => {
-    return tags.filter(t => !excludedTags.includes(t.tag.toLowerCase()));
+    return tags.filter((t) => !excludedTags.includes(t.tag.toLowerCase()));
   };
 
   const loadAllArtStyles = async () => {
@@ -78,15 +78,15 @@ export const DashboardPage = () => {
     }
   };
 
-  const loadAllTags = async () => {
+  const _loadAllTags = async () => {
     try {
       // Get all tags by querying with empty filters
       const response = await searchService.complexSearch({ limit: 1000 });
       // Extract unique tags from results
       const tagCounts = new Map<string, number>();
-      response.results.forEach(result => {
+      response.results.forEach((result) => {
         if (result.tags) {
-          result.tags.forEach(tag => {
+          result.tags.forEach((tag) => {
             tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
           });
         }
@@ -209,7 +209,9 @@ export const DashboardPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm font-medium">{t('dashboard.tags')}</p>
-                <p className="text-3xl font-bold text-white mt-2">{stats?.total_tags || stats?.top_tags?.length || 0}</p>
+                <p className="text-3xl font-bold text-white mt-2">
+                  {stats?.total_tags || stats?.top_tags?.length || 0}
+                </p>
                 <p className="text-xs text-green-400 mt-2">{t('dashboard.clickToViewAll')}</p>
               </div>
               <div className="bg-green-600/10 p-3 rounded-lg">
@@ -262,23 +264,27 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-          {/* Top Tags Table */}
+        {/* Top Tags Table */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-white">{t('dashboard.topTags')}</h3>
-              <span className="text-xs text-gray-500 bg-slate-700 px-2 py-1 rounded">Top 5 de {stats?.total_tags || 0}</span>
+              <span className="text-xs text-gray-500 bg-slate-700 px-2 py-1 rounded">
+                Top 5 de {stats?.total_tags || 0}
+              </span>
             </div>
             <div className="space-y-3">
-              {filterBlacklistedTags(stats?.top_tags || []).slice(0, 5).map((tag, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
-                >
-                  <span className="text-gray-300">{tag.tag}</span>
-                  <span className="text-violet-400 font-semibold">{tag.count}</span>
-                </div>
-              ))}
+              {filterBlacklistedTags(stats?.top_tags || [])
+                .slice(0, 5)
+                .map((tag, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
+                  >
+                    <span className="text-gray-300">{tag.tag}</span>
+                    <span className="text-violet-400 font-semibold">{tag.count}</span>
+                  </div>
+                ))}
             </div>
           </div>
 
@@ -294,30 +300,37 @@ export const DashboardPage = () => {
                     onChange={(e) => setShowUnspecified(e.target.checked)}
                     className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
                   />
-                  <span className="text-xs text-gray-400">{t('dashboard.display.showUnspecified')}</span>
+                  <span className="text-xs text-gray-400">
+                    {t('dashboard.display.showUnspecified')}
+                  </span>
                 </label>
               </div>
               <span className="text-xs text-gray-500 bg-slate-700 px-2 py-1 rounded">
-                {t('dashboard.modals.showing')} 5 {t('dashboard.modals.of')} {filterUnspecified(stats?.top_art_styles || []).length}
+                {t('dashboard.modals.showing')} 5 {t('dashboard.modals.of')}{' '}
+                {filterUnspecified(stats?.top_art_styles || []).length}
               </span>
             </div>
             <div className="space-y-3">
-              {filterUnspecified(stats?.top_art_styles || []).slice(0, 5).map((style, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
-                >
-                  <span className="text-gray-300">{style.style}</span>
-                  <span className="text-blue-400 font-semibold">{style.count}</span>
-                </div>
-              ))}
+              {filterUnspecified(stats?.top_art_styles || [])
+                .slice(0, 5)
+                .map((style, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg"
+                  >
+                    <span className="text-gray-300">{style.style}</span>
+                    <span className="text-blue-400 font-semibold">{style.count}</span>
+                  </div>
+                ))}
             </div>
           </div>
         </div>
 
         {/* NSFW Distribution */}
         <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
-          <h3 className="text-xl font-semibold text-white mb-4">{t('dashboard.nsfwDistribution')}</h3>
+          <h3 className="text-xl font-semibold text-white mb-4">
+            {t('dashboard.nsfwDistribution')}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Object.entries(stats?.nsfw_distribution || {}).map(([level, count]) => (
               <div key={level} className="p-4 bg-slate-700/50 rounded-lg text-center">
@@ -330,12 +343,12 @@ export const DashboardPage = () => {
 
         {/* Charts Section */}
         {stats && (
-          <StatsCharts 
+          <StatsCharts
             stats={{
               ...stats,
-              top_tags: filterBlacklistedTags(stats.top_tags || [])
-            }} 
-            showUnspecified={showUnspecified} 
+              top_tags: filterBlacklistedTags(stats.top_tags || []),
+            }}
+            showUnspecified={showUnspecified}
           />
         )}
 
@@ -411,7 +424,9 @@ export const DashboardPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filterUnspecified(allArtStyles.length > 0 ? allArtStyles : stats?.top_art_styles || []).map((style, index) => (
+              {filterUnspecified(
+                allArtStyles.length > 0 ? allArtStyles : stats?.top_art_styles || []
+              ).map((style, index) => (
                 <tr
                   key={index}
                   className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
@@ -455,17 +470,19 @@ export const DashboardPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filterBlacklistedTags(allTags.length > 0 ? allTags : stats?.top_tags || []).map((tag, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
-                >
-                  <td className="py-3 px-4 text-gray-300">{tag.tag}</td>
-                  <td className="py-3 px-4 text-right text-green-400 font-semibold">
-                    {tag.count}
-                  </td>
-                </tr>
-              ))}
+              {filterBlacklistedTags(allTags.length > 0 ? allTags : stats?.top_tags || []).map(
+                (tag, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+                  >
+                    <td className="py-3 px-4 text-gray-300">{tag.tag}</td>
+                    <td className="py-3 px-4 text-right text-green-400 font-semibold">
+                      {tag.count}
+                    </td>
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
         </div>
@@ -505,9 +522,7 @@ export const DashboardPage = () => {
                   className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
                 >
                   <td className="py-3 px-4 text-gray-300 capitalize">{level}</td>
-                  <td className="py-3 px-4 text-right text-orange-400 font-semibold">
-                    {count}
-                  </td>
+                  <td className="py-3 px-4 text-right text-orange-400 font-semibold">{count}</td>
                 </tr>
               ))}
             </tbody>

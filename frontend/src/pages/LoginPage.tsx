@@ -36,10 +36,10 @@ export const LoginPage = () => {
       // Show error directly on the page
       console.error('Login error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Login failed';
-      
+
       // Set error to display on page
       setError(errorMessage);
-      
+
       // Clear password for security but keep username
       setPassword('');
     } finally {

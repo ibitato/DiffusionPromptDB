@@ -109,7 +109,7 @@ export const PromptsPage = () => {
         // Update existing prompt
         updatedPrompt = await promptsService.updatePrompt(selectedPrompt.id, data);
         toast.success(t('promptForm.messages.updated'));
-        
+
         // If the detail modal is open, update the viewed prompt
         if (promptToView && promptToView.id === selectedPrompt.id) {
           setPromptToView(updatedPrompt);
@@ -122,7 +122,7 @@ export const PromptsPage = () => {
 
       setIsFormModalOpen(false);
       setSelectedPrompt(null);
-      
+
       // Force reload prompts with a small delay to ensure DB is updated
       setTimeout(async () => {
         await loadPrompts();
@@ -208,7 +208,9 @@ export const PromptsPage = () => {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold text-white mb-2">{t('prompts.title')}</h2>
-            <p className="text-gray-400">{totalPrompts} {t('prompts.totalPrompts')}</p>
+            <p className="text-gray-400">
+              {totalPrompts} {t('prompts.totalPrompts')}
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -280,9 +282,7 @@ export const PromptsPage = () => {
                 onChange={(e) => setMyPromptsOnly(e.target.checked)}
                 className="w-5 h-5 bg-slate-700 border border-slate-600 rounded text-violet-600 focus:ring-2 focus:ring-violet-600"
               />
-              <span className="text-sm font-medium text-gray-300">
-                📝 Solo mis prompts
-              </span>
+              <span className="text-sm font-medium text-gray-300">📝 Solo mis prompts</span>
             </label>
           </div>
         )}

@@ -90,11 +90,11 @@ export interface SearchFilters {
 
 export interface ComplexSearchParams {
   text?: string;
-  tags?: string;  // Comma-separated tags
+  tags?: string; // Comma-separated tags
   nsfw_level?: string;
   number_of_people?: number;
   art_style?: string;
-  my_prompts?: boolean;  // Filter to only show user's own prompts
+  my_prompts?: boolean; // Filter to only show user's own prompts
   limit?: number;
   offset?: number;
 }

@@ -30,7 +30,9 @@ export const LanguageToggle = () => {
           key={lang.code}
           onClick={() => changeLanguage(lang.code)}
           className={`px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
-            currentLang === lang.code ? 'bg-violet-600 text-white' : 'text-gray-300 hover:text-white'
+            currentLang === lang.code
+              ? 'bg-violet-600 text-white'
+              : 'text-gray-300 hover:text-white'
           }`}
           title={lang.label}
         >

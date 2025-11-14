@@ -14,7 +14,7 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache',
+    Pragma: 'no-cache',
   },
   timeout: 10000, // 10 seconds
 });
@@ -28,7 +28,7 @@ api.interceptors.request.use(
     if (config.headers) {
       // Always add API key for catalog/search endpoints
       config.headers['X-API-Key'] = apiKey;
-      
+
       // Add JWT token if available (for write operations)
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;

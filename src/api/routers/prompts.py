@@ -10,7 +10,13 @@ import sqlite3
 from pathlib import Path
 
 from ..models import PromptCreate, PromptUpdate, PromptResponse, PromptListResponse
-from ..auth import verify_api_key, verify_token, verify_admin, verify_ownership_or_admin, optional_auth
+from ..auth import (
+    verify_api_key,
+    verify_token,
+    verify_admin,
+    verify_ownership_or_admin,
+    optional_auth,
+)
 from ..config import settings
 from typing import Optional
 
@@ -35,7 +41,9 @@ async def list_prompts(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     category: str = Query(None),
-    my_prompts: Optional[bool] = Query(None, description="Filter to only show user's own prompts"),
+    my_prompts: Optional[bool] = Query(
+        None, description="Filter to only show user's own prompts"
+    ),
     db: sqlite3.Connection = Depends(get_prompts_db),
     api_key: str = Depends(verify_api_key),
     auth_info: Optional[dict] = Depends(optional_auth),
@@ -47,13 +55,13 @@ async def list_prompts(
     Requires: API Key
     """
     offset = (page - 1) * page_size
-    
+
     # Build WHERE clause for my_prompts filter
     where_clause = ""
     count_params = []
-    
+
     print(f"DEBUG PROMPTS: my_prompts={my_prompts}, auth_info={auth_info}")  # Debug
-    
+
     if my_prompts and auth_info:
         user_id = auth_info.get("user_id")
         if user_id:
@@ -202,10 +210,10 @@ async def create_prompt(
             "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
             (next_id, art_style_value),
         )
-    
+
     # Handle tags
     if prompt.tags:
-        tags_list = [tag.strip() for tag in prompt.tags.split(',') if tag.strip()]
+        tags_list = [tag.strip() for tag in prompt.tags.split(",") if tag.strip()]
         for tag in tags_list:
             db.execute(
                 "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
@@ -279,19 +287,19 @@ async def update_prompt(
             "UPDATE prompts SET negative_prompt = ? WHERE id = ?",
             (prompt.negative_prompt, prompt_id),
         )
-    
+
     if prompt.parameters is not None:
         db.execute(
             "UPDATE prompts SET parameters = ? WHERE id = ?",
             (prompt.parameters, prompt_id),
         )
-    
+
     if prompt.rating is not None:
         db.execute(
             "UPDATE prompts SET rating = ? WHERE id = ?",
             (prompt.rating, prompt_id),
         )
-    
+
     if prompt.notes is not None:
         db.execute(
             "UPDATE prompts SET notes = ? WHERE id = ?",
@@ -300,7 +308,9 @@ async def update_prompt(
 
     # Update art_style (using art_style field primarily, fallback to category)
     if prompt.art_style is not None or prompt.category is not None:
-        art_style_value = prompt.art_style if prompt.art_style is not None else prompt.category
+        art_style_value = (
+            prompt.art_style if prompt.art_style is not None else prompt.category
+        )
         # Check if art_style entry exists
         exists = db.execute(
             "SELECT 1 FROM art_styles WHERE prompt_id = ?", (prompt_id,)
@@ -315,15 +325,15 @@ async def update_prompt(
                 "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
                 (prompt_id, art_style_value),
             )
-    
+
     # Update tags
     if prompt.tags is not None:
         # Delete existing tags
         db.execute("DELETE FROM main_tags WHERE prompt_id = ?", (prompt_id,))
-        
+
         # Insert new tags
         if prompt.tags:
-            tags_list = [tag.strip() for tag in prompt.tags.split(',') if tag.strip()]
+            tags_list = [tag.strip() for tag in prompt.tags.split(",") if tag.strip()]
             for tag in tags_list:
                 db.execute(
                     "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
@@ -362,39 +372,41 @@ async def update_prompt(
 
 
 # Whitelist of allowed tables for cascade delete (SQL injection protection)
-ALLOWED_TABLES = frozenset([
-    "main_tags",
-    "emotions",
-    "mood_atmosphere",
-    "composition_notes",
-    "camera_composition",
-    "prompt_references",
-    "relationships",
-    "sexual_details",
-    "sexual_content",
-    "nsfw_elements",
-    "nsfw_content",
-    "technical_details",
-    "technical",
-    "art_style_tags",
-    "art_styles",
-    "lighting_quality",
-    "lighting",
-    "environment_details",
-    "settings",
-    "clothing_accessories",
-    "clothing_items",
-    "clothing",
-    "pose_actions",
-    "poses",
-    "character_attributes",
-    "character_eyes",
-    "character_hair",
-    "character_body_types",
-    "character_ages",
-    "character_genders",
-    "characters",
-])
+ALLOWED_TABLES = frozenset(
+    [
+        "main_tags",
+        "emotions",
+        "mood_atmosphere",
+        "composition_notes",
+        "camera_composition",
+        "prompt_references",
+        "relationships",
+        "sexual_details",
+        "sexual_content",
+        "nsfw_elements",
+        "nsfw_content",
+        "technical_details",
+        "technical",
+        "art_style_tags",
+        "art_styles",
+        "lighting_quality",
+        "lighting",
+        "environment_details",
+        "settings",
+        "clothing_accessories",
+        "clothing_items",
+        "clothing",
+        "pose_actions",
+        "poses",
+        "character_attributes",
+        "character_eyes",
+        "character_hair",
+        "character_body_types",
+        "character_ages",
+        "character_genders",
+        "characters",
+    ]
+)
 
 
 @router.delete("/{prompt_id}", status_code=204)

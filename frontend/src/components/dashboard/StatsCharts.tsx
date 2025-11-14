@@ -37,10 +37,10 @@ export const StatsCharts = ({ stats, showUnspecified = true }: StatsChartsProps)
   }));
 
   // Prepare art styles data for bar chart (filter unspecified if needed)
-  const filteredStyles = showUnspecified 
-    ? (stats.top_art_styles || [])
-    : (stats.top_art_styles || []).filter(s => s.style.toLowerCase() !== 'unspecified');
-  
+  const filteredStyles = showUnspecified
+    ? stats.top_art_styles || []
+    : (stats.top_art_styles || []).filter((s) => s.style.toLowerCase() !== 'unspecified');
+
   const stylesData = filteredStyles.slice(0, 10).map((style) => ({
     name: style.style,
     count: style.count,
@@ -134,11 +134,11 @@ export const StatsCharts = ({ stats, showUnspecified = true }: StatsChartsProps)
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={stylesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-              <XAxis 
-                dataKey="name" 
-                stroke="#94a3b8" 
-                angle={-45} 
-                textAnchor="end" 
+              <XAxis
+                dataKey="name"
+                stroke="#94a3b8"
+                angle={-45}
+                textAnchor="end"
                 height={120}
                 interval={0}
               />

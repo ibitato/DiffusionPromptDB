@@ -7,16 +7,17 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime
 
+
 def init_catalog_db():
     """Initialize catalog database with all required tables."""
-    
+
     # Database path
     db_path = Path("catalog.db")
-    
+
     # Create connection
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
+
     # Create all tables
     tables = [
         """
@@ -30,7 +31,6 @@ def init_catalog_db():
             created_by INTEGER DEFAULT NULL
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS characters (
             prompt_id INTEGER PRIMARY KEY,
@@ -39,7 +39,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS nsfw_content (
             prompt_id INTEGER PRIMARY KEY,
@@ -47,7 +46,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS art_styles (
             prompt_id INTEGER PRIMARY KEY,
@@ -55,7 +53,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS main_tags (
             prompt_id INTEGER,
@@ -63,7 +60,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS art_style_tags (
             prompt_id INTEGER,
@@ -71,7 +67,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS emotions (
             prompt_id INTEGER,
@@ -79,7 +74,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS mood_atmosphere (
             prompt_id INTEGER,
@@ -87,7 +81,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS composition_notes (
             prompt_id INTEGER,
@@ -95,7 +88,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS camera_composition (
             prompt_id INTEGER,
@@ -103,7 +95,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS prompt_references (
             prompt_id INTEGER,
@@ -111,7 +102,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS relationships (
             prompt_id INTEGER,
@@ -119,7 +109,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS sexual_details (
             prompt_id INTEGER,
@@ -127,7 +116,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS sexual_content (
             prompt_id INTEGER,
@@ -135,7 +123,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS nsfw_elements (
             prompt_id INTEGER,
@@ -143,7 +130,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS technical_details (
             prompt_id INTEGER,
@@ -151,7 +137,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS technical (
             prompt_id INTEGER,
@@ -159,7 +144,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS lighting_quality (
             prompt_id INTEGER,
@@ -167,7 +151,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS lighting (
             prompt_id INTEGER,
@@ -175,7 +158,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS environment_details (
             prompt_id INTEGER,
@@ -183,7 +165,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS settings (
             prompt_id INTEGER,
@@ -191,7 +172,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS clothing_accessories (
             prompt_id INTEGER,
@@ -199,7 +179,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS clothing_items (
             prompt_id INTEGER,
@@ -207,7 +186,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS clothing (
             prompt_id INTEGER,
@@ -215,7 +193,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS pose_actions (
             prompt_id INTEGER,
@@ -223,7 +200,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS poses (
             prompt_id INTEGER,
@@ -231,7 +207,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS character_attributes (
             prompt_id INTEGER,
@@ -239,7 +214,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS character_eyes (
             prompt_id INTEGER,
@@ -247,7 +221,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS character_hair (
             prompt_id INTEGER,
@@ -255,7 +228,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS character_body_types (
             prompt_id INTEGER,
@@ -263,7 +235,6 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS character_ages (
             prompt_id INTEGER,
@@ -271,20 +242,19 @@ def init_catalog_db():
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
         """,
-        
         """
         CREATE TABLE IF NOT EXISTS character_genders (
             prompt_id INTEGER,
             gender TEXT,
             FOREIGN KEY (prompt_id) REFERENCES prompts(id)
         )
-        """
+        """,
     ]
-    
+
     # Create all tables
     for table_sql in tables:
         cursor.execute(table_sql)
-    
+
     # Insert sample data
     sample_prompts = [
         {
@@ -293,7 +263,7 @@ def init_catalog_db():
             "model": "stable-diffusion-v1.5",
             "art_style": "digital art",
             "tags": ["landscape", "mountains", "lake", "sunset", "detailed"],
-            "nsfw_level": "safe"
+            "nsfw_level": "safe",
         },
         {
             "id": 2,
@@ -301,7 +271,7 @@ def init_catalog_db():
             "model": "anything-v4.0",
             "art_style": "anime",
             "tags": ["anime", "portrait", "character", "school", "cherry blossoms"],
-            "nsfw_level": "safe"
+            "nsfw_level": "safe",
         },
         {
             "id": 3,
@@ -309,50 +279,56 @@ def init_catalog_db():
             "model": "stable-diffusion-xl",
             "art_style": "realistic",
             "tags": ["cyberpunk", "city", "night", "neon", "rain", "photography"],
-            "nsfw_level": "safe"
-        }
+            "nsfw_level": "safe",
+        },
     ]
-    
+
     for prompt in sample_prompts:
         # Insert prompt
         cursor.execute(
             """INSERT INTO prompts (id, original_prompt, processed_at, model_used, created_by) 
                VALUES (?, ?, ?, ?, NULL)""",
-            (prompt["id"], prompt["text"], datetime.utcnow().isoformat(), prompt["model"])
+            (
+                prompt["id"],
+                prompt["text"],
+                datetime.utcnow().isoformat(),
+                prompt["model"],
+            ),
         )
-        
+
         # Insert character data
         cursor.execute(
             "INSERT INTO characters (prompt_id, number_of_people, breast_size) VALUES (?, 1, 'unspecified')",
-            (prompt["id"],)
+            (prompt["id"],),
         )
-        
+
         # Insert NSFW level
         cursor.execute(
             "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, ?)",
-            (prompt["id"], prompt["nsfw_level"])
+            (prompt["id"], prompt["nsfw_level"]),
         )
-        
+
         # Insert art style
         cursor.execute(
             "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
-            (prompt["id"], prompt["art_style"])
+            (prompt["id"], prompt["art_style"]),
         )
-        
+
         # Insert tags
         for tag in prompt["tags"]:
             cursor.execute(
                 "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
-                (prompt["id"], tag)
+                (prompt["id"], tag),
             )
-    
+
     # Commit changes
     conn.commit()
     conn.close()
-    
+
     print(f"Database initialized at: {db_path.absolute()}")
     print(f"Created {len(tables)} tables")
     print(f"Inserted {len(sample_prompts)} sample prompts")
+
 
 if __name__ == "__main__":
     init_catalog_db()

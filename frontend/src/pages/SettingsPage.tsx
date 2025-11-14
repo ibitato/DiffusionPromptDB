@@ -12,7 +12,7 @@ import { preferencesService, UserPreferences } from '../services/preferences.ser
 
 export const SettingsPage = () => {
   const { t } = useTranslation();
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
+  const [, setPreferences] = useState<UserPreferences | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showUnspecified, setShowUnspecified] = useState(true);
@@ -67,7 +67,7 @@ export const SettingsPage = () => {
   };
 
   const removeTag = (tagToRemove: string) => {
-    setExcludedTags(excludedTags.filter(tag => tag !== tagToRemove));
+    setExcludedTags(excludedTags.filter((tag) => tag !== tagToRemove));
   };
 
   const resetToDefaults = () => {
@@ -102,12 +102,14 @@ export const SettingsPage = () => {
           {/* Display Preferences */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
             <h3 className="text-xl font-semibold text-white mb-4">{t('settings.display.title')}</h3>
-            
+
             <div className="space-y-4">
               {/* Show Unspecified Toggle */}
               <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg">
                 <div>
-                  <h4 className="text-white font-medium">{t('settings.display.showUnspecified')}</h4>
+                  <h4 className="text-white font-medium">
+                    {t('settings.display.showUnspecified')}
+                  </h4>
                   <p className="text-sm text-gray-400 mt-1">
                     {t('settings.display.showUnspecifiedDesc')}
                   </p>
@@ -146,9 +148,11 @@ export const SettingsPage = () => {
 
           {/* Tag Blacklist */}
           <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <h3 className="text-xl font-semibold text-white mb-4">{t('settings.blacklist.title')}</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">
+              {t('settings.blacklist.title')}
+            </h3>
             <p className="text-sm text-gray-400 mb-4">{t('settings.blacklist.description')}</p>
-            
+
             {/* Add New Tag */}
             <div className="flex gap-2 mb-4">
               <input
@@ -200,7 +204,7 @@ export const SettingsPage = () => {
             >
               {t('settings.actions.reset')}
             </button>
-            
+
             <button
               onClick={handleSave}
               disabled={isSaving}
