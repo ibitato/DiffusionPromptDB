@@ -8,6 +8,8 @@
     "prompts": "Prompts",
     "search": "Búsqueda",
     "settings": "Configuración",
+    "profile": "Perfil",
+    "admin": "Admin",
     "logout": "Cerrar Sesión"
   },
   "login": {
@@ -196,6 +198,117 @@
       "tagSearch": "No se encontraron prompts con el tag",
       "tagSearchSuccess": "Encontrados {{count}} prompts con el tag",
       "error": "Error en la búsqueda"
+    }
+  },
+  "profile": {
+    "title": "Perfil de Usuario",
+    "loading": "Cargando perfil...",
+    "username": "Usuario",
+    "email": "Correo",
+    "fullName": "Nombre completo",
+    "location": "Ubicación",
+    "language": "Idioma",
+    "defaultLanding": "Página predeterminada al iniciar sesión",
+    "landing": {
+      "dashboard": "Dashboard",
+      "search": "Búsqueda avanzada"
+    },
+    "password": {
+      "title": "Actualizar contraseña",
+      "current": "Contraseña actual",
+      "next": "Nueva contraseña",
+      "confirm": "Confirmar contraseña",
+      "show": "Mostrar contraseñas",
+      "update": "Actualizar contraseña"
+    },
+    "preferences": {
+      "title": "Preferencias",
+      "showUnspecified": "Mostrar resultados \"unspecified\"",
+      "showUnspecifiedDesc": "Incluye resultados con datos incompletos en el catálogo",
+      "myPrompts": "Solo mis prompts",
+      "myPromptsDesc": "Filtra por defecto para mostrar solo tus prompts",
+      "excludedTags": "Tags excluidos",
+      "tagPlaceholder": "Agregar tag...",
+      "addTag": "Añadir tag"
+    },
+    "danger": {
+      "title": "Zona de peligro",
+      "description": "Eliminar tu cuenta es irreversible. Se generará un respaldo cifrado antes de eliminarla.",
+      "password": "Confirma tu contraseña",
+      "confirm": "Entiendo que esta acción es irreversible",
+      "delete": "Eliminar cuenta",
+      "deleting": "Eliminando cuenta..."
+    },
+    "messages": {
+      "profileUpdated": "Perfil actualizado",
+      "landingUpdated": "Página predeterminada actualizada",
+      "passwordUpdated": "Contraseña actualizada",
+      "preferencesUpdated": "Preferencias guardadas",
+      "accountDeleted": "Cuenta eliminada correctamente"
+    },
+    "errors": {
+      "load": "Error cargando el perfil",
+      "profileUpdate": "No se pudo actualizar el perfil",
+      "landingUpdate": "No se pudo actualizar la página predeterminada",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "passwordUpdate": "No se pudo actualizar la contraseña",
+      "preferencesUpdate": "No se pudieron guardar las preferencias",
+      "confirmDeletion": "Debes confirmar la eliminación",
+      "accountDeletion": "Error al eliminar la cuenta"
+    },
+    "save": "Guardar cambios",
+    "saving": "Guardando..."
+  },
+  "adminUsers": {
+    "title": "Administración de Usuarios",
+    "subtitle": "Gestiona cuentas y niveles de acceso",
+    "actions": {
+      "new": "Nuevo usuario",
+      "create": "Crear",
+      "disable": "Desactivar",
+      "enable": "Activar",
+      "resetPassword": "Restablecer contraseña",
+      "delete": "Eliminar"
+    },
+    "table": {
+      "user": "Usuario",
+      "email": "Correo",
+      "role": "Rol",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "status": {
+      "active": "Activo",
+      "disabled": "Deshabilitado"
+    },
+    "fields": {
+      "username": "Usuario",
+      "email": "Correo",
+      "fullName": "Nombre completo",
+      "password": "Contraseña temporal"
+    },
+    "roles": {
+      "user": "Usuario",
+      "admin": "Administrador"
+    },
+    "create": {
+      "title": "Crear usuario"
+    },
+    "messages": {
+      "created": "Usuario creado",
+      "passwordReset": "Contraseña actualizada",
+      "deleted": "Usuario eliminado"
+    },
+    "errors": {
+      "load": "Error al cargar usuarios",
+      "create": "Error al crear usuario",
+      "update": "Error al actualizar usuario",
+      "password": "Error al restablecer contraseña",
+      "delete": "Error al eliminar usuario"
+    },
+    "prompts": {
+      "newPassword": "Ingresa la nueva contraseña para {{username}}",
+      "delete": "¿Eliminar al usuario {{username}}?"
     }
   },
   "settings": {

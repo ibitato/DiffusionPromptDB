@@ -3,7 +3,7 @@
  * List and manage prompts with create, edit, delete functionality
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
@@ -38,6 +38,7 @@ export const PromptsPage = () => {
   const [promptToDelete, setPromptToDelete] = useState<Prompt | null>(null);
   const [promptToView, setPromptToView] = useState<Prompt | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const latestRequestRef = useRef(0);
 
   const toast = useToast();
 
@@ -61,18 +62,27 @@ export const PromptsPage = () => {
   };
 
   const loadPrompts = async () => {
+    const requestId = ++latestRequestRef.current;
     setIsLoading(true);
     try {
       const data = await promptsService.getPrompts(currentPage, pageSize, myPromptsOnly);
+      if (requestId !== latestRequestRef.current) {
+        return;
+      }
       setPrompts(data.results);
       setTotalPrompts(data.total);
       setError('');
     } catch (err) {
+      if (requestId !== latestRequestRef.current) {
+        return;
+      }
       const message = err instanceof Error ? err.message : 'Failed to load prompts';
       setError(message);
       toast.error(message);
     } finally {
-      setIsLoading(false);
+      if (requestId === latestRequestRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 

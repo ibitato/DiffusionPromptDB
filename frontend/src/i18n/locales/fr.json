@@ -8,6 +8,8 @@
     "prompts": "Prompts",
     "search": "Recherche",
     "settings": "Paramètres",
+    "profile": "Profil",
+    "admin": "Admin",
     "logout": "Déconnexion"
   },
   "login": {
@@ -134,6 +136,117 @@
       "close": "Fermer",
       "edit": "Modifier",
       "delete": "Supprimer"
+    }
+  },
+  "profile": {
+    "title": "Profil utilisateur",
+    "loading": "Chargement du profil...",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "fullName": "Nom complet",
+    "location": "Lieu",
+    "language": "Langue",
+    "defaultLanding": "Page d'accueil par défaut",
+    "landing": {
+      "dashboard": "Tableau de bord",
+      "search": "Recherche"
+    },
+    "password": {
+      "title": "Mettre à jour le mot de passe",
+      "current": "Mot de passe actuel",
+      "next": "Nouveau mot de passe",
+      "confirm": "Confirmer le mot de passe",
+      "show": "Afficher les mots de passe",
+      "update": "Mettre à jour le mot de passe"
+    },
+    "preferences": {
+      "title": "Préférences",
+      "showUnspecified": "Afficher « non spécifié »",
+      "showUnspecifiedDesc": "Inclure les prompts avec données incomplètes",
+      "myPrompts": "Seulement mes prompts",
+      "myPromptsDesc": "Filtrer par défaut sur vos prompts",
+      "excludedTags": "Étiquettes exclues",
+      "tagPlaceholder": "Ajouter une étiquette...",
+      "addTag": "Ajouter"
+    },
+    "danger": {
+      "title": "Zone dangereuse",
+      "description": "Supprimer votre compte est irréversible. Une sauvegarde sera créée avant suppression.",
+      "password": "Confirmez votre mot de passe",
+      "confirm": "Je comprends que cette action est définitive",
+      "delete": "Supprimer le compte",
+      "deleting": "Suppression du compte..."
+    },
+    "messages": {
+      "profileUpdated": "Profil mis à jour",
+      "landingUpdated": "Page d'accueil mise à jour",
+      "passwordUpdated": "Mot de passe mis à jour",
+      "preferencesUpdated": "Préférences enregistrées",
+      "accountDeleted": "Compte supprimé"
+    },
+    "errors": {
+      "load": "Impossible de charger le profil",
+      "profileUpdate": "Impossible de mettre à jour le profil",
+      "landingUpdate": "Impossible de mettre à jour la page d'accueil",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "passwordUpdate": "Impossible de mettre à jour le mot de passe",
+      "preferencesUpdate": "Impossible d'enregistrer les préférences",
+      "confirmDeletion": "Vous devez confirmer la suppression",
+      "accountDeletion": "Impossible de supprimer le compte"
+    },
+    "save": "Enregistrer",
+    "saving": "Enregistrement..."
+  },
+  "adminUsers": {
+    "title": "Administration des utilisateurs",
+    "subtitle": "Gérer les comptes et les accès",
+    "actions": {
+      "new": "Nouvel utilisateur",
+      "create": "Créer",
+      "disable": "Désactiver",
+      "enable": "Activer",
+      "resetPassword": "Réinitialiser le mot de passe",
+      "delete": "Supprimer"
+    },
+    "table": {
+      "user": "Utilisateur",
+      "email": "Email",
+      "role": "Rôle",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Actif",
+      "disabled": "Désactivé"
+    },
+    "fields": {
+      "username": "Nom d'utilisateur",
+      "email": "Email",
+      "fullName": "Nom complet",
+      "password": "Mot de passe temporaire"
+    },
+    "roles": {
+      "user": "Utilisateur",
+      "admin": "Administrateur"
+    },
+    "create": {
+      "title": "Créer un utilisateur"
+    },
+    "messages": {
+      "created": "Utilisateur créé",
+      "passwordReset": "Mot de passe mis à jour",
+      "deleted": "Utilisateur supprimé"
+    },
+    "errors": {
+      "load": "Impossible de charger les utilisateurs",
+      "create": "Impossible de créer l'utilisateur",
+      "update": "Impossible de mettre à jour l'utilisateur",
+      "password": "Impossible de réinitialiser le mot de passe",
+      "delete": "Impossible de supprimer l'utilisateur"
+    },
+    "prompts": {
+      "newPassword": "Entrer un nouveau mot de passe pour {{username}}",
+      "delete": "Supprimer l'utilisateur {{username}}?"
     }
   },
   "deleteConfirm": {

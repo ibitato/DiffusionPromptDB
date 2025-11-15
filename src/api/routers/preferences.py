@@ -7,28 +7,15 @@ Endpoints for managing user preferences.
 from fastapi import APIRouter, Depends, HTTPException
 import sqlite3
 import json
-from pathlib import Path
 
 from ..auth import verify_token
 from ..models.user_preferences_models import (
     UserPreferencesResponse,
     UserPreferencesUpdate,
 )
+from ..db import get_users_db
 
 router = APIRouter()
-
-
-def get_users_db():
-    """Get users database connection."""
-    db_path = Path(__file__).parent.parent.parent / "data" / "users.db"
-    if not db_path.exists():
-        raise HTTPException(status_code=503, detail="Users database not available")
-    conn = sqlite3.connect(db_path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
 
 
 @router.get("/preferences", response_model=UserPreferencesResponse)

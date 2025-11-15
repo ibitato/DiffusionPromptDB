@@ -88,8 +88,12 @@ export const authService = {
         return null;
       }
 
-      const response = await api.get<User>('/auth/me');
-      return response.data;
+      const response = await api.get<LoginResponse>('/auth/me');
+      if (response.data.access_token) {
+        localStorage.setItem('auth_token', response.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      return response.data.user;
     } catch (error) {
       // Token is invalid or expired
       localStorage.removeItem('auth_token');

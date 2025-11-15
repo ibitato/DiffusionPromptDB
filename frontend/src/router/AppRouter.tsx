@@ -10,7 +10,8 @@ import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { PromptsPage } from '../pages/PromptsPage';
 import { SearchPage } from '../pages/SearchPage';
-import { SettingsPage } from '../pages/SettingsPage';
+import { ProfilePage } from '../pages/ProfilePage';
+import { AdminUsersPage } from '../pages/AdminUsersPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -29,20 +30,30 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Public Route Component (redirect to dashboard if already authenticated)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, getDefaultLanding } = useAuthStore();
 
   if (isLoading) {
     return <LoadingScreen text="Cargando..." />;
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={`/${getDefaultLanding()}`} replace />;
   }
 
   return <>{children}</>;
 };
 
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuthStore();
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <ProtectedRoute>{children}</ProtectedRoute>;
+};
+
 export const AppRouter = () => {
+  const defaultLanding = useAuthStore((state) => state.user?.default_landing_page ?? 'dashboard');
+
   return (
     <BrowserRouter>
       <Routes>
@@ -85,16 +96,25 @@ export const AppRouter = () => {
         />
 
         <Route
-          path="/settings"
+          path="/profile"
           element={
             <ProtectedRoute>
-              <SettingsPage />
+              <ProfilePage />
             </ProtectedRoute>
           }
         />
 
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminUsersPage />
+            </AdminRoute>
+          }
+        />
+
         {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to={`/${defaultLanding}`} replace />} />
 
         {/* 404 fallback */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

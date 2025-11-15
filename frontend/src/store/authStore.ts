@@ -17,9 +17,11 @@ interface AuthState {
   logout: () => void;
   setLoading: (loading: boolean) => void;
   initAuth: () => void;
+  updateUser: (partial: Partial<User>) => void;
+  getDefaultLanding: () => 'dashboard' | 'search';
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   isAuthenticated: false,
@@ -78,5 +80,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   // Set loading state
   setLoading: (loading: boolean) => {
     set({ isLoading: loading });
+  },
+
+  updateUser: (partial: Partial<User>) => {
+    set((state) => {
+      if (!state.user) return state;
+      const updated = { ...state.user, ...partial };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return { ...state, user: updated };
+    });
+  },
+
+  getDefaultLanding: () => {
+    const { user } = get();
+    return user?.default_landing_page ?? 'dashboard';
   },
 }));

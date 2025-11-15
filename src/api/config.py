@@ -60,6 +60,9 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
     log_file: str = "api.log"
+    password_rotation_days: int = 90
+    password_min_length: int = 12
+    password_history_limit: int = 5
 
     class Config:
         env_file = ".env"

@@ -107,6 +107,9 @@ async def list_prompts(
     results = db.execute(query, params).fetchall()
 
     prompts = [dict(row) for row in results]
+    print(
+        f"DEBUG PROMPTS: response count={len(prompts)} total={total} using filter={where_clause!r}"
+    )
 
     return {"total": total, "page": page, "page_size": page_size, "results": prompts}
 

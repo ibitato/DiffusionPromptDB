@@ -30,30 +30,13 @@ export const Header = () => {
 
           {/* Navigation */}
           <nav className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              {t('nav.dashboard')}
-            </button>
-            <button
-              onClick={() => navigate('/prompts')}
-              className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              {t('nav.prompts')}
-            </button>
-            <button
-              onClick={() => navigate('/search')}
-              className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              {t('nav.search')}
-            </button>
-            <button
-              onClick={() => navigate('/settings')}
-              className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              {t('nav.settings')}
-            </button>
+            <HeaderLink label={t('nav.dashboard')} onClick={() => navigate('/dashboard')} />
+            <HeaderLink label={t('nav.prompts')} onClick={() => navigate('/prompts')} />
+            <HeaderLink label={t('nav.search')} onClick={() => navigate('/search')} />
+            <HeaderLink label={t('nav.profile')} onClick={() => navigate('/profile')} />
+            {user?.role === 'admin' && (
+              <HeaderLink label={t('nav.admin')} onClick={() => navigate('/admin/users')} />
+            )}
           </nav>
 
           {/* Search Bar */}
@@ -75,3 +58,17 @@ export const Header = () => {
     </header>
   );
 };
+
+interface HeaderLinkProps {
+  label: string;
+  onClick: () => void;
+}
+
+const HeaderLink = ({ label, onClick }: HeaderLinkProps) => (
+  <button
+    onClick={onClick}
+    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+  >
+    {label}
+  </button>
+);

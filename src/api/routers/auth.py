@@ -1,126 +1,91 @@
 """
 Authentication Router
 
-Endpoints for user authentication with secure password hashing.
+Handles login and token validation backed by users.db.
 """
 
-from fastapi import APIRouter, HTTPException, status, Request
-from ..models.auth_models import LoginRequest, LoginResponse
-from ..auth import create_access_token
-from ..security import hash_password, verify_password
-from datetime import timedelta
-from ..config import settings
-from ..middleware.rate_limiting import limiter, get_rate_limit, get_rate_limit_message
+from datetime import datetime, timedelta
 import logging
+import sqlite3
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+
+from ..auth import create_access_token, verify_token
+from ..config import settings
+from ..db import get_users_db
+from ..middleware.rate_limiting import limiter
+from ..models.auth_models import LoginRequest, LoginResponse
+from ..services import user_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Secure user storage with hashed passwords
-# NOTE: In production, these should be stored in a database
-# Default passwords for demo accounts (using bcrypt):
-# - test/test123
-# - admin/admin123
-# - user/user123
-USERS_DB = {
-    "test": {
-        "id": 1,
-        "username": "test",
-        "password": "REDACTED_HASH",  # test123
-        "email": "test@example.com",
-        "role": "user",
-    },
-    "admin": {
-        "id": 2,
-        "username": "admin",
-        "password": "REDACTED_HASH",  # admin123
-        "email": "admin@example.com",
-        "role": "admin",
-    },
-    "user": {
-        "id": 3,
-        "username": "user",
-        "password": "REDACTED_HASH",  # user123
-        "email": "user@example.com",
-        "role": "user",
-    },
-}
-
 
 @router.post("/login", response_model=LoginResponse)
-@limiter.limit("5/minute")  # Strict rate limiting to prevent brute force
-async def login(request: Request, credentials: LoginRequest):
-    """
-    Login endpoint - authenticate user and return JWT token.
+@limiter.limit("5/minute")
+async def login(
+    request: Request,
+    credentials: LoginRequest,
+    db: sqlite3.Connection = Depends(get_users_db),
+):
+    """Authenticate user and return JWT."""
+    user = user_service.get_user_by_username(db, credentials.username)
 
-    Uses bcrypt for secure password verification.
-    Rate limited to 5 attempts per minute to prevent brute force attacks.
-
-    Args:
-        request: FastAPI request object (for rate limiting)
-        credentials: Username and password
-
-    Returns:
-        JWT token and user information
-
-    Raises:
-        HTTPException: If credentials are invalid
-        RateLimitExceeded: If too many login attempts
-    """
-    # Get user from database
-    user = USERS_DB.get(credentials.username)
-
-    if not user:
-        # Log failed login attempt
-        logger.warning(f"Login attempt with unknown username: {credentials.username}")
+    if not user or not user_service.verify_password(
+        credentials.password, user["password_hash"]
+    ):
+        logger.warning("Failed login attempt for user %s", credentials.username)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Verify password using bcrypt
-    if not verify_password(credentials.password, user["password"]):
-        # Log failed login attempt
-        logger.warning(f"Failed login attempt for user: {credentials.username}")
+    if not user.get("is_active", 1):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account disabled. Contact administrator.",
         )
 
-    # Log successful login
-    logger.info(f"Successful login for user: {credentials.username}")
+    if user.get("must_change_password") or user_service.needs_password_rotation(user):
+        db.execute("UPDATE users SET must_change_password=1 WHERE id=?", (user["id"],))
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Password expired. Please update your password.",
+            headers={"X-Password-Expired": "true"},
+        )
 
-    # Create JWT token
-    token_data = {"sub": user["username"], "user_id": user["id"], "role": user["role"]}
-
+    token_payload = {"sub": user["username"], "user_id": user["id"], "role": user["role"]}
     access_token = create_access_token(
-        data=token_data, expires_delta=timedelta(minutes=settings.jwt_expire_minutes)
+        data=token_payload, expires_delta=timedelta(minutes=settings.jwt_expire_minutes)
     )
 
-    # Return token and user info (without password)
-    user_info = {
-        "id": user["id"],
-        "username": user["username"],
-        "email": user["email"],
-        "role": user["role"],
-    }
+    db.execute(
+        "UPDATE users SET last_login=? WHERE id=?",
+        (datetime.utcnow().isoformat(), user["id"]),
+    )
+    db.commit()
 
-    return LoginResponse(access_token=access_token, token_type="bearer", user=user_info)
+    profile = user_service.serialize_profile(user)
+    return LoginResponse(access_token=access_token, token_type="bearer", user=profile)
 
 
-@router.get("/me")
-@limiter.limit("30/minute")  # Moderate rate limiting for token verification
-async def get_current_user(request: Request):
-    """
-    Get current user information.
-    Requires JWT token authentication.
+@router.get("/me", response_model=LoginResponse)
+@limiter.limit("30/minute")
+async def get_current_user(
+    request: Request,
+    token_payload: dict = Depends(verify_token),
+    db: sqlite3.Connection = Depends(get_users_db),
+):
+    """Return user info for the authenticated token."""
+    user = user_service.get_user_by_id(db, token_payload["user_id"])
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    This endpoint can be used to verify if a token is still valid.
-    Rate limited to 30 requests per minute.
-    """
-    # This would use verify_token dependency in production
-    return {
-        "message": "Token verification endpoint - implement with verify_token dependency"
-    }
+    profile = user_service.serialize_profile(user)
+    refreshed_token = create_access_token(
+        data={"sub": profile["username"], "user_id": profile["id"], "role": profile["role"]},
+        expires_delta=timedelta(minutes=settings.jwt_expire_minutes),
+    )
+    return LoginResponse(access_token=refreshed_token, token_type="bearer", user=profile)
