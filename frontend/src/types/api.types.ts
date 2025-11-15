@@ -36,11 +36,36 @@ export interface LoginResponse {
   user: User;
 }
 
+export type LandingPage = 'dashboard' | 'search';
+
 export interface User {
   id: number;
   username: string;
   email?: string;
   role: 'admin' | 'user';
+  full_name?: string | null;
+  avatar_url?: string | null;
+  location?: string | null;
+  language?: string;
+  default_landing_page?: LandingPage;
+  must_change_password?: boolean;
+  password_last_changed?: string | null;
+  created_at?: string | null;
+  last_login?: string | null;
+  is_active?: boolean;
+}
+
+export interface UserProfile extends User {}
+
+export interface PasswordChangePayload {
+  current_password: string;
+  new_password: string;
+}
+
+export interface DeleteAccountPayload {
+  password: string;
+  confirm: boolean;
+  reason?: string;
 }
 
 // Prompt Types

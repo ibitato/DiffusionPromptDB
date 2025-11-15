@@ -14,6 +14,7 @@ SQLite database for Stability Diffusion Prompts
 - 🧪 **Tested**: Unit tests with pytest
 - 📝 **Well Documented**: Comprehensive docstrings and examples
 - 🔄 **Version Control**: Git-ready with proper .gitignore
+- 🔐 **Account Management**: JWT auth with profile page, password rotation, and admin tooling
 
 ## NEW: Complete Catalogation System 🚀
 
@@ -136,6 +137,12 @@ curl -H "X-API-Key: demo-read-key-12345" \
   "http://localhost:8000/api/v1/search/complex?nsfw_level=explicit&art_style=anime"
 ```
 
+### Account & User Management
+
+- `/api/v1/user/profile` – read/update profile fields, change password, select default landing page, update preferences, and self-delete accounts (with secure data dumps).
+- `/api/v1/admin/users/*` – admin-only CRUD for users: invite/create, update roles/status, reset passwords, and delete accounts.
+- Password rotation is enforced via configurable environment variables (`PASSWORD_ROTATION_DAYS`, `PASSWORD_MIN_LENGTH`, `PASSWORD_HISTORY_LIMIT`).
+
 See [API README](src/api/README.md) and [Authentication Setup](AUTHENTICATION_SETUP.md) for complete documentation.
 
 ### 4️⃣ Frontend Web Application 🌐
@@ -176,6 +183,8 @@ npm run dev
 - ⚙️ **Settings**: User preferences and display customization
 - 📱 **Responsive**: Works on desktop, tablet, and mobile
 - 🎨 **Dark Theme**: Modern dark mode interface
+- 👤 **Profile & Preferences**: Dedicated page to manage personal data, password rotation, landing page, and account deletion
+- 🛠️ **Admin Console**: Manage users (create/reset/disable) directly from the UI
 
 See [Frontend README](frontend/FRONTEND_README.md) and [I18N Guide](frontend/I18N_GUIDE.md) for complete documentation.
 
@@ -341,11 +350,21 @@ Indexes are created on `category`, `model`, and `rating` for efficient queries.
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run tests
+# Run entire backend test suite
 pytest
 
 # Run with coverage
 pytest --cov=diffusion_prompt_db --cov-report=html
+
+# Targeted suites
+pytest tests/unit/database/test_database.py
+pytest tests/unit/api/test_profile_admin.py
+
+# Frontend unit tests (Vitest)
+cd frontend && npm run test
+
+# Keep locale files aligned with English source
+cd frontend && npm run check:i18n
 ```
 
 ### Code Quality

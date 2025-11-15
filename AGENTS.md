@@ -424,7 +424,9 @@ The backend supports automatic hot-reloading for development, similar to the fro
 - `/search/*` - Search functionality
 - `/catalog/*` - Catalog operations
 - `/preferences/*` - User preferences
+- `/user/*` - Profile data, password updates, defaults, and account deletion
 - `/admin/*` - Admin operations
+- `/admin/users/*` - Admin user management (create/reset/disable/delete)
 
 ### Testing API Endpoints
 
@@ -435,6 +437,9 @@ pytest tests/
 
 # Test specific endpoint
 pytest tests/test_all_endpoints.py::test_prompt_creation
+
+# Targeted account/admin coverage
+pytest tests/unit/api/test_profile_admin.py
 ```
 
 ## Frontend Development Guidelines
@@ -465,6 +470,8 @@ npm run preview      # Preview production build
 npm run format       # Format with Prettier
 npm run lint         # Lint with ESLint
 npm run type-check   # TypeScript type checking
+npm run test         # Vitest unit tests
+npm run check:i18n   # Ensure locale files are in sync
 ```
 
 ### Component Structure

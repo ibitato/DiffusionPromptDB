@@ -8,6 +8,8 @@
     "prompts": "Prompts",
     "search": "Search",
     "settings": "Settings",
+    "profile": "Profile",
+    "admin": "Admin",
     "logout": "Logout"
   },
   "login": {
@@ -20,6 +22,117 @@
     "loggingIn": "Logging in...",
     "demoCredentials": "Demo credentials:",
     "backendApi": "Backend API: https://www.diffusionprompt.net/api/v1"
+  },
+  "profile": {
+    "title": "User Profile",
+    "loading": "Loading profile...",
+    "username": "Username",
+    "email": "Email",
+    "fullName": "Full name",
+    "location": "Location",
+    "language": "Language",
+    "defaultLanding": "Default landing page",
+    "landing": {
+      "dashboard": "Dashboard",
+      "search": "Search"
+    },
+    "password": {
+      "title": "Update password",
+      "current": "Current password",
+      "next": "New password",
+      "confirm": "Confirm password",
+      "show": "Show passwords",
+      "update": "Update password"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "showUnspecified": "Show \"unspecified\" results",
+      "showUnspecifiedDesc": "Include prompts with incomplete metadata",
+      "myPrompts": "Only my prompts",
+      "myPromptsDesc": "Filter your prompts by default",
+      "excludedTags": "Excluded tags",
+      "tagPlaceholder": "Add a tag...",
+      "addTag": "Add tag"
+    },
+    "danger": {
+      "title": "Danger zone",
+      "description": "Deleting your account is irreversible. A secure export will be generated before removal.",
+      "password": "Confirm your password",
+      "confirm": "I understand this action cannot be undone",
+      "delete": "Delete account",
+      "deleting": "Deleting account..."
+    },
+    "messages": {
+      "profileUpdated": "Profile updated",
+      "landingUpdated": "Landing page updated",
+      "passwordUpdated": "Password updated",
+      "preferencesUpdated": "Preferences updated",
+      "accountDeleted": "Account deleted successfully"
+    },
+    "errors": {
+      "load": "Failed to load profile",
+      "profileUpdate": "Failed to update profile",
+      "landingUpdate": "Failed to update landing page",
+      "passwordMismatch": "Passwords do not match",
+      "passwordUpdate": "Failed to update password",
+      "preferencesUpdate": "Failed to save preferences",
+      "confirmDeletion": "You must confirm account deletion",
+      "accountDeletion": "Failed to delete account"
+    },
+    "save": "Save changes",
+    "saving": "Saving..."
+  },
+  "adminUsers": {
+    "title": "User Administration",
+    "subtitle": "Manage accounts and access levels",
+    "actions": {
+      "new": "New user",
+      "create": "Create",
+      "disable": "Disable",
+      "enable": "Enable",
+      "resetPassword": "Reset password",
+      "delete": "Delete"
+    },
+    "table": {
+      "user": "User",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "fields": {
+      "username": "Username",
+      "email": "Email",
+      "fullName": "Full name",
+      "password": "Temporary password"
+    },
+    "roles": {
+      "user": "User",
+      "admin": "Admin"
+    },
+    "create": {
+      "title": "Create user"
+    },
+    "messages": {
+      "created": "User created",
+      "passwordReset": "Password updated",
+      "deleted": "User deleted"
+    },
+    "errors": {
+      "load": "Failed to load users",
+      "create": "Failed to create user",
+      "update": "Failed to update user",
+      "password": "Failed to reset password",
+      "delete": "Failed to delete user"
+    },
+    "prompts": {
+      "newPassword": "Enter new password for {{username}}",
+      "delete": "Delete user {{username}}?"
+    }
   },
   "dashboard": {
     "title": "Dashboard",

@@ -1,0 +1,42 @@
+{
+  "user": {
+    "id": 3,
+    "username": "deleteme",
+    "email": "deleteme@example.com",
+    "password_hash": "$2b$12$2DkifpvVx4DEaqkctFg0TOmX2gx65EbZoANyX5dpnuR1PiVk20ht6",
+    "role": "user",
+    "full_name": null,
+    "avatar_url": null,
+    "location": null,
+    "language": "en",
+    "default_landing_page": "dashboard",
+    "created_at": "2025-11-15 16:00:41",
+    "last_login": null,
+    "is_active": 1,
+    "must_change_password": 0,
+    "password_last_changed": "2025-11-15T16:00:41.346367"
+  },
+  "preferences": {
+    "user_id": 3,
+    "show_unspecified": 1,
+    "my_prompts_only": 0,
+    "excluded_tags": "[\"high quality\",\"masterpiece\",\"best quality\"]",
+    "created_at": "2025-11-15 16:00:41",
+    "updated_at": "2025-11-15 16:00:41"
+  },
+  "prompts": [
+    {
+      "id": 1,
+      "original_prompt": "test prompt",
+      "processed_at": "2025-11-15T16:00:41.352991",
+      "model_used": "manual",
+      "created_by": 3,
+      "negative_prompt": null,
+      "parameters": null,
+      "rating": null,
+      "notes": null,
+      "input_tokens": 0,
+      "output_tokens": 0
+    }
+  ]
+}

@@ -8,6 +8,8 @@
     "prompts": "Prompts",
     "search": "Suche",
     "settings": "Einstellungen",
+    "profile": "Profil",
+    "admin": "Admin",
     "logout": "Abmelden"
   },
   "login": {
@@ -134,6 +136,117 @@
       "close": "Schließen",
       "edit": "Bearbeiten",
       "delete": "Löschen"
+    }
+  },
+  "profile": {
+    "title": "Benutzerprofil",
+    "loading": "Profil wird geladen...",
+    "username": "Benutzername",
+    "email": "E-Mail",
+    "fullName": "Vollständiger Name",
+    "location": "Standort",
+    "language": "Sprache",
+    "defaultLanding": "Standardseite beim Anmelden",
+    "landing": {
+      "dashboard": "Dashboard",
+      "search": "Suche"
+    },
+    "password": {
+      "title": "Passwort aktualisieren",
+      "current": "Aktuelles Passwort",
+      "next": "Neues Passwort",
+      "confirm": "Passwort bestätigen",
+      "show": "Passwörter anzeigen",
+      "update": "Passwort aktualisieren"
+    },
+    "preferences": {
+      "title": "Präferenzen",
+      "showUnspecified": "\"Nicht spezifiziert\" anzeigen",
+      "showUnspecifiedDesc": "Prompts mit unvollständigen Daten einschließen",
+      "myPrompts": "Nur meine Prompts",
+      "myPromptsDesc": "Standardmäßig nur eigene Prompts anzeigen",
+      "excludedTags": "Ausgeschlossene Tags",
+      "tagPlaceholder": "Tag hinzufügen...",
+      "addTag": "Tag hinzufügen"
+    },
+    "danger": {
+      "title": "Gefahrenzone",
+      "description": "Das Löschen deines Kontos ist endgültig. Zuvor wird ein Backup erstellt.",
+      "password": "Passwort bestätigen",
+      "confirm": "Ich verstehe, dass diese Aktion nicht rückgängig gemacht werden kann",
+      "delete": "Konto löschen",
+      "deleting": "Konto wird gelöscht..."
+    },
+    "messages": {
+      "profileUpdated": "Profil aktualisiert",
+      "landingUpdated": "Startseite aktualisiert",
+      "passwordUpdated": "Passwort aktualisiert",
+      "preferencesUpdated": "Präferenzen gespeichert",
+      "accountDeleted": "Konto erfolgreich gelöscht"
+    },
+    "errors": {
+      "load": "Profil konnte nicht geladen werden",
+      "profileUpdate": "Profil konnte nicht aktualisiert werden",
+      "landingUpdate": "Startseite konnte nicht aktualisiert werden",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "passwordUpdate": "Passwort konnte nicht aktualisiert werden",
+      "preferencesUpdate": "Präferenzen konnten nicht gespeichert werden",
+      "confirmDeletion": "Löschung muss bestätigt werden",
+      "accountDeletion": "Konto konnte nicht gelöscht werden"
+    },
+    "save": "Änderungen speichern",
+    "saving": "Speichern..."
+  },
+  "adminUsers": {
+    "title": "Benutzerverwaltung",
+    "subtitle": "Konten und Zugriffsrechte verwalten",
+    "actions": {
+      "new": "Neuer Benutzer",
+      "create": "Erstellen",
+      "disable": "Deaktivieren",
+      "enable": "Aktivieren",
+      "resetPassword": "Passwort zurücksetzen",
+      "delete": "Löschen"
+    },
+    "table": {
+      "user": "Benutzer",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "status": "Status",
+      "actions": "Aktionen"
+    },
+    "status": {
+      "active": "Aktiv",
+      "disabled": "Deaktiviert"
+    },
+    "fields": {
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "fullName": "Vollständiger Name",
+      "password": "Temporäres Passwort"
+    },
+    "roles": {
+      "user": "Benutzer",
+      "admin": "Administrator"
+    },
+    "create": {
+      "title": "Benutzer erstellen"
+    },
+    "messages": {
+      "created": "Benutzer erstellt",
+      "passwordReset": "Passwort aktualisiert",
+      "deleted": "Benutzer gelöscht"
+    },
+    "errors": {
+      "load": "Benutzer konnten nicht geladen werden",
+      "create": "Benutzer konnte nicht erstellt werden",
+      "update": "Benutzer konnte nicht aktualisiert werden",
+      "password": "Passwort konnte nicht zurückgesetzt werden",
+      "delete": "Benutzer konnte nicht gelöscht werden"
+    },
+    "prompts": {
+      "newPassword": "Neues Passwort für {{username}} eingeben",
+      "delete": "Benutzer {{username}} löschen?"
     }
   },
   "deleteConfirm": {

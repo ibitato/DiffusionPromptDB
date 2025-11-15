@@ -31,7 +31,7 @@ from datetime import datetime
 import os
 
 from .config import settings
-from .routers import prompts, catalog, search, admin, auth, preferences
+from .routers import prompts, catalog, search, admin, auth, preferences, profile, admin_users
 from .middleware.security import add_security_headers
 
 # Configure logging with file and console handlers
@@ -101,8 +101,14 @@ app.include_router(
     admin.router, prefix="/api/v1/admin", tags=["admin"]
 )  # Admin operations
 app.include_router(
+    admin_users.router, prefix="/api/v1/admin", tags=["admin"]
+)
+app.include_router(
     preferences.router, prefix="/api/v1/user", tags=["user"]
 )  # User preferences
+app.include_router(
+    profile.router, prefix="/api/v1/user", tags=["user"]
+)
 
 
 @app.get("/", tags=["root"])
