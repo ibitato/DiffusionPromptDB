@@ -7,6 +7,7 @@ Modern React application for managing and cataloging Stable Diffusion prompts wi
 ### ✅ Core Features (Completed)
 - **Multi-language Support**: Full internationalization (ES, EN, FR, DE)
 - **Authentication System**: JWT-based login/logout with protected routes
+- **Self-service Onboarding**: Public registration + verification flow tied to backend tokens
 - **Dashboard**: Real-time statistics with interactive charts
 - **Prompts Management**: Complete CRUD operations
 - **Advanced Search**: Multi-filter search with complex queries
@@ -51,11 +52,13 @@ frontend/src/
 │       └── de.json               # German translations
 │
 ├── pages/
+│   ├── RegisterPage.tsx          # Self-service onboarding
 │   ├── LoginPage.tsx             # Authentication page
 │   ├── DashboardPage.tsx         # Statistics dashboard
 │   ├── PromptsPage.tsx           # Prompts management
 │   ├── SearchPage.tsx            # Advanced search
-│   └── SettingsPage.tsx          # User preferences
+│   ├── ProfilePage.tsx           # Preferences + password rotation
+│   └── AdminUsersPage.tsx        # Admin console
 │
 ├── providers/
 │   └── QueryProvider.tsx         # TanStack Query provider
@@ -101,7 +104,7 @@ cp .env.example .env
 
 # Edit .env with your settings
 VITE_API_URL=http://localhost:8000/api/v1
-VITE_API_KEY=REDACTED_API_KEY
+VITE_API_KEY=your-public-api-key
 ```
 
 ### 3. Start Development Server
@@ -116,16 +119,19 @@ Application will be available at: http://localhost:5173
 
 ### Demo Credentials
 
-- **Admin**: `admin` / `admin` (full access)
-- **User**: `user` / `user` (read/write)
-- **Test**: `test` / `test` (limited access)
+- **Admin**: `admin` / `REDACTED_PASSWORD` (full access)
+- **User**: `user` / `REDACTED_PASSWORD` (read/write)
+- **Test**: `test` / `REDACTED_PASSWORD` (limited access)
 
-### Authentication Flow
+### Authentication & onboarding flow
 
-1. **JWT Tokens**: Secure token-based authentication
-2. **Protected Routes**: Automatic route protection
-3. **Token Refresh**: Automatic token refresh on 401
-4. **API Key Fallback**: Public read access with API key
+1. **Self-service register (`/register`)**: users submit username/email/password; the backend stores the request, sends the verification email, and only surfaces the token in a debug banner when `EMAIL_DEBUG_MODE=True`.
+2. **Token verification**: users click the link inside the email (or call `/auth/verify` manually during debugging) and the account becomes active.
+3. **Login (`/login`)**: once verified, credentials are submitted to `/auth/login` and the JWT is persisted in localStorage.
+4. **Protected routes**: `AppRouter` prevents access to `/dashboard`, `/prompts`, `/search`, `/profile` and `/admin/users` until the token is validated via `/auth/me`.
+5. **Password rotation**: expired passwords trigger the forced-change dialog connected to `/auth/password/expired`.
+
+> Configure `SMTP_*` variables + `PUBLIC_APP_URL` in the backend `.env` so verification messages are emailed from your domain. When SMTP is not available, leave `EMAIL_DEBUG_MODE=True` to expose the token in the API/UI for manual onboarding.
 
 ## 📡 API Integration
 

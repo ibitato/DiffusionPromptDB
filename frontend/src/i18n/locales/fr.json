@@ -21,7 +21,66 @@
     "submit": "Se connecter",
     "loggingIn": "Connexion en cours...",
     "demoCredentials": "Identifiants de démonstration:",
-    "backendApi": "API Backend: https://www.diffusionprompt.net/api/v1"
+    "backendApi": "API Backend: https://www.diffusionprompt.net/api/v1",
+    "passwordExpiredTitle": "Mise à jour du mot de passe requise",
+    "passwordExpiredDescription": "Votre mot de passe a expiré. Merci d'en créer un nouveau pour continuer.",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "updatePassword": "Mettre à jour le mot de passe",
+    "updatingPassword": "Mise à jour du mot de passe...",
+    "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas",
+    "passwordUpdateError": "Impossible de mettre à jour le mot de passe. Réessayez.",
+    "noAccount": "Besoin d'un compte ?",
+    "goToRegister": "Demander un accès",
+    "requestAccessButton": "Demander un accès",
+    "validation": {
+      "usernameRequired": "Le nom d'utilisateur est obligatoire",
+      "passwordRequired": "Le mot de passe est obligatoire"
+    },
+    "errors": {
+      "invalidCredentials": "Nom d'utilisateur ou mot de passe incorrect",
+      "disabled": "Compte désactivé. Contacte un administrateur.",
+      "generic": "Échec de la connexion. Réessaie."
+    }
+  },
+  "register": {
+    "title": "Crée ton compte",
+    "subtitle": "Demande un accès et vérifie ton e-mail pour commencer à cataloguer les prompts.",
+    "createHeading": "Étape 1 · Demander l'accès",
+    "createDescription": "Renseigne tes informations. Nous t'enverrons un lien de vérification avant d'activer ton compte.",
+    "username": "Nom d'utilisateur",
+    "usernamePlaceholder": "Choisis un nom d'utilisateur unique",
+    "email": "E-mail",
+    "emailPlaceholder": "Entre un e-mail valide (idéalement sur le domaine du projet)",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Utilise au moins 12 caractères",
+    "passwordHint": "Utilise un mot de passe robuste avec lettres, chiffres et symboles.",
+    "createAccount": "Demander l'e-mail de vérification",
+    "creating": "Envoi en cours...",
+    "verifyHeading": "Étape 2 · Vérifier le compte",
+    "verifyDescription": "Nous venons d'envoyer un e-mail sécurisé. Suis ces étapes pour activer ton compte.",
+    "verifySteps": {
+      "email": "Ouvre la boîte de réception de l'adresse utilisée lors de l'inscription.",
+      "link": "Clique sur le bouton de vérification présent dans cet e-mail.",
+      "login": "Retourne sur la page de connexion et connecte-toi avec tes nouveaux identifiants."
+    },
+    "verifyPending": "Envoie d'abord le formulaire pour recevoir l'e-mail de vérification.",
+    "debugTitle": "Jeton (mode debug)",
+    "debugDescription": "Visible uniquement lorsque EMAIL_DEBUG_MODE=True. Ne le partage qu'avec des admins de confiance.",
+    "haveAccount": "Compte déjà vérifié ?",
+    "backToLogin": "Retour au login",
+    "errors": {
+      "generic": "L'inscription a échoué. Réessaie."
+    },
+    "messages": {
+      "verifySuccess": "E-mail envoyé ! Utilise le lien reçu pour activer ton compte."
+    },
+    "validation": {
+      "usernameRequired": "Le nom d'utilisateur est obligatoire",
+      "emailRequired": "L'e-mail est obligatoire",
+      "emailInvalid": "Entre une adresse e-mail valide",
+      "passwordRequired": "Le mot de passe est obligatoire"
+    }
   },
   "dashboard": {
     "title": "Tableau de Bord",
@@ -54,10 +113,17 @@
     "display": {
       "showUnspecified": "Afficher \"non spécifié\""
     },
+    "filters": {
+      "myPrompts": "Uniquement mes prompts",
+      "myPromptsDesc": "Limiter les métriques du tableau de bord aux prompts que vous avez créés"
+    },
     "charts": {
       "nsfwTitle": "Distribution NSFW",
       "tagsTitle": "Top 10 Étiquettes",
       "stylesTitle": "Top 10 Styles Artistiques"
+    },
+    "errors": {
+      "load": "Impossible de charger les statistiques"
     }
   },
   "prompts": {
@@ -80,6 +146,11 @@
     "pagination": {
       "previous": "Précédent",
       "next": "Suivant"
+    },
+    "errors": {
+      "load": "Impossible de charger les prompts",
+      "save": "Impossible d'enregistrer le prompt",
+      "delete": "Impossible de supprimer le prompt"
     }
   },
   "promptForm": {
@@ -164,7 +235,7 @@
       "showUnspecified": "Afficher « non spécifié »",
       "showUnspecifiedDesc": "Inclure les prompts avec données incomplètes",
       "myPrompts": "Seulement mes prompts",
-      "myPromptsDesc": "Filtrer par défaut sur vos prompts",
+      "myPromptsDesc": "Afficher uniquement vos prompts lors du chargement des pages Prompts, Recherche et Tableau de bord",
       "excludedTags": "Étiquettes exclues",
       "tagPlaceholder": "Ajouter une étiquette...",
       "addTag": "Ajouter"
@@ -275,7 +346,8 @@
       "tagSearch": "Recherche par Étiquette",
       "tagPlaceholder": "Recherche par étiquette (ex: 1girl, anime, etc)...",
       "tagHelp": "Rechercher des prompts contenant une étiquette spécifique. Plusieurs étiquettes séparées par virgule.",
-      "all": "Tous"
+      "all": "Tous",
+      "myPrompts": "Uniquement mes prompts"
     },
     "actions": {
       "search": "Rechercher",
@@ -299,7 +371,8 @@
       "style": "Style",
       "people": "Personnes",
       "text": "Texte",
-      "tag": "Étiquette"
+      "tag": "Étiquette",
+      "myPrompts": "Mes prompts"
     },
     "activeFilters": "filtre actif",
     "activeFiltersPlural": "filtres actifs",
@@ -309,6 +382,12 @@
       "tagSearch": "Aucun prompt trouvé avec l'étiquette",
       "tagSearchSuccess": "{{count}} prompts trouvés avec l'étiquette",
       "error": "Erreur de recherche"
+    },
+    "errors": {
+      "update": "Impossible de mettre à jour le prompt",
+      "delete": "Impossible de supprimer le prompt",
+      "permissionEdit": "Tu n'as pas l'autorisation de modifier ce prompt",
+      "permissionDelete": "Tu n'as pas l'autorisation de supprimer ce prompt"
     }
   },
   "settings": {
@@ -320,7 +399,7 @@
       "showUnspecified": "Afficher \"non spécifié\" par défaut",
       "showUnspecifiedDesc": "Afficher les styles artistiques marqués comme \"non spécifié\" dans le tableau de bord et les graphiques",
       "myPromptsOnly": "Afficher uniquement mes prompts par défaut",
-      "myPromptsOnlyDesc": "Afficher uniquement mes prompts lors du chargement des pages Prompts et Recherche"
+      "myPromptsOnlyDesc": "Afficher uniquement mes prompts lors du chargement des pages Prompts, Recherche et Tableau de bord"
     },
     "blacklist": {
       "title": "Liste Noire d'Étiquettes",
@@ -356,6 +435,10 @@
     "export": "Exporter",
     "import": "Importer",
     "more": "plus",
+    "filters": {
+      "myPrompts": "Uniquement mes prompts",
+      "myPromptsDesc": "Afficher uniquement les prompts que vous avez créés"
+    },
     "errors": {
       "loadingPreferences": "Erreur lors du chargement des préférences",
       "loadingArtStyles": "Erreur lors du chargement des styles artistiques",

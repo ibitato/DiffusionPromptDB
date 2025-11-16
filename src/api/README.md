@@ -40,7 +40,7 @@ python -m uvicorn main:app --reload
 
 **2. API Key (Solo Lectura):**
 ```bash
-curl -H "X-API-Key: REDACTED_API_KEY" http://localhost:8000/api/v1/prompts
+curl -H "X-API-Key: $API_KEY" http://localhost:8000/api/v1/prompts
 ```
 
 **3. JWT Token (Lectura/Escritura):**
@@ -58,6 +58,28 @@ python -m src.api.start_server
 
 # API: http://localhost:8000
 # Docs: http://localhost:8000/docs
+```
+
+### Registro y verificación
+
+```bash
+# Crear cuenta
+curl -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+        "username": "nuevo",
+        "email": "nuevo@example.com",
+        "password": "StrongPass!42"
+      }'
+
+# Completar verificación (normalmente se hace desde el enlace recibido por email)
+curl -X POST http://localhost:8000/api/v1/auth/verify \
+  -H "Content-Type: application/json" \
+  -d '{"token": "TOKEN"}'
+
+# Nota: configura SMTP_* en .env para que el token se envíe automáticamente.
+# Solo en entornos con EMAIL_DEBUG_MODE=True verás el token en la respuesta/UI.
+```
 ```
 
 ## 📡 Endpoints Principales
@@ -99,7 +121,7 @@ GET    /api/v1/admin/stats          # Estadísticas
 ### 1. Listar Prompts
 
 ```bash
-curl -H "X-API-Key: REDACTED_API_KEY" \
+curl -H "X-API-Key: $API_KEY" \
   "http://localhost:8000/api/v1/prompts?page=1&page_size=10"
 ```
 
@@ -138,7 +160,7 @@ curl -X POST http://localhost:8000/api/v1/prompts \
 ### 3. Búsqueda en Catálogo por NSFW
 
 ```bash
-curl -H "X-API-Key: REDACTED_API_KEY" \
+curl -H "X-API-Key: $API_KEY" \
   "http://localhost:8000/api/v1/catalog/search/nsfw/explicit?limit=10"
 ```
 
@@ -158,7 +180,7 @@ curl -H "X-API-Key: REDACTED_API_KEY" \
 ### 4. Búsqueda Compleja
 
 ```bash
-curl -H "X-API-Key: REDACTED_API_KEY" \
+curl -H "X-API-Key: $API_KEY" \
   "http://localhost:8000/api/v1/search/complex?nsfw_level=explicit&number_of_people=1&art_style=anime&limit=20"
 ```
 
@@ -281,7 +303,7 @@ curl http://localhost:8000/health
 curl http://localhost:8000/api/v1/admin/stats
 
 # Con API key
-curl -H "X-API-Key: REDACTED_API_KEY" \
+curl -H "X-API-Key: $API_KEY" \
   http://localhost:8000/api/v1/prompts
 
 # Con autenticación JWT

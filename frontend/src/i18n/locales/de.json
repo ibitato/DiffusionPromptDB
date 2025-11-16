@@ -21,7 +21,66 @@
     "submit": "Anmelden",
     "loggingIn": "Anmeldung läuft...",
     "demoCredentials": "Demo-Anmeldedaten:",
-    "backendApi": "Backend-API: https://www.diffusionprompt.net/api/v1"
+    "backendApi": "Backend-API: https://www.diffusionprompt.net/api/v1",
+    "passwordExpiredTitle": "Passwortaktualisierung erforderlich",
+    "passwordExpiredDescription": "Ihr Passwort ist abgelaufen. Bitte setzen Sie ein neues, um fortzufahren.",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Neues Passwort bestätigen",
+    "updatePassword": "Passwort aktualisieren",
+    "updatingPassword": "Passwort wird aktualisiert...",
+    "passwordMismatch": "Die neuen Passwörter stimmen nicht überein",
+    "passwordUpdateError": "Passwort konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+    "noAccount": "Noch kein Konto?",
+    "goToRegister": "Zugang anfordern",
+    "requestAccessButton": "Zugang anfordern",
+    "validation": {
+      "usernameRequired": "Benutzername ist erforderlich",
+      "passwordRequired": "Passwort ist erforderlich"
+    },
+    "errors": {
+      "invalidCredentials": "Benutzername oder Passwort falsch",
+      "disabled": "Konto deaktiviert. Wende dich an einen Administrator.",
+      "generic": "Anmeldung fehlgeschlagen. Bitte erneut versuchen."
+    }
+  },
+  "register": {
+    "title": "Erstelle dein Konto",
+    "subtitle": "Fordere Zugriff an und bestätige deine E-Mail, um Prompts zu katalogisieren.",
+    "createHeading": "Schritt 1 · Zugriff anfordern",
+    "createDescription": "Fülle deine Daten aus. Wir senden dir vor der Aktivierung einen Verifizierungslink.",
+    "username": "Benutzername",
+    "usernamePlaceholder": "Wähle einen eindeutigen Benutzernamen",
+    "email": "E-Mail",
+    "emailPlaceholder": "Gib eine gültige E-Mail-Adresse ein (am besten vom Projekt-Domain)",
+    "password": "Passwort",
+    "passwordPlaceholder": "Nutze mindestens 12 Zeichen",
+    "passwordHint": "Nutze ein starkes Passwort mit Buchstaben, Zahlen und Symbolen.",
+    "createAccount": "Verifizierungs-E-Mail anfordern",
+    "creating": "Wird gesendet...",
+    "verifyHeading": "Schritt 2 · Konto verifizieren",
+    "verifyDescription": "Wir haben dir soeben eine sichere E-Mail gesendet. Folge diesen Schritten, um dein Konto zu aktivieren.",
+    "verifySteps": {
+      "email": "Öffne das Postfach der Adresse, die du beim Registrieren angegeben hast.",
+      "link": "Klicke auf den Verifizierungsbutton in dieser E-Mail.",
+      "login": "Kehre zur Anmeldeseite zurück und logge dich mit deinen neuen Zugangsdaten ein."
+    },
+    "verifyPending": "Sende zuerst das Formular ab, um die Verifizierungs-E-Mail zu erhalten.",
+    "debugTitle": "Token (Debug-Modus)",
+    "debugDescription": "Wird nur angezeigt, solange EMAIL_DEBUG_MODE=True ist. Teile ihn nur mit vertrauenswürdigen Admins.",
+    "haveAccount": "Bereits verifiziert?",
+    "backToLogin": "Zurück zum Login",
+    "errors": {
+      "generic": "Registrierung fehlgeschlagen. Bitte erneut versuchen."
+    },
+    "messages": {
+      "verifySuccess": "E-Mail gesendet! Verwende den Link, um dein Konto zu aktivieren."
+    },
+    "validation": {
+      "usernameRequired": "Benutzername ist erforderlich",
+      "emailRequired": "E-Mail ist erforderlich",
+      "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein",
+      "passwordRequired": "Passwort ist erforderlich"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -54,10 +113,17 @@
     "display": {
       "showUnspecified": "\"Nicht spezifiziert\" anzeigen"
     },
+    "filters": {
+      "myPrompts": "Nur meine Prompts",
+      "myPromptsDesc": "Begrenze die Dashboard-Metriken auf die Prompts, die du erstellt hast"
+    },
     "charts": {
       "nsfwTitle": "NSFW-Verteilung",
       "tagsTitle": "Top 10 Tags",
       "stylesTitle": "Top 10 Kunststile"
+    },
+    "errors": {
+      "load": "Statistiken konnten nicht geladen werden"
     }
   },
   "prompts": {
@@ -80,6 +146,11 @@
     "pagination": {
       "previous": "Zurück",
       "next": "Weiter"
+    },
+    "errors": {
+      "load": "Prompts konnten nicht geladen werden",
+      "save": "Prompt konnte nicht gespeichert werden",
+      "delete": "Prompt konnte nicht gelöscht werden"
     }
   },
   "promptForm": {
@@ -164,7 +235,7 @@
       "showUnspecified": "\"Nicht spezifiziert\" anzeigen",
       "showUnspecifiedDesc": "Prompts mit unvollständigen Daten einschließen",
       "myPrompts": "Nur meine Prompts",
-      "myPromptsDesc": "Standardmäßig nur eigene Prompts anzeigen",
+      "myPromptsDesc": "Nur eigene Prompts anzeigen, wenn die Seiten Prompts, Suche und Dashboard geladen werden",
       "excludedTags": "Ausgeschlossene Tags",
       "tagPlaceholder": "Tag hinzufügen...",
       "addTag": "Tag hinzufügen"
@@ -275,7 +346,8 @@
       "tagSearch": "Suche nach Tag",
       "tagPlaceholder": "Suche nach Tag (z.B.: 1girl, anime, etc)...",
       "tagHelp": "Suche nach Prompts mit einem bestimmten Tag. Mehrere Tags durch Komma getrennt.",
-      "all": "Alle"
+      "all": "Alle",
+      "myPrompts": "Nur meine Prompts"
     },
     "actions": {
       "search": "Suchen",
@@ -299,7 +371,8 @@
       "style": "Stil",
       "people": "Personen",
       "text": "Text",
-      "tag": "Tag"
+      "tag": "Tag",
+      "myPrompts": "Meine Prompts"
     },
     "activeFilters": "aktiver Filter",
     "activeFiltersPlural": "aktive Filter",
@@ -309,6 +382,12 @@
       "tagSearch": "Keine Prompts mit dem Tag gefunden",
       "tagSearchSuccess": "{{count}} Prompts mit dem Tag gefunden",
       "error": "Suchfehler"
+    },
+    "errors": {
+      "update": "Prompt konnte nicht aktualisiert werden",
+      "delete": "Prompt konnte nicht gelöscht werden",
+      "permissionEdit": "Du hast keine Berechtigung, diesen Prompt zu bearbeiten",
+      "permissionDelete": "Du hast keine Berechtigung, diesen Prompt zu löschen"
     }
   },
   "settings": {
@@ -320,7 +399,7 @@
       "showUnspecified": "\"Nicht spezifiziert\" standardmäßig anzeigen",
       "showUnspecifiedDesc": "Kunststile, die als \"nicht spezifiziert\" markiert sind, im Dashboard und in Diagrammen anzeigen",
       "myPromptsOnly": "Standardmäßig nur meine Prompts anzeigen",
-      "myPromptsOnlyDesc": "Nur meine Prompts beim Laden der Seiten Prompts und Suche anzeigen"
+      "myPromptsOnlyDesc": "Nur meine Prompts beim Laden der Seiten Prompts, Suche und Dashboard anzeigen"
     },
     "blacklist": {
       "title": "Tag-Blacklist",
@@ -356,6 +435,10 @@
     "export": "Exportieren",
     "import": "Importieren",
     "more": "mehr",
+    "filters": {
+      "myPrompts": "Nur meine Prompts",
+      "myPromptsDesc": "Zeige nur die von dir erstellten Prompts"
+    },
     "errors": {
       "loadingPreferences": "Fehler beim Laden der Einstellungen",
       "loadingArtStyles": "Fehler beim Laden der Kunststile",

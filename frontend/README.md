@@ -167,19 +167,24 @@ CREATE TABLE IF NOT EXISTS users (
 ### 2. New API Endpoints
 
 ```python
-# Authentication
-POST /api/v1/auth/register      # Register (admin only for admin role)
-POST /api/v1/auth/login         # Login → JWT + user info
-POST /api/v1/auth/refresh       # Refresh token
-GET  /api/v1/auth/me            # Current user info
-PUT  /api/v1/auth/profile       # Update own profile
+# Authentication & onboarding
+POST /api/v1/auth/register         # Self-service registration
+POST /api/v1/auth/verify           # Activate account via token
+POST /api/v1/auth/login            # Login → JWT + user info
+POST /api/v1/auth/password/expired # Force password rotation
+GET  /api/v1/auth/me               # Current user info + rolling token
+
+# Profile & preferences
+GET  /api/v1/user/profile              # Profile + preferences
+PUT  /api/v1/user/profile              # Update profile fields
+PUT  /api/v1/user/profile/preferences  # Persist "Only my prompts", excluded tags, etc.
 
 # User Management (Admin only)
-GET    /api/v1/users            # List users
-POST   /api/v1/users            # Create user
-PUT    /api/v1/users/{id}       # Update user
-DELETE /api/v1/users/{id}       # Delete user
-PUT    /api/v1/users/{id}/role  # Change role
+GET    /api/v1/admin/users         # List users
+POST   /api/v1/admin/users         # Create user
+PUT    /api/v1/admin/users/{id}    # Update user / role / status
+DELETE /api/v1/admin/users/{id}    # Delete user
+POST   /api/v1/admin/users/{id}/reset-password  # Force reset
 ```
 
 ## 💻 Installation
@@ -201,36 +206,38 @@ npm run dev
 ## 🎯 Pages & Routes
 
 ### Public Routes
-- `/` - Landing page
-- `/login` - Login page
+- `/login` - Login page (password rotation included)
+- `/register` - Self-service onboarding & verification
 
-### Protected Routes (User)
-- `/dashboard` - User dashboard
-- `/prompts` - List prompts
-- `/prompts/:id` - Prompt detail
-- `/prompts/create` - Create prompt
-- `/prompts/:id/edit` - Edit prompt
-- `/catalog` - Search catalog
-- `/catalog/:id` - Catalog detail
-- `/stats` - Statistics
+> La ruta `/` redirige automáticamente según el landing configurado del usuario cuando la sesión está activa.
 
-### Admin Routes
-- `/admin/users` - User management
-- `/admin/settings` - System settings
+### Protected Routes
+- `/dashboard` - Overview cards + charts
+- `/prompts` - Prompt table + CRUD modals
+- `/search` - Advanced search workspace
+- `/profile` - User profile, preferences, account deletion
+- `/admin/users` - Admin-only console (creación, bloqueo, reset)
 
 ## 🔑 Authentication Flow
 
+1. **Registro**: el usuario completa `/register` (`POST /auth/register`) y recibe un correo con el enlace de verificación (solo se muestra el token en pantalla cuando `EMAIL_DEBUG_MODE=True`).
+2. **Verificación**: el enlace del correo llama internamente a `/auth/verify` y activa la cuenta (`is_active=True`).
+3. **Login**: ya verificada, la cuenta llama a `/auth/login` y obtiene JWT + perfil.
+4. **Persistencia**: `authService` guarda `auth_token` + usuario en `localStorage` y los interceptores adjuntan el Bearer token.
+5. **Refresco silencioso**: `/auth/me` renueva el JWT en segundo plano mientras la sesión es válida; si vence, se limpia el store y se redirige a `/login`.
+
 ```typescript
-// 1. Login
+// Login example
 POST /api/v1/auth/login
 {
   "username": "admin",
-  "password": "secret"
+  "password": "REDACTED_PASSWORD"
 }
 
 // Response
 {
   "access_token": "jwt-token...",
+  "token_type": "bearer",
   "user": {
     "id": 1,
     "username": "admin",
@@ -238,14 +245,11 @@ POST /api/v1/auth/login
   }
 }
 
-// 2. Store token + user
-localStorage.setItem('token', response.access_token)
-authStore.setUser(response.user)
+// Persist on the client
+localStorage.setItem('auth_token', response.access_token);
+localStorage.setItem('user', JSON.stringify(response.user));
 
-// 3. All requests include token
-headers: {
-  'Authorization': `Bearer ${token}`
-}
+// Axios automatically sends Authorization header afterwards
 ```
 
 ## 🌐 i18n Implementation

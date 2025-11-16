@@ -21,7 +21,66 @@
     "submit": "Login",
     "loggingIn": "Logging in...",
     "demoCredentials": "Demo credentials:",
-    "backendApi": "Backend API: https://www.diffusionprompt.net/api/v1"
+    "backendApi": "Backend API: https://www.diffusionprompt.net/api/v1",
+    "passwordExpiredTitle": "Password update required",
+    "passwordExpiredDescription": "Your password expired. Please set a new one to continue.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "updatePassword": "Update password",
+    "updatingPassword": "Updating password...",
+    "passwordMismatch": "New passwords do not match",
+    "passwordUpdateError": "Failed to update password. Try again.",
+    "noAccount": "Need an account?",
+    "goToRegister": "Request access",
+    "requestAccessButton": "Request access",
+    "validation": {
+      "usernameRequired": "Username is required",
+      "passwordRequired": "Password is required"
+    },
+    "errors": {
+      "invalidCredentials": "Incorrect username or password",
+      "disabled": "Account disabled. Contact administrator.",
+      "generic": "Login failed. Try again."
+    }
+  },
+  "register": {
+    "title": "Create your account",
+    "subtitle": "Request access and verify your email to start cataloging prompts.",
+    "createHeading": "Step 1 · Request access",
+    "createDescription": "Fill in your details. We'll email a verification link before activating your account.",
+    "username": "Username",
+    "usernamePlaceholder": "Choose a unique username",
+    "email": "Email",
+    "emailPlaceholder": "Enter a valid email (project domain preferred)",
+    "password": "Password",
+    "passwordPlaceholder": "Use at least 12 characters",
+    "passwordHint": "Use a strong password with letters, numbers, and symbols.",
+    "createAccount": "Request verification email",
+    "creating": "Submitting...",
+    "verifyHeading": "Step 2 · Verify account",
+    "verifyDescription": "We just sent you a secure email. Follow the steps below to finish the activation.",
+    "verifySteps": {
+      "email": "Open the inbox of the address you used during registration.",
+      "link": "Click the verification button inside that email.",
+      "login": "Return to the login page and sign in with your new credentials."
+    },
+    "verifyPending": "Submit the registration form to receive your verification email.",
+    "debugTitle": "Token (debug mode)",
+    "debugDescription": "Only shown while EMAIL_DEBUG_MODE=True. Share it only with trusted admins.",
+    "haveAccount": "Already verified?",
+    "backToLogin": "Return to login",
+    "errors": {
+      "generic": "Registration failed. Please try again."
+    },
+    "messages": {
+      "verifySuccess": "Email sent! Use the link we sent to activate your account."
+    },
+    "validation": {
+      "usernameRequired": "Username is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "passwordRequired": "Password is required"
+    }
   },
   "profile": {
     "title": "User Profile",
@@ -49,7 +108,7 @@
       "showUnspecified": "Show \"unspecified\" results",
       "showUnspecifiedDesc": "Include prompts with incomplete metadata",
       "myPrompts": "Only my prompts",
-      "myPromptsDesc": "Filter your prompts by default",
+      "myPromptsDesc": "Show only my prompts when loading Prompts, Search, and Dashboard pages",
       "excludedTags": "Excluded tags",
       "tagPlaceholder": "Add a tag...",
       "addTag": "Add tag"
@@ -165,10 +224,17 @@
     "display": {
       "showUnspecified": "Show \"unspecified\""
     },
+    "filters": {
+      "myPrompts": "Only my prompts",
+      "myPromptsDesc": "Limit dashboard metrics to prompts you created"
+    },
     "charts": {
       "nsfwTitle": "NSFW Distribution",
       "tagsTitle": "Top 10 Tags",
       "stylesTitle": "Top 10 Art Styles"
+    },
+    "errors": {
+      "load": "Failed to load statistics"
     }
   },
   "prompts": {
@@ -191,6 +257,11 @@
     "pagination": {
       "previous": "Previous",
       "next": "Next"
+    },
+    "errors": {
+      "load": "Failed to load prompts",
+      "save": "Failed to save prompt",
+      "delete": "Failed to delete prompt"
     }
   },
   "promptForm": {
@@ -275,7 +346,8 @@
       "tagSearch": "Search by Tag",
       "tagPlaceholder": "Search by tag (ex: 1girl, anime, etc)...",
       "tagHelp": "Search prompts containing a specific tag. Multiple tags separated by comma.",
-      "all": "All"
+      "all": "All",
+      "myPrompts": "Only my prompts"
     },
     "actions": {
       "search": "Search",
@@ -299,7 +371,8 @@
       "style": "Style",
       "people": "People",
       "text": "Text",
-      "tag": "Tag"
+      "tag": "Tag",
+      "myPrompts": "My prompts"
     },
     "activeFilters": "active filter",
     "activeFiltersPlural": "active filters",
@@ -309,6 +382,12 @@
       "tagSearch": "No prompts found with tag",
       "tagSearchSuccess": "Found {{count}} prompts with tag",
       "error": "Search error"
+    },
+    "errors": {
+      "update": "Failed to update prompt",
+      "delete": "Failed to delete prompt",
+      "permissionEdit": "You don't have permission to edit this prompt",
+      "permissionDelete": "You don't have permission to delete this prompt"
     }
   },
   "settings": {
@@ -320,7 +399,7 @@
       "showUnspecified": "Show \"unspecified\" by default",
       "showUnspecifiedDesc": "Display art styles marked as \"unspecified\" in dashboard and charts",
       "myPromptsOnly": "Show only my prompts by default",
-      "myPromptsOnlyDesc": "Show only my prompts when loading Prompts and Search pages"
+      "myPromptsOnlyDesc": "Show only my prompts when loading Prompts, Search, and Dashboard pages"
     },
     "blacklist": {
       "title": "Tag Blacklist",
@@ -356,6 +435,10 @@
     "export": "Export",
     "import": "Import",
     "more": "more",
+    "filters": {
+      "myPrompts": "Only my prompts",
+      "myPromptsDesc": "Show only prompts you created"
+    },
     "errors": {
       "loadingPreferences": "Error loading preferences",
       "loadingArtStyles": "Error loading art styles",
