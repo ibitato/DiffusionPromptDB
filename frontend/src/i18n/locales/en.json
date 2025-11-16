@@ -288,6 +288,10 @@
       "notes": "Notes",
       "notesPlaceholder": "Additional notes (optional)..."
     },
+    "validation": {
+      "artStyleRequired": "Select an art style",
+      "artStyleInvalid": "Choose one of the available art styles"
+    },
     "actions": {
       "cancel": "Cancel",
       "create": "Create",
