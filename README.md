@@ -15,6 +15,7 @@ SQLite database for Stability Diffusion Prompts
 - 📝 **Well Documented**: Comprehensive docstrings and examples
 - 🔄 **Version Control**: Git-ready with proper .gitignore
 - 🔐 **Account Management**: JWT auth with profile page, password rotation, and admin tooling
+- 📈 **Personalized Metrics**: “Only my prompts” preference automatically scopes Dashboard, Search, and Prompts to your own catalog
 
 ## NEW: Complete Catalogation System 🚀
 
@@ -133,7 +134,7 @@ python start_server.py
 curl http://localhost:8000/api/v1/admin/stats
 
 # Search with API key
-curl -H "X-API-Key: demo-read-key-12345" \
+curl -H "X-API-Key: $API_KEY" \
   "http://localhost:8000/api/v1/search/complex?nsfw_level=explicit&art_style=anime"
 ```
 
@@ -141,7 +142,59 @@ curl -H "X-API-Key: demo-read-key-12345" \
 
 - `/api/v1/user/profile` – read/update profile fields, change password, select default landing page, update preferences, and self-delete accounts (with secure data dumps).
 - `/api/v1/admin/users/*` – admin-only CRUD for users: invite/create, update roles/status, reset passwords, and delete accounts.
-- Password rotation is enforced via configurable environment variables (`PASSWORD_ROTATION_DAYS`, `PASSWORD_MIN_LENGTH`, `PASSWORD_HISTORY_LIMIT`).
+- Password rotation is enforced via configurable environment variables (`PASSWORD_ROTATION_DAYS`, `PASSWORD_MIN_LENGTH`, `PASSWORD_HISTORY_LIMIT`), and users with expired credentials are redirected through `/api/v1/auth/password/expired` to verify their previous password and set a compliant replacement before logging back in.
+- User preferences now drive every surface: if “Only my prompts” is enabled, Dashboard cards and charts, advanced Search, and the Prompts list automatically scope results to `created_by = current_user`.
+
+#### Self-service registration
+
+1. El usuario abre `https://www.diffusionprompt.net/register`, completa usuario/correo/contraseña y envía el formulario.
+2. El backend envía un correo firmado con el enlace de verificación (`PUBLIC_APP_URL` controla la URL del botón). El Paso 2 de la página solo muestra las instrucciones y el estado del correo; no se pide token manual.
+3. Tras hacer clic en el enlace, el endpoint `/api/v1/auth/verify` activa la cuenta y ya se puede iniciar sesión desde `/login`.
+
+> Para automatizaciones o pruebas locales puedes seguir usando la API directamente:
+
+```bash
+# Registro vía API
+curl -X POST https://www.diffusionprompt.net/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"newuser","email":"newuser@example.com","password":"StrongPass!42"}'
+
+# Verificación manual (solo necesaria cuando EMAIL_DEBUG_MODE=True y la API devuelve el token en la respuesta)
+curl -X POST https://www.diffusionprompt.net/api/v1/auth/verify \
+  -H "Content-Type: application/json" \
+  -d '{"token":"TOKEN_FROM_DEBUG_RESPONSE"}'
+```
+
+**Configurar envío de correos**
+
+| Variable `.env` | Descripción |
+|-----------------|-------------|
+| `SMTP_HOST`     | Servidor SMTP de tu proveedor (Mailgun, SendGrid, etc.) |
+| `SMTP_PORT`     | Puerto TLS (587) o SSL (465) |
+| `SMTP_USERNAME` | Usuario/API key del servicio |
+| `SMTP_PASSWORD` | Contraseña/API key |
+| `SMTP_SENDER`   | Remitente (ej. `noreply@tudominio.com`) |
+| `SMTP_USE_TLS`  | `True` para STARTTLS, `False` para SSL puro |
+| `PUBLIC_APP_URL`| URL pública usada en los enlaces (ej. `https://www.diffusionprompt.net`) |
+
+Si aún no cuentas con correo en GoDaddy, crea un remitente en un proveedor transaccional (Mailgun, SendGrid, Postmark), añade los registros SPF/DKIM que te indiquen en la zona DNS del dominio y coloca las credenciales en `.env`. Mientras `SMTP_*` no esté completo, la API seguirá devolviendo el `verification_token` en la respuesta para que puedas compartirlo manualmente (`EMAIL_DEBUG_MODE=True` por defecto).
+
+#### Password expiry flow
+
+```bash
+# 1) User attempts login and receives 403 with X-Password-Expired: true
+
+# 2) They submit their current + new password to renew the credential:
+curl -X POST https://www.diffusionprompt.net/api/v1/auth/password/expired \
+  -H "Content-Type: application/json" \
+  -d '{
+        "username": "test",
+        "current_password": "1302Quiter@#",
+        "new_password": "NewPassword!123"
+      }'
+
+# 3) On success they can log in again with the new password.
+```
 
 See [API README](src/api/README.md) and [Authentication Setup](AUTHENTICATION_SETUP.md) for complete documentation.
 
@@ -173,7 +226,10 @@ cp .env.example .env
 npm run dev
 
 # Frontend: http://localhost:5173
-# Login: test/test, admin/admin, or user/user
+# Demo Login accounts (JWT):
+# - test / 1302Quiter@#
+# - admin / 1302Quiter@#
+# - user / 1302Quiter@# (seed account, disabled by default)
 ```
 
 **Features:**

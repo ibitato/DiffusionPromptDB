@@ -21,7 +21,66 @@
     "submit": "Iniciar Sesión",
     "loggingIn": "Iniciando sesión...",
     "demoCredentials": "Credenciales de prueba:",
-    "backendApi": "API Backend: https://www.diffusionprompt.net/api/v1"
+    "backendApi": "API Backend: https://www.diffusionprompt.net/api/v1",
+    "passwordExpiredTitle": "Es necesario actualizar tu contraseña",
+    "passwordExpiredDescription": "Tu contraseña ha expirado. Ingresa una nueva para continuar.",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "updatePassword": "Actualizar contraseña",
+    "updatingPassword": "Actualizando contraseña...",
+    "passwordMismatch": "Las nuevas contraseñas no coinciden",
+    "passwordUpdateError": "No se pudo actualizar la contraseña. Intenta nuevamente.",
+    "noAccount": "¿Necesitas una cuenta?",
+    "goToRegister": "Solicitar acceso",
+    "requestAccessButton": "Solicitar acceso",
+    "validation": {
+      "usernameRequired": "El usuario es obligatorio",
+      "passwordRequired": "La contraseña es obligatoria"
+    },
+    "errors": {
+      "invalidCredentials": "Usuario o contraseña incorrectos",
+      "disabled": "Cuenta deshabilitada. Contacta con un administrador.",
+      "generic": "No se pudo iniciar sesión. Inténtalo de nuevo."
+    }
+  },
+  "register": {
+    "title": "Crea tu cuenta",
+    "subtitle": "Solicita acceso y verifica tu correo para empezar a catalogar prompts.",
+    "createHeading": "Paso 1 · Solicitar acceso",
+    "createDescription": "Completa tu información. Te enviaremos un enlace de verificación antes de activar tu cuenta.",
+    "username": "Usuario",
+    "usernamePlaceholder": "Elige un usuario único",
+    "email": "Correo",
+    "emailPlaceholder": "Introduce un correo válido (mejor si es del dominio del proyecto)",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Usa al menos 12 caracteres",
+    "passwordHint": "Utiliza una contraseña robusta con letras, números y símbolos.",
+    "createAccount": "Solicitar correo de verificación",
+    "creating": "Enviando...",
+    "verifyHeading": "Paso 2 · Verificar cuenta",
+    "verifyDescription": "Ya enviamos un correo seguro. Sigue estos pasos para activar tu cuenta.",
+    "verifySteps": {
+      "email": "Abre la bandeja de entrada del correo usado en el registro.",
+      "link": "Haz clic en el botón de verificación dentro de ese correo.",
+      "login": "Regresa al login e inicia sesión con tus credenciales nuevas."
+    },
+    "verifyPending": "Completa el formulario para recibir el correo de verificación.",
+    "debugTitle": "Token (modo depuración)",
+    "debugDescription": "Solo se muestra con EMAIL_DEBUG_MODE=True. Compártelo únicamente con administradores.",
+    "haveAccount": "¿Ya verificaste tu cuenta?",
+    "backToLogin": "Volver al login",
+    "errors": {
+      "generic": "El registro falló. Inténtalo nuevamente."
+    },
+    "messages": {
+      "verifySuccess": "¡Correo enviado! Usa el enlace que recibiste para activar tu cuenta."
+    },
+    "validation": {
+      "usernameRequired": "El usuario es obligatorio",
+      "emailRequired": "El correo es obligatorio",
+      "emailInvalid": "Ingresa un correo válido",
+      "passwordRequired": "La contraseña es obligatoria"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -54,10 +113,17 @@
     "display": {
       "showUnspecified": "Mostrar \"unspecified\""
     },
+    "filters": {
+      "myPrompts": "Solo mis prompts",
+      "myPromptsDesc": "Limita las métricas del dashboard a los prompts que creaste"
+    },
     "charts": {
       "nsfwTitle": "Distribución NSFW",
       "tagsTitle": "Top 10 Tags",
       "stylesTitle": "Top 10 Estilos de Arte"
+    },
+    "errors": {
+      "load": "No se pudieron cargar las estadísticas"
     }
   },
   "prompts": {
@@ -80,6 +146,11 @@
     "pagination": {
       "previous": "Anterior",
       "next": "Siguiente"
+    },
+    "errors": {
+      "load": "No se pudieron cargar los prompts",
+      "save": "No se pudo guardar el prompt",
+      "delete": "No se pudo eliminar el prompt"
     }
   },
   "promptForm": {
@@ -164,7 +235,8 @@
       "tagSearch": "Buscar por Tag",
       "tagPlaceholder": "Buscar por tag (ej: 1girl, anime, etc)...",
       "tagHelp": "Busca prompts que contengan un tag específico. Múltiples tags separados por coma.",
-      "all": "Todos"
+      "all": "Todos",
+      "myPrompts": "Solo mis prompts"
     },
     "actions": {
       "search": "Buscar",
@@ -185,10 +257,11 @@
     },
     "chips": {
       "nsfw": "NSFW",
-      "style": "Style",
-      "people": "People",
+      "style": "Estilo",
+      "people": "Personas",
       "text": "Texto",
-      "tag": "Tag"
+      "tag": "Etiqueta",
+      "myPrompts": "Mis prompts"
     },
     "activeFilters": "filtro activo",
     "activeFiltersPlural": "filtros activos",
@@ -198,6 +271,12 @@
       "tagSearch": "No se encontraron prompts con el tag",
       "tagSearchSuccess": "Encontrados {{count}} prompts con el tag",
       "error": "Error en la búsqueda"
+    },
+    "errors": {
+      "update": "No se pudo actualizar el prompt",
+      "delete": "No se pudo eliminar el prompt",
+      "permissionEdit": "No tienes permisos para editar este prompt",
+      "permissionDelete": "No tienes permisos para eliminar este prompt"
     }
   },
   "profile": {
@@ -226,7 +305,7 @@
       "showUnspecified": "Mostrar resultados \"unspecified\"",
       "showUnspecifiedDesc": "Incluye resultados con datos incompletos en el catálogo",
       "myPrompts": "Solo mis prompts",
-      "myPromptsDesc": "Filtra por defecto para mostrar solo tus prompts",
+      "myPromptsDesc": "Mostrar solo tus prompts al cargar las páginas de Prompts, Búsqueda y Dashboard",
       "excludedTags": "Tags excluidos",
       "tagPlaceholder": "Agregar tag...",
       "addTag": "Añadir tag"
@@ -320,7 +399,7 @@
       "showUnspecified": "Mostrar \"unspecified\" por defecto",
       "showUnspecifiedDesc": "Mostrar estilos de arte marcados como \"unspecified\" en el dashboard y gráficas",
       "myPromptsOnly": "Solo mis prompts por defecto",
-      "myPromptsOnlyDesc": "Mostrar solo mis prompts al cargar las páginas de Prompts y Búsqueda"
+      "myPromptsOnlyDesc": "Mostrar solo mis prompts al cargar las páginas de Prompts, Búsqueda y Dashboard"
     },
     "blacklist": {
       "title": "Blacklist de Tags",
@@ -356,6 +435,10 @@
     "export": "Exportar",
     "import": "Importar",
     "more": "más",
+    "filters": {
+      "myPrompts": "Solo mis prompts",
+      "myPromptsDesc": "Mostrar únicamente los prompts que creaste"
+    },
     "errors": {
       "loadingPreferences": "Error al cargar preferencias",
       "loadingArtStyles": "Error al cargar estilos de arte",

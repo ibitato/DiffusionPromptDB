@@ -3,11 +3,11 @@
  * User authentication page
  */
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { FormEvent, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
-import { authService } from '../services/auth.service';
+import { authService, PasswordExpiredError } from '../services/auth.service';
 import { Loading } from '../components/ui/Loading';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
 
@@ -17,9 +17,38 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetForm, setResetForm] = useState({ current: '', next: '', confirm: '' });
+  const [resetError, setResetError] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+  const [forcedUsername, setForcedUsername] = useState('');
 
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
+
+  const handleInvalid = (
+    event: FormEvent<HTMLInputElement>,
+    message: { required: string }
+  ) => {
+    event.currentTarget.setCustomValidity(message.required);
+  };
+
+  const clearValidity = (event: FormEvent<HTMLInputElement>) => {
+    event.currentTarget.setCustomValidity('');
+  };
+
+  const translateLoginError = (message: string): string => {
+    const translations: Record<string, string> = {
+      'Invalid username or password': 'login.errors.invalidCredentials',
+      'Incorrect username or password': 'login.errors.invalidCredentials',
+      'Account disabled. Contact administrator.': 'login.errors.disabled',
+      'Account disabled. Contact administrator': 'login.errors.disabled',
+      'login.errors.generic': 'login.errors.generic',
+    };
+
+    const key = translations[message] ?? 'login.errors.generic';
+    return t(key);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,18 +62,64 @@ export const LoginPage = () => {
       setAuth(response.user, response.access_token);
       navigate('/dashboard');
     } catch (err) {
+      if (err instanceof PasswordExpiredError) {
+        setForcedUsername(err.username);
+        setShowPasswordReset(true);
+        setResetForm({ current: '', next: '', confirm: '' });
+        setResetError('');
+        setError(err.message);
+        setPassword('');
+        return;
+      }
       // Show error directly on the page
       console.error('Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      const rawMessage = err instanceof Error ? err.message : 'login.errors.generic';
+      const translatedMessage = translateLoginError(rawMessage);
 
       // Set error to display on page
-      setError(errorMessage);
+      setError(translatedMessage);
 
       // Clear password for security but keep username
       setPassword('');
     } finally {
       // Always stop loading indicator
       setIsLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError('');
+
+    if (resetForm.next !== resetForm.confirm) {
+      setResetError(t('login.passwordMismatch'));
+      return;
+    }
+
+    setIsResetting(true);
+    const targetUsername = forcedUsername || username;
+
+    try {
+      await authService.forcePasswordChange({
+        username: targetUsername,
+        current_password: resetForm.current,
+        new_password: resetForm.next,
+      });
+
+      const response = await authService.login({
+        username: targetUsername,
+        password: resetForm.next,
+      });
+
+      setAuth(response.user, response.access_token);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Password reset error:', err);
+      setResetError(
+        err instanceof Error ? err.message : t('login.passwordUpdateError')
+      );
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -63,7 +138,7 @@ export const LoginPage = () => {
         </div>
 
         {/* Login Form */}
-        <div className="bg-slate-800 rounded-lg shadow-xl p-8">
+        <div className="bg-slate-800 rounded-lg shadow-xl p-8 space-y-6">
           <h2 className="text-2xl font-semibold text-white mb-6">{t('login.title')}</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -78,6 +153,10 @@ export const LoginPage = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                onInvalid={(e) =>
+                  handleInvalid(e, { required: t('login.validation.usernameRequired') })
+                }
+                onInput={clearValidity}
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
                 placeholder={t('login.usernamePlaceholder')}
                 disabled={isLoading}
@@ -95,6 +174,10 @@ export const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                onInvalid={(e) =>
+                  handleInvalid(e, { required: t('login.validation.passwordRequired') })
+                }
+                onInput={clearValidity}
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
                 placeholder={t('login.passwordPlaceholder')}
                 disabled={isLoading}
@@ -124,6 +207,84 @@ export const LoginPage = () => {
               )}
             </button>
           </form>
+
+          <div className="space-y-3">
+            <div className="text-center text-sm text-gray-400">
+              {t('login.noAccount')}{' '}
+              <Link to="/register" className="text-violet-400 hover:text-violet-300">
+                {t('login.goToRegister')}
+              </Link>
+            </div>
+
+            <Link
+              to="/register"
+              className="inline-flex w-full justify-center rounded-lg border border-violet-500 px-4 py-3 text-sm font-semibold text-violet-100 transition hover:bg-violet-600/10 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-slate-800"
+            >
+              {t('login.requestAccessButton')}
+            </Link>
+          </div>
+
+          {showPasswordReset && (
+            <div className="mt-8 border-t border-slate-700 pt-6">
+              <h3 className="text-xl font-semibold text-white mb-2">
+                {t('login.passwordExpiredTitle')}
+              </h3>
+              <p className="text-sm text-gray-400 mb-4">{t('login.passwordExpiredDescription')}</p>
+
+              <form onSubmit={handlePasswordReset} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {t('profile.password.current')}
+                  </label>
+                  <input
+                    type="password"
+                    value={resetForm.current}
+                    onChange={(e) => setResetForm({ ...resetForm, current: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {t('login.newPassword')}
+                  </label>
+                  <input
+                    type="password"
+                    value={resetForm.next}
+                    onChange={(e) => setResetForm({ ...resetForm, next: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {t('login.confirmPassword')}
+                  </label>
+                  <input
+                    type="password"
+                    value={resetForm.confirm}
+                    onChange={(e) => setResetForm({ ...resetForm, confirm: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                {resetError && (
+                  <div className="bg-red-500/10 border border-red-500 rounded-lg p-3">
+                    <p className="text-red-400 text-sm font-medium">{resetError}</p>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isResetting}
+                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 focus:ring-offset-slate-800"
+                >
+                  {isResetting ? t('login.updatingPassword') : t('login.updatePassword')}
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>

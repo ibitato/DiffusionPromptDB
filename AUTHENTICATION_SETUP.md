@@ -10,41 +10,74 @@ Este documento explica la configuración completa del sistema de autenticación 
 2. **`src/api/routers/auth.py`** - Endpoints de autenticación
 3. **`src/api/main.py`** - Actualizado para incluir el router de auth
 
-### Endpoint de Login
+### Endpoints Clave
 
-**URL:** `POST /api/v1/auth/login`
+| Método | Ruta                                  | Descripción                                                 |
+|--------|---------------------------------------|-------------------------------------------------------------|
+| POST   | `/api/v1/auth/login`                  | Autentica al usuario y devuelve JWT + perfil                |
+| POST   | `/api/v1/auth/password/expired`       | Permite actualizar contraseñas expiradas antes de ingresar  |
+| GET    | `/api/v1/user/profile`                | Perfil + preferencias (requiere JWT)                        |
+| PUT    | `/api/v1/user/profile/preferences`    | Persiste “Solo mis prompts”, tags excluidos, etc.           |
+| GET    | `/api/v1/admin/stats?my_prompts_only` | Métricas personalizadas (requiere JWT válido)               |
 
-**Request Body:**
-```json
-{
-  "username": "test",
-  "password": "test"
-}
+#### Flujo de registro
+
+1. El usuario abre `https://www.diffusionprompt.net/register`, completa sus datos y envía la solicitud.
+2. El backend guarda la cuenta como inactiva y envía un correo seguro con el enlace de verificación (`PUBLIC_APP_URL` define la URL base). La tarjeta de “Paso 2” solo explica los pasos y muestra el estado del correo; no pide token manual.
+3. Al pulsar el botón del correo se ejecuta `/api/v1/auth/verify`, la cuenta pasa a `is_active = 1` y ya se puede iniciar sesión desde `/login`.
+
+> Para pruebas locales puedes seguir usando la API directamente. El token solo se muestra en la respuesta y en la UI cuando `EMAIL_DEBUG_MODE=True`:
+
+```bash
+curl -X POST https://www.diffusionprompt.net/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"nuevo_usuario","email":"nuevo@example.com","password":"StrongPass!42"}'
+
+curl -X POST https://www.diffusionprompt.net/api/v1/auth/verify \
+  -H "Content-Type: application/json" \
+  -d '{"token":"TOKEN_DESDE_DEBUG"}'
 ```
 
-**Response:**
-```json
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer",
-  "user": {
-    "id": 1,
-    "username": "test",
-    "email": "test@example.com",
-    "role": "admin"
-  }
-}
+#### Ejemplo de login
+
+```bash
+curl -X POST https://www.diffusionprompt.net/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"1302Quiter@#"}'
 ```
+
+### Configuración de correo saliente
+
+| Variable | Descripción |
+|----------|-------------|
+| `SMTP_HOST` | Host SMTP del proveedor (Mailgun/Postmark/SendGrid) |
+| `SMTP_PORT` | 587 (STARTTLS) o 465 (SSL) |
+| `SMTP_USERNAME` | Usuario/API key |
+| `SMTP_PASSWORD` | Contraseña/API key |
+| `SMTP_SENDER` | Remitente, ej. `noreply@tudominio.com` |
+| `SMTP_USE_TLS` | `True` para STARTTLS |
+| `PUBLIC_APP_URL` | URL pública usada en los enlaces |
+
+> GoDaddy no incluye correo transaccional por defecto. La recomendación es usar un proveedor externo (Mailgun, SendGrid, etc.) y añadir los registros SPF/DKIM que te indiquen en el panel de DNS de GoDaddy para que los correos salgan firmados con tu dominio.
+
+#### Paso a paso recomendado (GoDaddy + Mailgun/SendGrid)
+
+1. **Crear el dominio en el proveedor SMTP** (Mailgun, SendGrid, Postmark, etc.) y elegir el plan para correo transaccional.
+2. **Agregar los registros DNS en GoDaddy**: copia los SPF, DKIM (y opcional DMARC) que provee el servicio y espera su propagación.
+3. **Generar las credenciales SMTP o API key** y guardarlas de forma segura.
+4. **Actualizar el `.env`** con `SMTP_HOST`, `SMTP_PORT` (587), `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_SENDER` (`noreply@tudominio.com`), `SMTP_USE_TLS=True`, `PUBLIC_APP_URL=https://www.diffusionprompt.net` y `EMAIL_DEBUG_MODE=False` para producción.
+5. **Reiniciar el backend** para que cargue la configuración y revisar los logs (`backend.log`) para confirmar que se inicializó el `email_service`.
+6. **Probar el flujo** desde `/register`: registra un usuario, comprueba que el correo llega firmado por tu dominio y verifica la cuenta con el enlace/token recibido.
 
 ### Usuarios Disponibles
 
-El backend incluye 3 usuarios de prueba (en memoria):
+El backend incluye 3 usuarios de demo (almacenados en `data/users.db`):
 
-| Usuario | Contraseña | Rol   | Email              |
-|---------|-----------|-------|--------------------|
-| test    | test      | admin | test@example.com   |
-| admin   | admin     | admin | admin@example.com  |
-| user    | user      | user  | user@example.com   |
+| Usuario | Contraseña     | Rol   | Email              |
+|---------|----------------|-------|--------------------|
+| test    | 1302Quiter@#   | user  | test@example.com   |
+| admin   | 1302Quiter@#   | admin | admin@example.com  |
+| user    | 1302Quiter@#   | user  | user@example.com   |
 
 ⚠️ **IMPORTANTE:** En producción, usar una base de datos real y contraseñas hasheadas (bcrypt/argon2).
 
@@ -59,6 +92,13 @@ JWT_EXPIRE_MINUTES: int = 60  # Token expira en 60 minutos
 ```
 
 ## ✅ Frontend - Conectado a API Real
+
+### UI de registro y verificación
+
+- Ruta pública `/register` (`frontend/src/pages/RegisterPage.tsx`) con dos tarjetas: solicitud de alta y un panel informativo con los pasos para revisar el correo.
+- El formulario de alta usa `authService.register()` y solo muestra el `verification_token` cuando `EMAIL_DEBUG_MODE=True`; en producción, únicamente informa que se envió el correo.
+- Tras hacer clic en el enlace del correo (o llamar manualmente a `/auth/verify`), la cuenta se activa y el panel muestra el estado junto al enlace para volver al login.
+- Desde `/login` hay un enlace y un botón “Solicitar acceso” para exponer el flujo sin intervención del equipo.
 
 ### Cambios Realizados
 
@@ -116,7 +156,7 @@ cd src/api
 pip install -r requirements.txt
 
 # Iniciar servidor
-python main.py
+python start_server.py
 ```
 
 Backend disponible en: **http://localhost:8000**
@@ -144,11 +184,11 @@ Frontend disponible en: **http://localhost:5173**
 2. Serás redirigido automáticamente a `/login`
 3. Ingresa credenciales:
    - Usuario: `test`
-   - Contraseña: `test`
+   - Contraseña: `1302Quiter@#`
 4. Click en "Iniciar Sesión"
 5. Serás redirigido al Dashboard con stats reales
 
-## 🔍 Verificación del Login
+## 🔍 Verificación del Login y cambio de contraseña
 
 ### Usando cURL
 
@@ -156,7 +196,7 @@ Frontend disponible en: **http://localhost:5173**
 # Login
 curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"test"}'
+  -d '{"username":"test","password":"1302Quiter@#"}'
 
 # Respuesta esperada:
 {
@@ -170,6 +210,22 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
   }
 }
 ```
+
+### Contraseña expirada
+
+Si `/auth/login` devuelve `403` con el header `X-Password-Expired: true`, el frontend muestra el formulario de renovación. El backend expone el endpoint:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/password/expired \
+  -H "Content-Type: application/json" \
+  -d '{
+        "username": "test",
+        "current_password": "1302Quiter@#",
+        "new_password": "NewPassword!456"
+      }'
+```
+
+Al completarse, se puede iniciar sesión de nuevo con la contraseña nueva.
 
 ### Usando el Token
 
