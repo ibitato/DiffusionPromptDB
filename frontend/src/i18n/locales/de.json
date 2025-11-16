@@ -177,6 +177,10 @@
       "notes": "Notizen",
       "notesPlaceholder": "Zusätzliche Notizen (optional)..."
     },
+    "validation": {
+      "artStyleRequired": "Bitte einen Kunststil auswählen",
+      "artStyleInvalid": "Wähle einen der verfügbaren Kunststile"
+    },
     "actions": {
       "cancel": "Abbrechen",
       "create": "Erstellen",

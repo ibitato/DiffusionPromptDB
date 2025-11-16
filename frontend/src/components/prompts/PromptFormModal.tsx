@@ -26,7 +26,7 @@
  * ```
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../ui/Modal';
@@ -113,6 +113,34 @@ export const PromptFormModal = ({
 
   // Watch the rating value to show selected star
   const currentRating = watch('rating');
+  const styleLocaleCompare = (a: string, b: string) =>
+    a.localeCompare(b, undefined, { sensitivity: 'base' });
+
+  const normalizedArtStyles = useMemo(() => {
+    const unique = new Map<string, number>();
+    artStyles.forEach((item) => {
+      if (item.style) {
+        unique.set(item.style, item.count);
+      }
+    });
+    if (prompt?.art_style && prompt.art_style.trim() && !unique.has(prompt.art_style)) {
+      unique.set(prompt.art_style, 0);
+    }
+    return Array.from(unique.entries())
+      .map(([style, count]) => ({ style, count }))
+      .sort((a, b) => styleLocaleCompare(a.style, b.style));
+  }, [artStyles, prompt?.art_style]);
+
+  const validateArtStyle = (value: string) => {
+    if (!value) {
+      return t('promptForm.validation.artStyleRequired');
+    }
+    const exists = normalizedArtStyles.some((item) => item.style === value);
+    if (!exists) {
+      return t('promptForm.validation.artStyleInvalid');
+    }
+    return true;
+  };
 
   /**
    * Load art styles for dropdown
@@ -254,17 +282,22 @@ export const PromptFormModal = ({
             </span>
           </label>
           <select
-            {...register('art_style')}
+            {...register('art_style', {
+              validate: validateArtStyle,
+            })}
             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent"
             disabled={isLoading || isLoadingStyles}
           >
             <option value="">{t('promptForm.fields.artStylePlaceholder')}</option>
-            {artStyles.map((item) => (
+            {normalizedArtStyles.map((item) => (
               <option key={item.style} value={item.style}>
                 {item.style.charAt(0).toUpperCase() + item.style.slice(1)} ({item.count})
               </option>
             ))}
           </select>
+          {errors.art_style && (
+            <p className="mt-1 text-sm text-red-400">{errors.art_style.message}</p>
+          )}
         </div>
 
         {/* Tags */}
