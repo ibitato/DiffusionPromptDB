@@ -467,6 +467,7 @@ export const PromptsPage = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         canModify={promptToView ? canModify(promptToView) : false}
+        canCopy={Boolean(user && promptToView && promptToView.created_by !== user.id)}
       />
 
       {/* Form Modal */}
