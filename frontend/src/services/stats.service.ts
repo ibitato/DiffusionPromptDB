@@ -9,7 +9,7 @@ import { Stats } from '../types/api.types';
 export const statsService = {
   /**
    * Get overall statistics
-   * Public endpoint - auth only required when requesting personal stats
+   * Requires authentication (non-admin users allowed); personal stats still use the same token.
    */
   getStats: async (myPromptsOnly: boolean = false): Promise<Stats> => {
     try {
@@ -37,7 +37,7 @@ export const statsService = {
 
   /**
    * Get available filters
-   * Public endpoint - no auth required
+   * Requires authentication even though data is non-sensitive, so we keep everything behind the dashboard session.
    */
   getFilters: async (): Promise<{
     nsfw_levels: string[];

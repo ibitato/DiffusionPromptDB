@@ -13,6 +13,8 @@ Modern React application for managing and cataloging Stable Diffusion prompts wi
 - **Advanced Search**: Multi-filter search with complex queries
 - **User Preferences**: Customizable settings and tag blacklisting
 - **Export Functionality**: Export prompts to JSON/CSV formats
+- **One-click Prompt Copy**: Save curated catalog prompts into your workspace
+- **Search Exports**: Download any filtered search result as JSON or CSV
 
 ### 🌍 Internationalization
 - **4 Languages Supported**: Spanish, English, French, German
@@ -105,6 +107,7 @@ cp .env.example .env
 # Edit .env with your settings
 VITE_API_URL=http://localhost:8000/api/v1
 VITE_API_KEY=your-public-api-key
+VITE_ENABLE_DEBUG_LOGS=false         # optional: set to true to see console logs in prod builds
 ```
 
 ### 3. Start Development Server
@@ -114,6 +117,10 @@ npm run dev
 ```
 
 Application will be available at: http://localhost:5173
+
+> ℹ️ **Console logging:** by default production builds silence debug output. Toggle
+> `VITE_ENABLE_DEBUG_LOGS=true` if you need to troubleshoot against a staging/prod
+> backend; remember to switch it off afterwards.
 
 ## 🔐 Authentication
 
@@ -154,8 +161,8 @@ Application will be available at: http://localhost:5173
 - `GET /search/text` - Full-text search
 
 **Statistics:**
-- `GET /admin/stats` - Dashboard statistics
-- `GET /admin/filters` - Available filter options
+- `GET /admin/stats` - Dashboard statistics (JWT required; non-admin users allowed)
+- `GET /admin/filters` - Available filter options (JWT required)
 
 **Preferences:**
 - `GET /preferences` - Get user preferences

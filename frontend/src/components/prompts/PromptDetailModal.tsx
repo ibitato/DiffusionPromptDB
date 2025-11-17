@@ -3,6 +3,7 @@
  * Full view of a prompt with all its information
  */
 
+import { useTranslation } from 'react-i18next';
 import { Modal } from '../ui/Modal';
 import { Prompt } from '../../types/api.types';
 import { motion } from 'framer-motion';
@@ -14,6 +15,8 @@ interface PromptDetailModalProps {
   onEdit: (prompt: Prompt) => void;
   onDelete: (prompt: Prompt) => void;
   canModify?: boolean; // Whether user can edit/delete this prompt
+  canCopy?: boolean;
+  onCopy?: (prompt: Prompt) => void;
 }
 
 export const PromptDetailModal = ({
@@ -23,7 +26,10 @@ export const PromptDetailModal = ({
   onEdit,
   onDelete,
   canModify = false,
+  canCopy = false,
+  onCopy,
 }: PromptDetailModalProps) => {
+  const { t } = useTranslation();
   if (!prompt) return null;
 
   const formatDate = (dateString: string) => {
@@ -96,6 +102,14 @@ export const PromptDetailModal = ({
                   </svg>
                 ))}
               </motion.div>
+            )}
+            {canCopy && onCopy && (
+              <button
+                onClick={() => onCopy(prompt)}
+                className="ml-auto px-3 py-1 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-full transition-colors"
+              >
+                {t('promptDetail.copyToMyPrompts')}
+              </button>
             )}
           </div>
 

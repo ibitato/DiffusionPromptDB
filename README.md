@@ -101,6 +101,16 @@ python search_catalog.py
 
 # Example queries
 python example_queries.py
+
+#### Sanitizing narrative/non-prompt rows
+
+Some legacy dumps ship with descriptive stories instead of actual prompts. Use the cleanup
+helper to purge them (a timestamped backup is created under `database/backups/`):
+
+```bash
+python3 scripts/clean_invalid_prompts.py          # dry-run, shows matches
+python3 scripts/clean_invalid_prompts.py --apply  # delete + backup
+```
 ```
 
 ### 3️⃣ REST API 📡
@@ -130,8 +140,14 @@ python start_server.py
 
 **Quick Example:**
 ```bash
-# Get stats (public)
-curl http://localhost:8000/api/v1/admin/stats
+# Login to obtain JWT
+TOKEN=$(curl -s -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"test"}' | jq -r '.access_token')
+
+# Get stats (requires Authorization header)
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8000/api/v1/admin/stats
 
 # Search with API key
 curl -H "X-API-Key: $API_KEY" \

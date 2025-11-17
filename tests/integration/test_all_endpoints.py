@@ -33,6 +33,15 @@ TEST_PASS = DEMO_PASSWORD
 API_KEY = settings.api_keys[0]
 
 
+def _login_and_get_token(username: str = TEST_USER, password: str = TEST_PASS) -> str:
+    """Helper to perform login and return JWT token."""
+    response = client.post(
+        "/api/v1/auth/login", json={"username": username, "password": password}
+    )
+    assert response.status_code == 200, f"Login failed: {response.text}"
+    return response.json()["access_token"]
+
+
 class TestAuthentication:
     """Test authentication endpoints."""
 
@@ -58,7 +67,7 @@ class TestAuthentication:
 
 
 class TestPublicEndpoints:
-    """Test public endpoints (no auth required)."""
+    """Test general endpoints (some public, some require auth)."""
 
     def test_root_endpoint(self):
         """Test root endpoint."""
@@ -84,8 +93,11 @@ class TestPublicEndpoints:
         print(f"✅ Admin health check working")
 
     def test_admin_stats(self):
-        """Test admin stats endpoint (should show catalog data)."""
-        response = client.get("/api/v1/admin/stats")
+        """Test admin stats endpoint (requires authentication)."""
+        token = _login_and_get_token()
+        response = client.get(
+            "/api/v1/admin/stats", headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code == 200
         data = response.json()
         assert "total_prompts" in data
@@ -98,10 +110,7 @@ class TestPromptsEndpoints:
     @pytest.fixture
     def auth_token(self):
         """Get auth token for tests."""
-        response = client.post(
-            "/api/v1/auth/login", json={"username": TEST_USER, "password": TEST_PASS}
-        )
-        return response.json()["access_token"]
+        return _login_and_get_token()
 
     def test_list_prompts_with_api_key(self):
         """Test listing prompts with API key."""

@@ -18,6 +18,8 @@ import { promptsService } from '../services/prompts.service';
 import { preferencesService } from '../services/preferences.service';
 import { useAuthStore } from '../store/authStore';
 import { CatalogPrompt, Prompt, CreatePromptRequest } from '../types/api.types';
+import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
+import { logDebug, logError } from '../utils/logger';
 
 export const SearchPage = () => {
   const { t } = useTranslation();
@@ -67,7 +69,7 @@ export const SearchPage = () => {
       const prefs = await preferencesService.getPreferences();
       setMyPromptsOnly(prefs.my_prompts_only);
     } catch (err) {
-      console.error('Error loading preferences', err);
+      logError('Error loading preferences', err);
     }
   };
 
@@ -91,7 +93,7 @@ export const SearchPage = () => {
       setNsfwLevels(filters.nsfw_levels);
       setArtStyles(filters.art_styles);
     } catch (err) {
-      console.error(t('common.errors.loadingFilters'), err);
+      logError(t('common.errors.loadingFilters'), err);
       toast.error(t('common.errors.loadingFilters'));
     } finally {
       setIsLoadingFilters(false);
@@ -176,7 +178,7 @@ export const SearchPage = () => {
         // My prompts only filter
         if (myPromptsOnly && user) {
           params.my_prompts = true;
-          console.log('Sending my_prompts=true filter'); // Debug log
+          logDebug('Search: applying my_prompts filter', { userId: user.id });
         }
 
         // Pagination
@@ -266,6 +268,8 @@ export const SearchPage = () => {
     };
   };
 
+  const getExportablePrompts = (): Prompt[] => results.map((result) => convertToPrompt(result));
+
   // Check if user can edit/delete a prompt
   const canModify = (prompt: Prompt): boolean => {
     if (!user) return false;
@@ -284,7 +288,7 @@ export const SearchPage = () => {
   };
 
   const handleEdit = (prompt: Prompt) => {
-    console.log('Editing prompt:', prompt); // Debug log
+    logDebug('Editing prompt', { promptId: prompt.id });
     // Set the editing prompt separately
     setEditingPrompt(prompt);
     // Close detail modal
@@ -303,13 +307,13 @@ export const SearchPage = () => {
 
   const handleFormSubmit = async (data: CreatePromptRequest) => {
     if (!editingPrompt) {
-      console.error('No prompt selected for editing');
+      logError('No prompt selected for editing');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      console.log('Updating prompt:', editingPrompt.id, data); // Debug log
+      logDebug('Updating prompt', { promptId: editingPrompt.id });
       const updatedPrompt = await promptsService.updatePrompt(editingPrompt.id, data);
       toast.success(t('promptForm.messages.updated'));
 
@@ -330,7 +334,7 @@ export const SearchPage = () => {
       setEditingPrompt(null);
       setSelectedPrompt(null);
     } catch (err) {
-      console.error('Error updating prompt:', err); // Debug log
+      logError('Error updating prompt', err);
       const message = err instanceof Error ? err.message : t('search.errors.update');
 
       // Check if it's a permission error
@@ -346,13 +350,13 @@ export const SearchPage = () => {
 
   const confirmDelete = async () => {
     if (!promptToDelete) {
-      console.error('No prompt selected for deletion');
+      logError('No prompt selected for deletion');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      console.log('Deleting prompt:', promptToDelete.id); // Debug log
+      logDebug('Deleting prompt', { promptId: promptToDelete.id });
       await promptsService.deletePrompt(promptToDelete.id);
       toast.success(t('deleteConfirm.success'));
 
@@ -364,7 +368,7 @@ export const SearchPage = () => {
       setIsDeleteModalOpen(false);
       setPromptToDelete(null);
     } catch (err) {
-      console.error('Error deleting prompt:', err); // Debug log
+      logError('Error deleting prompt', err);
       const message = err instanceof Error ? err.message : t('search.errors.delete');
 
       // Check if it's a permission error
@@ -375,6 +379,28 @@ export const SearchPage = () => {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCopyPrompt = async (prompt: Prompt) => {
+    try {
+      await promptsService.copyPrompt(prompt.id);
+      toast.success(t('search.messages.copySuccess'));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t('search.messages.copyError');
+      toast.error(message);
+    }
+  };
+
+  const handleExport = (format: 'json' | 'csv') => {
+    if (!results.length) return;
+    const exportData = getExportablePrompts();
+    if (format === 'json') {
+      exportToJSON(exportData, getExportFilename('json'));
+      toast.success(t('search.export.successJson'));
+    } else {
+      exportToCSV(exportData, getExportFilename('csv'));
+      toast.success(t('search.export.successCsv'));
     }
   };
 
@@ -598,28 +624,65 @@ export const SearchPage = () => {
         ) : hasSearched ? (
           <>
             {/* Results Header */}
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-white">
-                {results.length > 0 ? (
-                  <>
-                    {allResultsCount > 0 && (
-                      <span className="text-violet-400">
-                        {allResultsCount} {t('search.results.total')}
-                      </span>
-                    )}
-                    {allResultsCount > 0 && ' - '}
-                    {t('search.results.page')} {currentPage}
-                  </>
-                ) : (
-                  t('search.results.noResults')
+            <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-white">
+                  {results.length > 0 ? (
+                    <>
+                      {allResultsCount > 0 && (
+                        <span className="text-violet-400">
+                          {allResultsCount} {t('search.results.total')}
+                        </span>
+                      )}
+                      {allResultsCount > 0 && ' - '}
+                      {t('search.results.page')} {currentPage}
+                    </>
+                  ) : (
+                    t('search.results.noResults')
+                  )}
+                </h3>
+                {results.length > 0 && (
+                  <span className="text-sm text-gray-400">
+                    {t('search.results.showing')} {(currentPage - 1) * pageSize + 1} -{' '}
+                    {Math.min(
+                      currentPage * pageSize,
+                      (currentPage - 1) * pageSize + results.length
+                    )}{' '}
+                    {t('search.results.of')} {allResultsCount}
+                  </span>
                 )}
-              </h3>
+              </div>
               {results.length > 0 && (
-                <span className="text-sm text-gray-400">
-                  {t('search.results.showing')} {(currentPage - 1) * pageSize + 1} -{' '}
-                  {Math.min(currentPage * pageSize, (currentPage - 1) * pageSize + results.length)}{' '}
-                  {t('search.results.of')} {allResultsCount}
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => handleExport('json')}
+                    className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-medium transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                      />
+                    </svg>
+                    {t('search.export.json')}
+                  </button>
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                      />
+                    </svg>
+                    {t('search.export.csv')}
+                  </button>
+                </div>
               )}
             </div>
 
@@ -755,6 +818,8 @@ export const SearchPage = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           canModify={canModify(selectedPrompt)}
+          canCopy={Boolean(user && selectedPrompt.created_by !== user.id)}
+          onCopy={handleCopyPrompt}
         />
       )}
 

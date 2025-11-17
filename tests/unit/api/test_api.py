@@ -19,6 +19,18 @@ client = TestClient(app)
 
 # Test API key
 TEST_API_KEY = settings.api_keys[0]
+TEST_USER = "test"
+TEST_PASSWORD = "1302Quiter@#"
+
+
+def _login_and_get_token() -> str:
+    """Helper to obtain JWT token for tests."""
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"username": TEST_USER, "password": TEST_PASSWORD},
+    )
+    assert response.status_code == 200, response.text
+    return response.json()["access_token"]
 
 
 class TestRoot:
@@ -52,10 +64,30 @@ class TestAdmin:
         data = response.json()
         assert data["status"] == "healthy"
 
-    def test_stats_public(self):
-        """Test stats endpoint (public access)."""
+    def test_stats_requires_auth(self):
+        """Stats endpoint should reject anonymous access."""
         response = client.get("/api/v1/admin/stats")
-        # May fail if catalog DB doesn't exist, but should return proper status
+        assert response.status_code == 401
+
+    def test_stats_with_auth(self):
+        """Authenticated users can load stats (even if DB fallback)."""
+        token = _login_and_get_token()
+        response = client.get(
+            "/api/v1/admin/stats", headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code in [200, 503]
+
+    def test_filters_require_auth(self):
+        """Filters endpoint should enforce authentication."""
+        response = client.get("/api/v1/admin/filters")
+        assert response.status_code == 401
+
+    def test_filters_with_auth(self):
+        """Authenticated users can read filters."""
+        token = _login_and_get_token()
+        response = client.get(
+            "/api/v1/admin/filters", headers={"Authorization": f"Bearer {token}"}
+        )
         assert response.status_code in [200, 503]
 
 
@@ -102,6 +134,30 @@ class TestPromptsAuth:
             "/api/v1/prompts/1", headers={"X-API-Key": TEST_API_KEY}
         )
         assert response.status_code == 401
+
+    def test_copy_prompt_creates_user_owned_prompt(self):
+        """Copying a catalog prompt should create a user-owned entry."""
+        token = _login_and_get_token()
+        list_resp = client.get(
+            "/api/v1/prompts?page=1&page_size=1",
+            headers={"X-API-Key": TEST_API_KEY},
+        )
+        assert list_resp.status_code == 200, list_resp.text
+        source_id = list_resp.json()["results"][0]["id"]
+        copy_resp = client.post(
+            f"/api/v1/prompts/{source_id}/copy",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert copy_resp.status_code == 201, copy_resp.text
+        data = copy_resp.json()
+        assert data["id"] != 1
+        assert data["created_by"] == 1
+        assert data["text"]
+
+        cleanup = client.delete(
+            f"/api/v1/prompts/{data['id']}", headers={"Authorization": f"Bearer {token}"}
+        )
+        assert cleanup.status_code in (200, 204)
 
 
 class TestCatalogEndpoints:

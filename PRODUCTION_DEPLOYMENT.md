@@ -99,12 +99,17 @@ Description=DiffusionPrompt API
 After=network.target
 
 [Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/diffusionprompt.net/src/api
-Environment="PATH=/var/www/diffusionprompt.net/venv/bin"
-ExecStart=/var/www/diffusionprompt.net/venv/bin/python start_server.py
+User=diffusionprompt
+Group=diffusionprompt
+WorkingDirectory=/var/www/diffusionprompt/api
+Environment="ENVIRONMENT=production"
+Environment="LOG_FILE=/var/log/diffusionprompt/backend.log"
+EnvironmentFile=/var/www/diffusionprompt/api/.env
+ExecStart=/var/www/diffusionprompt/api/.venv/bin/uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 4 --proxy-headers --forwarded-allow-ips="*"
 Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/diffusionprompt/api.service.log
+StandardError=append:/var/log/diffusionprompt/api.service.log
 
 [Install]
 WantedBy=multi-user.target
@@ -125,18 +130,25 @@ sudo apt install python3-pip python3-venv nginx certbot python3-certbot-nginx po
 
 ### 2. Clonar y Configurar
 ```bash
-# Clonar repositorio
-cd /var/www
-sudo git clone https://github.com/yourusername/DiffusionPromptDB.git diffusionprompt.net
-cd diffusionprompt.net
+# Código fuente trabajo
+cd /home/dlopez/DiffusionPromptDB   # repo editable
 
-# Crear entorno virtual
-python3 -m venv venv
-source venv/bin/activate
+# Sincronizar backend a /var/www/diffusionprompt/api (propietario diffusionprompt)
+sudo mkdir -p /var/www/diffusionprompt/api
+sudo rsync -a --delete --exclude '.venv' --exclude 'frontend/dist' ./ /var/www/diffusionprompt/api/
+sudo chown -R diffusionprompt:diffusionprompt /var/www/diffusionprompt/api
 
-# Instalar dependencias
-pip install -r requirements.txt
-cd frontend && npm install && npm run build
+# Crear venv de producción con usuario del servicio
+sudo -u diffusionprompt bash -lc 'cd /var/www/diffusionprompt/api && python3 -m venv .venv && source .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt'
+
+# Frontend estático
+cd /home/dlopez/DiffusionPromptDB/frontend
+npm install
+npm run build
+sudo rsync -a --delete dist/ /var/www/diffusionprompt/frontend/dist_new/
+sudo mv /var/www/diffusionprompt/frontend/dist /var/www/diffusionprompt/frontend/dist_$(date +%Y%m%d%H%M%S)
+sudo mv /var/www/diffusionprompt/frontend/dist_new /var/www/diffusionprompt/frontend/dist
+sudo chown -R www-data:www-data /var/www/diffusionprompt/frontend/dist
 ```
 
 ### 3. Configurar Variables de Entorno
@@ -195,7 +207,7 @@ sudo apt install htop nethogs iotop
 
 # Logs
 tail -f /var/log/nginx/access.log
-tail -f /var/www/diffusionprompt.net/src/api/api.log
+tail -f /var/log/diffusionprompt/backend.log
 ```
 
 ---

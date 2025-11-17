@@ -36,7 +36,7 @@ python -m uvicorn main:app --reload
 
 **1. Público (Sin auth):**
 - `GET /health`
-- `GET /api/v1/admin/stats`
+- `GET /api/v1/admin/health`
 
 **2. API Key (Solo Lectura):**
 ```bash
@@ -59,6 +59,9 @@ python -m src.api.start_server
 # API: http://localhost:8000
 # Docs: http://localhost:8000/docs
 ```
+Requerido para:
+- POST/PUT/DELETE de prompts
+- Endpoints sensibles dentro de `/api/v1/admin`, como `/admin/stats` y `/admin/filters`
 
 ### Registro y verificación
 
@@ -112,8 +115,9 @@ GET    /api/v1/search/tags/{tag}    # Por tag específico
 ### Admin
 
 ```
-GET    /api/v1/admin/health         # Health check
-GET    /api/v1/admin/stats          # Estadísticas
+GET    /api/v1/admin/health         # Health check (público)
+GET    /api/v1/admin/stats          # Estadísticas (JWT)
+GET    /api/v1/admin/filters        # Valores para filtros (JWT)
 ```
 
 ## 💡 Ejemplos de Uso
@@ -184,10 +188,11 @@ curl -H "X-API-Key: $API_KEY" \
   "http://localhost:8000/api/v1/search/complex?nsfw_level=explicit&number_of_people=1&art_style=anime&limit=20"
 ```
 
-### 5. Estadísticas (Público)
+### 5. Estadísticas (requiere JWT)
 
 ```bash
-curl http://localhost:8000/api/v1/admin/stats
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  http://localhost:8000/api/v1/admin/stats
 ```
 
 **Response:**
@@ -299,8 +304,9 @@ CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
 # Health check
 curl http://localhost:8000/health
 
-# Stats (público)
-curl http://localhost:8000/api/v1/admin/stats
+# Stats (requiere JWT)
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  http://localhost:8000/api/v1/admin/stats
 
 # Con API key
 curl -H "X-API-Key: $API_KEY" \
@@ -340,6 +346,7 @@ Ver `config.py` y `.env.example` para todas las opciones.
 - `GET /api/v1/prompts?page=1&page_size=20&category=landscape`
 - `GET /api/v1/prompts/{id}`
 - `POST /api/v1/prompts` (JWT)
+- `POST /api/v1/prompts/{id}/copy` (JWT) – duplicate catalog prompt into the authenticated user's collection
 - `PUT /api/v1/prompts/{id}` (JWT)
 - `DELETE /api/v1/prompts/{id}` (JWT)
 
@@ -352,9 +359,10 @@ Ver `config.py` y `.env.example` para todas las opciones.
 - `GET /api/v1/search/complex?nsfw_level=explicit&number_of_people=1&art_style=anime`
 - `GET /api/v1/search/tags/{tag}`
 
-### Admin (público o API Key)
+### Admin (health público, resto con JWT)
 - `GET /api/v1/admin/health`
-- `GET /api/v1/admin/stats`
+- `GET /api/v1/admin/stats` (JWT)
+- `GET /api/v1/admin/filters` (JWT)
 
 ## 🎯 Próximos Pasos
 

@@ -214,6 +214,7 @@
   "promptDetail": {
     "title": "Prompt",
     "copy": "Kopieren",
+    "copyToMyPrompts": "In meinen Prompts speichern",
     "sections": {
       "promptText": "Prompt-Text",
       "negativePrompt": "Negativer Prompt",
@@ -376,6 +377,12 @@
       "clear": "Filter Löschen",
       "searching": "Suche läuft..."
     },
+    "export": {
+      "json": "Als JSON exportieren",
+      "csv": "Als CSV exportieren",
+      "successJson": "Suchergebnisse als JSON exportiert",
+      "successCsv": "Suchergebnisse als CSV exportiert"
+    },
     "results": {
       "total": "Ergebnisse insgesamt",
       "page": "Seite",
@@ -403,6 +410,8 @@
       "foundResults": "{{count}} Ergebnisse insgesamt gefunden",
       "tagSearch": "Keine Prompts mit dem Tag gefunden",
       "tagSearchSuccess": "{{count}} Prompts mit dem Tag gefunden",
+      "copySuccess": "Prompt wurde zu deiner Sammlung kopiert",
+      "copyError": "Prompt konnte nicht kopiert werden",
       "error": "Suchfehler"
     },
     "errors": {

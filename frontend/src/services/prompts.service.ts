@@ -155,6 +155,18 @@ export const promptsService = {
   },
 
   /**
+   * Copies an existing catalog prompt into the authenticated user's collection.
+   */
+  copyPrompt: async (id: number): Promise<Prompt> => {
+    try {
+      const response = await api.post<Prompt>(`/prompts/${id}/copy`);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
    * Searches prompts with multiple filter criteria
    *
    * @param {string} [text] - Text to search in prompt content

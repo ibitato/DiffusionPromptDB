@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import sqlite3
 from datetime import datetime
 
-from ..auth import optional_auth
+from ..auth import optional_auth, verify_token
 from .catalog import get_catalog_db
 
 router = APIRouter()
@@ -30,18 +30,21 @@ async def health_check(auth: dict = Depends(optional_auth)):
 async def get_statistics(
     my_prompts_only: bool = False,
     db: sqlite3.Connection = Depends(get_catalog_db),
-    auth: dict = Depends(optional_auth),
+    auth: dict = Depends(verify_token),
 ):
     """
-    Get database statistics (public).
+    Get database statistics.
+
+    Requires a valid authenticated session (non-admin users allowed).
     """
     user_id = None
     if my_prompts_only:
-        if not auth:
+        user_id = auth.get("user_id")
+        if not user_id:
             raise HTTPException(
-                status_code=401, detail="Authentication required for personal statistics."
+                status_code=403,
+                detail="Authenticated user context required for personal statistics.",
             )
-        user_id = auth["user_id"]
 
     filter_params = (user_id,) if my_prompts_only else ()
     filter_clause = " WHERE created_by = ?" if my_prompts_only else ""
@@ -145,10 +148,12 @@ async def get_statistics(
 @router.get("/filters")
 async def get_filters(
     db: sqlite3.Connection = Depends(get_catalog_db),
-    auth: dict = Depends(optional_auth),
+    _auth: dict = Depends(verify_token),
 ):
     """
-    Get available filter values from database (public).
+    Get available filter values from database.
+    Requires authentication but is accessible to any logged-in user.
+
     Returns unique values for NSFW levels and art styles with counts.
     """
     filters = {}

@@ -13,6 +13,7 @@ import { preferencesService } from '../services/preferences.service';
 import { profileService } from '../services/profile.service';
 import { landingPageLabels } from '../utils/landingPageLabels';
 import { DeleteAccountPayload, UserProfile } from '../types/api.types';
+import { logError } from '../utils/logger';
 
 export const ProfilePage = () => {
   const { t } = useTranslation();
@@ -60,7 +61,7 @@ export const ProfilePage = () => {
         setExcludedTags(prefs.excluded_tags);
         updateUser(profileData);
       } catch (error) {
-        console.error(error);
+        logError('Failed to load profile data', error);
         toast.error(t('profile.errors.load'));
       } finally {
         setIsLoading(false);

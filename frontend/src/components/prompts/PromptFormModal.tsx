@@ -33,6 +33,7 @@ import { Modal } from '../ui/Modal';
 import { Loading } from '../ui/Loading';
 import { CreatePromptRequest, Prompt } from '../../types/api.types';
 import { statsService } from '../../services/stats.service';
+import { logDebug, logError } from '../../utils/logger';
 
 /**
  * Props for the PromptFormModal component
@@ -71,9 +72,6 @@ export const PromptFormModal = ({
   const { t } = useTranslation();
   const [artStyles, setArtStyles] = useState<Array<{ style: string; count: number }>>([]);
   const [isLoadingStyles, setIsLoadingStyles] = useState(true);
-
-  // Debug log to see what we receive
-  console.log('PromptFormModal rendered with prompt:', prompt);
 
   /**
    * React Hook Form configuration
@@ -151,7 +149,7 @@ export const PromptFormModal = ({
         const filters = await statsService.getFilters();
         setArtStyles(filters.art_styles);
       } catch (err) {
-        console.error('Failed to load art styles:', err);
+        logError('Failed to load art styles', err);
       } finally {
         setIsLoadingStyles(false);
       }
@@ -169,10 +167,8 @@ export const PromptFormModal = ({
    */
   useEffect(() => {
     if (prompt && isOpen) {
-      // Edit mode: populate form with existing prompt data
-      console.log('useEffect - Setting values for prompt:', prompt);
+      logDebug('PromptFormModal: populating form for editing', { promptId: prompt.id });
 
-      // Reset the entire form with new values
       const formData = {
         text: prompt.text || '',
         negative_prompt: prompt.negative_prompt || '',
@@ -185,11 +181,9 @@ export const PromptFormModal = ({
         parameters: prompt.parameters || '',
       };
 
-      console.log('Form data to set:', formData);
       reset(formData);
     } else if (!prompt && isOpen) {
-      // Create mode: clear form with default values
-      console.log('useEffect - Clearing form for create mode');
+      logDebug('PromptFormModal: resetting form for create mode');
       reset({
         text: '',
         negative_prompt: '',

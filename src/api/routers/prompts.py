@@ -4,8 +4,9 @@ Prompts Router
 CRUD operations for original prompts.
 """
 
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List
+from typing import List, Optional, Dict, Any
 import sqlite3
 from pathlib import Path
 
@@ -18,7 +19,6 @@ from ..auth import (
     optional_auth,
 )
 from ..config import settings
-from typing import Optional
 
 router = APIRouter()
 
@@ -126,36 +126,11 @@ async def get_prompt(
 
     Requires: API Key
     """
-    # Get prompt with mapped fields including tags and art_style
-    row = db.execute(
-        """
-        SELECT 
-            p.id,
-            p.original_prompt as text,
-            p.model_used as model,
-            p.processed_at as created_at,
-            p.processed_at as updated_at,
-            p.created_by,
-            a.primary_style as category,
-            a.primary_style as art_style,
-            p.negative_prompt,
-            p.parameters,
-            GROUP_CONCAT(DISTINCT t.tag) as tags,
-            p.rating,
-            p.notes
-        FROM prompts p
-        LEFT JOIN art_styles a ON p.id = a.prompt_id
-        LEFT JOIN main_tags t ON p.id = t.prompt_id
-        WHERE p.id = ?
-        GROUP BY p.id
-    """,
-        (prompt_id,),
-    ).fetchone()
-
+    row = _fetch_prompt_details(db, prompt_id)
     if not row:
         raise HTTPException(status_code=404, detail="Prompt not found")
 
-    return dict(row)
+    return row
 
 
 @router.post("/", response_model=PromptResponse, status_code=201)
@@ -173,9 +148,7 @@ async def create_prompt(
     user_id = auth["user_id"]
     from datetime import datetime
 
-    # Get next ID
-    max_id = db.execute("SELECT MAX(id) FROM prompts").fetchone()[0]
-    next_id = (max_id or 0) + 1
+    next_id = _get_next_prompt_id(db)
 
     # Insert into prompts table (catalog schema) with created_by and new fields
     db.execute(
@@ -225,33 +198,76 @@ async def create_prompt(
 
     db.commit()
 
-    # Return created prompt with mapping including tags and art_style
-    row = db.execute(
+    created = _fetch_prompt_details(db, next_id)
+    if not created:
+        raise HTTPException(status_code=500, detail="Failed to create prompt")
+    return created
+
+
+@router.post("/{prompt_id}/copy", response_model=PromptResponse, status_code=201)
+async def copy_prompt(
+    prompt_id: int,
+    db: sqlite3.Connection = Depends(get_prompts_db),
+    auth: dict = Depends(verify_token),
+):
+    """
+    Create a personal copy of an existing catalog prompt.
+
+    Requires: JWT Token
+    """
+    source = db.execute(
         """
-        SELECT 
-            p.id,
-            p.original_prompt as text,
-            p.model_used as model,
-            p.processed_at as created_at,
-            p.processed_at as updated_at,
-            p.created_by,
-            a.primary_style as category,
-            a.primary_style as art_style,
-            p.negative_prompt,
-            p.parameters,
-            GROUP_CONCAT(DISTINCT t.tag) as tags,
-            p.rating,
-            p.notes
-        FROM prompts p
-        LEFT JOIN art_styles a ON p.id = a.prompt_id
-        LEFT JOIN main_tags t ON p.id = t.prompt_id
-        WHERE p.id = ?
-        GROUP BY p.id
+        SELECT id, original_prompt, model_used, input_tokens, output_tokens,
+               negative_prompt, parameters, rating, notes
+        FROM prompts
+        WHERE id = ?
     """,
-        (next_id,),
+        (prompt_id,),
     ).fetchone()
 
-    return dict(row)
+    if not source:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+
+    next_id = _get_next_prompt_id(db)
+    db.execute(
+        """
+        INSERT INTO prompts (
+            id,
+            original_prompt,
+            processed_at,
+            model_used,
+            input_tokens,
+            output_tokens,
+            created_by,
+            negative_prompt,
+            parameters,
+            rating,
+            notes
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """,
+        (
+            next_id,
+            source["original_prompt"],
+            datetime.utcnow().isoformat(),
+            source["model_used"],
+            source["input_tokens"] or 0,
+            source["output_tokens"] or 0,
+            auth["user_id"],
+            source["negative_prompt"],
+            source["parameters"],
+            source["rating"],
+            source["notes"],
+        ),
+    )
+
+    _clone_related_rows(db, prompt_id, next_id)
+    db.commit()
+
+    created = _fetch_prompt_details(db, next_id)
+    if not created:
+        raise HTTPException(status_code=500, detail="Failed to copy prompt")
+    return created
 
 
 @router.put("/{prompt_id}", response_model=PromptResponse)
@@ -439,3 +455,64 @@ async def delete_prompt(
     db.commit()
 
     return None
+PROMPT_DETAILS_QUERY = """
+        SELECT 
+            p.id,
+            p.original_prompt as text,
+            p.model_used as model,
+            p.processed_at as created_at,
+            p.processed_at as updated_at,
+            p.created_by,
+            a.primary_style as category,
+            a.primary_style as art_style,
+            p.negative_prompt,
+            p.parameters,
+            GROUP_CONCAT(DISTINCT t.tag) as tags,
+            p.rating,
+            p.notes
+        FROM prompts p
+        LEFT JOIN art_styles a ON p.id = a.prompt_id
+        LEFT JOIN main_tags t ON p.id = t.prompt_id
+        WHERE p.id = ?
+        GROUP BY p.id
+    """
+
+
+def _fetch_prompt_details(db: sqlite3.Connection, prompt_id: int) -> Optional[Dict[str, Any]]:
+    row = db.execute(PROMPT_DETAILS_QUERY, (prompt_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def _get_next_prompt_id(db: sqlite3.Connection) -> int:
+    max_id = db.execute("SELECT MAX(id) FROM prompts").fetchone()[0]
+    return (max_id or 0) + 1
+
+
+def _tables_with_prompt_id(db: sqlite3.Connection) -> List[List[str]]:
+    tables = []
+    for (name,) in db.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+    ):
+        columns = [col[1] for col in db.execute(f"PRAGMA table_info('{name}')")]
+        if "prompt_id" in columns and name != "prompts":
+            tables.append((name, columns))
+    return tables
+
+
+def _clone_related_rows(db: sqlite3.Connection, source_id: int, target_id: int) -> None:
+    for table, columns in _tables_with_prompt_id(db):
+        rows = db.execute(
+            f"SELECT {', '.join(columns)} FROM {table} WHERE prompt_id = ?",
+            (source_id,),
+        ).fetchall()
+        if not rows:
+            continue
+        placeholders = ", ".join(["?"] * len(columns))
+        prompt_idx = columns.index("prompt_id")
+        for row in rows:
+            values = list(row)
+            values[prompt_idx] = target_id
+            db.execute(
+                f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})",
+                values,
+            )

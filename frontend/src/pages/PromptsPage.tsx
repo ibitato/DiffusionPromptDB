@@ -16,6 +16,7 @@ import { promptsService } from '../services/prompts.service';
 import { preferencesService } from '../services/preferences.service';
 import { Prompt, CreatePromptRequest } from '../types/api.types';
 import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
+import { logError } from '../utils/logger';
 
 export const PromptsPage = () => {
   const { t } = useTranslation();
@@ -55,7 +56,7 @@ export const PromptsPage = () => {
       const prefs = await preferencesService.getPreferences();
       setMyPromptsOnly(prefs.my_prompts_only);
     } catch (err) {
-      console.error('Error loading preferences', err);
+      logError('Error loading preferences', err);
     } finally {
       setIsLoading(false);
     }

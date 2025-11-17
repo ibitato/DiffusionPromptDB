@@ -325,6 +325,7 @@
   "promptDetail": {
     "title": "Prompt",
     "copy": "Copy",
+    "copyToMyPrompts": "Save to my prompts",
     "sections": {
       "promptText": "Prompt Text",
       "negativePrompt": "Negative Prompt",
@@ -376,6 +377,12 @@
       "clear": "Clear Filters",
       "searching": "Searching..."
     },
+    "export": {
+      "json": "Export JSON",
+      "csv": "Export CSV",
+      "successJson": "Exported search results to JSON",
+      "successCsv": "Exported search results to CSV"
+    },
     "results": {
       "total": "total results",
       "page": "Page",
@@ -403,6 +410,8 @@
       "foundResults": "Found {{count}} total results",
       "tagSearch": "No prompts found with tag",
       "tagSearchSuccess": "Found {{count}} prompts with tag",
+      "copySuccess": "Prompt copied to your collection",
+      "copyError": "Unable to copy this prompt",
       "error": "Search error"
     },
     "errors": {

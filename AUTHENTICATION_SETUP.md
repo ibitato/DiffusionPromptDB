@@ -18,6 +18,7 @@ Este documento explica la configuración completa del sistema de autenticación 
 | POST   | `/api/v1/auth/password/expired`       | Permite actualizar contraseñas expiradas antes de ingresar  |
 | GET    | `/api/v1/user/profile`                | Perfil + preferencias (requiere JWT)                        |
 | PUT    | `/api/v1/user/profile/preferences`    | Persiste “Solo mis prompts”, tags excluidos, etc.           |
+| GET    | `/api/v1/admin/stats`                 | Métricas globales del catálogo (requiere JWT sin rol admin) |
 | GET    | `/api/v1/admin/stats?my_prompts_only` | Métricas personalizadas (requiere JWT válido)               |
 
 #### Flujo de registro
@@ -271,7 +272,6 @@ localStorage.getItem('user')
 ## 📝 Endpoints Disponibles
 
 ### Públicos (Sin Auth)
-- `GET /api/v1/admin/stats` - Estadísticas
 - `GET /api/v1/admin/health` - Health check
 - `POST /api/v1/auth/login` - Login
 
@@ -285,6 +285,8 @@ localStorage.getItem('user')
 - `POST /api/v1/prompts` - Crear prompt
 - `PUT /api/v1/prompts/{id}` - Actualizar prompt
 - `DELETE /api/v1/prompts/{id}` - Eliminar prompt
+- `GET /api/v1/admin/stats` - Estadísticas del catálogo
+- `GET /api/v1/admin/filters` - Valores para filtros del dashboard
 
 ## 🐛 Troubleshooting
 
