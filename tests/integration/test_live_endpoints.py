@@ -57,8 +57,8 @@ class APITester:
             return False
 
     def test_public_endpoints(self):
-        """Test 2: Public endpoints."""
-        print("\n🔹 Test 2: Public Endpoints")
+        """Test 2: Core endpoints (health + auth-gated stats)."""
+        print("\n🔹 Test 2: Core Endpoints")
 
         # Root
         response = requests.get(f"{self.base_url}/")
@@ -68,13 +68,23 @@ class APITester:
         response = requests.get(f"{self.base_url}/health")
         self.test("GET /health", response.status_code == 200)
 
-        # Admin stats (public)
-        response = requests.get(f"{self.base_url}/api/v1/admin/stats")
-        self.test("GET /admin/stats (public)", response.status_code == 200)
-        if response.status_code == 200:
-            data = response.json()
-            total = data.get("total_prompts", 0)
-            print(f"     Catalog has {total:,} prompts")
+        # Admin stats (requires auth)
+        if not self.token:
+            self.test(
+                "Auth token available for /admin/stats",
+                False,
+                "Run authentication test first to obtain JWT.",
+            )
+        else:
+            response = requests.get(
+                f"{self.base_url}/api/v1/admin/stats",
+                headers={"Authorization": f"Bearer {self.token}"},
+            )
+            self.test("GET /admin/stats (auth)", response.status_code == 200)
+            if response.status_code == 200:
+                data = response.json()
+                total = data.get("total_prompts", 0)
+                print(f"     Catalog has {total:,} prompts")
 
         # Admin health
         response = requests.get(f"{self.base_url}/api/v1/admin/health")
@@ -262,8 +272,8 @@ class APITester:
             return False
 
         # Run all tests
-        self.test_public_endpoints()
         self.test_authentication()
+        self.test_public_endpoints()
         self.test_prompts_endpoints()
         self.test_catalog_endpoints()
         self.test_search_endpoints()

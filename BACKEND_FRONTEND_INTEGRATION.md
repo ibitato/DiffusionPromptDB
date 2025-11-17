@@ -62,7 +62,7 @@ async def login(credentials: LoginRequest):
 
 **Backend:** `routers/admin.py`
 - Usa `catalog_db_path` para stats del catálogo
-- Público (sin auth)
+- Requiere JWT (usuario autenticado, no es necesario rol admin)
 - Devuelve:
   - total_prompts
   - nsfw_distribution
@@ -126,8 +126,9 @@ catalog_db_path: str = "../batch_analyzer/prompts_catalog.db"
 
 **1. API Keys (Solo Lectura)**
 - Defínelas en `.env` → `API_KEYS='["<TU_API_KEY>"]'`
-- Endpoints públicos: `/admin/stats`, `/admin/health`
+- Endpoints públicos: `/admin/health`
 - Endpoints con API Key: GET prompts, GET catalog, búsquedas
+- Endpoints que ahora exigen JWT aunque estén en `/admin`: `/admin/stats`, `/admin/filters`
 
 **2. JWT Tokens (Lectura/Escritura)**
 - Generados en `/auth/login`
@@ -167,6 +168,7 @@ cors_origins: List[str] = [
 **Frontend:** `pages/DashboardPage.tsx`
 - Llama: `statsService.getStats()`
 - Endpoint: `GET /api/v1/admin/stats`
+- Auth: requiere JWT (se usa el mismo token del login)
 
 **Backend:** `routers/admin.py`
 - Consulta `catalog_db_path`
@@ -221,13 +223,14 @@ cd src/api
 python main.py
 
 # 2. Test endpoints (nueva terminal)
-# Stats (público)
-curl http://localhost:8000/api/v1/admin/stats
-
-# Login
+# Login (guarda el token de la respuesta)
 curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"test","password":"test"}'
+
+# Stats (requiere JWT del paso anterior)
+curl -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  http://localhost:8000/api/v1/admin/stats
 
 # Prompts con API key
 curl -H "X-API-Key: $API_KEY" \
@@ -284,7 +287,7 @@ curl -H "X-API-Key: $API_KEY" \
 5. ✅ Usuario autenticado
 
 ### Ver Dashboard
-1. Frontend → GET /api/v1/admin/stats
+1. Frontend → GET /api/v1/admin/stats (con header Authorization: Bearer <token>)
 2. Backend consulta catalog_db (10,386 prompts)
 3. Devuelve stats + distribución NSFW + top tags
 4. Frontend renderiza gráficos

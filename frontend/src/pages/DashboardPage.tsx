@@ -15,6 +15,7 @@ import { searchService } from '../services/search.service';
 import { preferencesService } from '../services/preferences.service';
 import { ComplexSearchParams, Stats } from '../types/api.types';
 import { useAuthStore } from '../store/authStore';
+import { logError } from '../utils/logger';
 
 export const DashboardPage = () => {
   const { t } = useTranslation();
@@ -45,7 +46,7 @@ export const DashboardPage = () => {
         setMyPromptsOnly(prefs.my_prompts_only);
       } catch (err) {
         if (!isMounted) return;
-        console.error(t('common.errors.loadingPreferences'), err);
+        logError(t('common.errors.loadingPreferences'), err);
         setShowUnspecified(true);
         setExcludedTags(['high quality', 'masterpiece', 'best quality']);
       } finally {
@@ -104,7 +105,7 @@ export const DashboardPage = () => {
       const filters = await statsService.getFilters();
       setAllArtStyles(filters.art_styles);
     } catch (err) {
-      console.error(t('common.errors.loadingArtStyles'), err);
+      logError(t('common.errors.loadingArtStyles'), err);
     }
   };
 
@@ -130,7 +131,7 @@ export const DashboardPage = () => {
         .sort((a, b) => b.count - a.count);
       setAllTags(sortedTags);
     } catch (err) {
-      console.error(t('common.errors.loadingTags'), err);
+      logError(t('common.errors.loadingTags'), err);
     }
   };
 

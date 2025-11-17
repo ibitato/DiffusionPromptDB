@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import { User } from '../types/api.types';
+import { logError } from '../utils/logger';
 
 interface AuthState {
   user: User | null;
@@ -43,7 +44,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
       } catch (error) {
-        console.error('Failed to parse user data:', error);
+        logError('Failed to parse user data', error);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
         set({ isLoading: false });

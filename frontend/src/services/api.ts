@@ -1,8 +1,5 @@
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { logDebug, logWarn } from '../utils/logger';
 
 const DEFAULT_PROD_API_URL = 'https://www.diffusionprompt.net/api/v1';
 const DEFAULT_DEV_API_URL = 'http://localhost:8000/api/v1';
@@ -37,13 +34,12 @@ const resolveApiBaseUrl = (): string => {
 };
 
 const API_BASE_URL = resolveApiBaseUrl();
-
-console.log('[API Base URL]', API_BASE_URL);
+logDebug('[API Base URL]', API_BASE_URL);
 
 const API_KEY = (() => {
   const key = import.meta.env.VITE_API_KEY;
   if (!key) {
-    console.warn('[API] Missing VITE_API_KEY environment variable. Requests may be rejected.');
+    logWarn('[API] Missing VITE_API_KEY environment variable. Requests may be rejected.');
   }
   return key ?? '';
 })();
@@ -69,9 +65,9 @@ api.interceptors.request.use(
       }
     }
 
-    console.log('[API Request]', config.method?.toUpperCase(), config.url);
+    logDebug('[API Request]', config.method?.toUpperCase(), config.url);
     if (config.baseURL) {
-      console.log('[API Base]', config.baseURL);
+      logDebug('[API Base]', config.baseURL);
     }
     return config;
   },

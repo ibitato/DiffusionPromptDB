@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/authStore';
 import { authService, PasswordExpiredError } from '../services/auth.service';
 import { Loading } from '../components/ui/Loading';
 import { LanguageToggle } from '../components/ui/LanguageToggle';
+import { logError } from '../utils/logger';
 
 export const LoginPage = () => {
   const { t } = useTranslation();
@@ -71,8 +72,7 @@ export const LoginPage = () => {
         setPassword('');
         return;
       }
-      // Show error directly on the page
-      console.error('Login error:', err);
+      logError('Login error', err);
       const rawMessage = err instanceof Error ? err.message : 'login.errors.generic';
       const translatedMessage = translateLoginError(rawMessage);
 
@@ -114,7 +114,7 @@ export const LoginPage = () => {
       setAuth(response.user, response.access_token);
       navigate('/dashboard');
     } catch (err) {
-      console.error('Password reset error:', err);
+      logError('Password reset error', err);
       setResetError(
         err instanceof Error ? err.message : t('login.passwordUpdateError')
       );

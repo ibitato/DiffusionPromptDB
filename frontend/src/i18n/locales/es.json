@@ -214,6 +214,7 @@
   "promptDetail": {
     "title": "Prompt",
     "copy": "Copiar",
+    "copyToMyPrompts": "Guardar en mis prompts",
     "sections": {
       "promptText": "Prompt Text",
       "negativePrompt": "Negative Prompt",
@@ -265,6 +266,12 @@
       "clear": "Limpiar Filtros",
       "searching": "Buscando..."
     },
+    "export": {
+      "json": "Exportar JSON",
+      "csv": "Exportar CSV",
+      "successJson": "Resultados exportados a JSON",
+      "successCsv": "Resultados exportados a CSV"
+    },
     "results": {
       "total": "resultados totales",
       "page": "Página",
@@ -292,6 +299,8 @@
       "foundResults": "Encontrados {{count}} resultados totales",
       "tagSearch": "No se encontraron prompts con el tag",
       "tagSearchSuccess": "Encontrados {{count}} prompts con el tag",
+      "copySuccess": "Prompt copiado a tu colección",
+      "copyError": "No se pudo copiar este prompt",
       "error": "Error en la búsqueda"
     },
     "errors": {
