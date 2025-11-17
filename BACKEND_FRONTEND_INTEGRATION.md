@@ -24,7 +24,8 @@ async def login(credentials: LoginRequest):
 **Estado:** ✅ Conectado
 - Frontend usa authService.login()
 - Backend devuelve JWT token + user info
-- 3 usuarios disponibles: test/test, admin/admin, user/user
+- Registro/verificación expuestos en `/auth/register` y `/auth/verify`
+- Cuentas demo: `admin / 1302Quiter@#`, `test / 1302Quiter@#`
 
 ---
 
@@ -124,7 +125,7 @@ catalog_db_path: str = "../batch_analyzer/prompts_catalog.db"
 ### Sistema de Auth Implementado
 
 **1. API Keys (Solo Lectura)**
-- Configuradas en `config.py`: `["demo-read-key-12345"]`
+- Defínelas en `.env` → `API_KEYS='["<TU_API_KEY>"]'`
 - Endpoints públicos: `/admin/stats`, `/admin/health`
 - Endpoints con API Key: GET prompts, GET catalog, búsquedas
 
@@ -229,11 +230,11 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
   -d '{"username":"test","password":"test"}'
 
 # Prompts con API key
-curl -H "X-API-Key: demo-read-key-12345" \
+curl -H "X-API-Key: $API_KEY" \
   http://localhost:8000/api/v1/prompts
 
 # Búsqueda compleja
-curl -H "X-API-Key: demo-read-key-12345" \
+curl -H "X-API-Key: $API_KEY" \
   "http://localhost:8000/api/v1/search/complex?nsfw_level=explicit&number_of_people=1&limit=5"
 ```
 

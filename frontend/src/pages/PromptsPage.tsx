@@ -10,7 +10,7 @@ import { Loading } from '../components/ui/Loading';
 import { ConfirmModal } from '../components/ui/Modal';
 import { PromptFormModal } from '../components/prompts/PromptFormModal';
 import { PromptDetailModal } from '../components/prompts/PromptDetailModal';
-import { useToast } from '../components/ui/Toast';
+import { useToast } from '../hooks/useToast';
 import { useAuthStore } from '../store/authStore';
 import { promptsService } from '../services/prompts.service';
 import { preferencesService } from '../services/preferences.service';
@@ -76,7 +76,7 @@ export const PromptsPage = () => {
       if (requestId !== latestRequestRef.current) {
         return;
       }
-      const message = err instanceof Error ? err.message : 'Failed to load prompts';
+      const message = err instanceof Error ? err.message : t('prompts.errors.load');
       setError(message);
       toast.error(message);
     } finally {
@@ -138,7 +138,7 @@ export const PromptsPage = () => {
         await loadPrompts();
       }, 100);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save prompt';
+      const message = err instanceof Error ? err.message : t('prompts.errors.save');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -156,7 +156,7 @@ export const PromptsPage = () => {
       setPromptToDelete(null);
       await loadPrompts();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete prompt';
+      const message = err instanceof Error ? err.message : t('prompts.errors.delete');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -292,7 +292,9 @@ export const PromptsPage = () => {
                 onChange={(e) => setMyPromptsOnly(e.target.checked)}
                 className="w-5 h-5 bg-slate-700 border border-slate-600 rounded text-violet-600 focus:ring-2 focus:ring-violet-600"
               />
-              <span className="text-sm font-medium text-gray-300">📝 Solo mis prompts</span>
+              <span className="text-sm font-medium text-gray-300">
+                📝 {t('common.filters.myPrompts')}
+              </span>
             </label>
           </div>
         )}

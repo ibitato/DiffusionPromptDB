@@ -9,7 +9,13 @@ Then run these tests: python test_live_endpoints.py
 
 import requests
 import json
+import os
+from pathlib import Path
+import sys
 from typing import Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from src.api.config import settings  # type: ignore
 
 
 class APITester:
@@ -18,7 +24,7 @@ class APITester:
     def __init__(self, base_url: str = "http://localhost:8000"):
         """Initialize with API base URL."""
         self.base_url = base_url
-        self.api_key = "demo-read-key-12345"
+        self.api_key = os.getenv("API_TEST_KEY", settings.api_keys[0])
         self.token: Optional[str] = None
         self.passed = 0
         self.failed = 0
@@ -81,7 +87,7 @@ class APITester:
         # Valid login
         response = requests.post(
             f"{self.base_url}/api/v1/auth/login",
-            json={"username": "test", "password": "test"},
+            json={"username": "test", "password": "1302Quiter@#"},
         )
         self.test("POST /auth/login (valid)", response.status_code == 200)
 

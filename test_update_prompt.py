@@ -1,12 +1,15 @@
 import json
 import urllib.request
 import urllib.error
+import os
+
+from src.api.config import settings
 
 # First login to get token
 login_url = "http://localhost:8000/api/v1/auth/login"
 login_data = {
     "username": "admin",
-    "password": "admin"
+    "password": "1302Quiter@#"
 }
 
 try:
@@ -20,7 +23,7 @@ try:
     
     # Get prompt #10384 (uses API key)
     prompt_id = 10384
-    api_key = "demo-read-key-12345"  # Correct API key from settings
+    api_key = os.getenv("API_TEST_KEY", settings.api_keys[0])
     get_url = f"http://localhost:8000/api/v1/prompts/{prompt_id}"
     req = urllib.request.Request(get_url, headers={'X-API-Key': api_key})
     response = urllib.request.urlopen(req)

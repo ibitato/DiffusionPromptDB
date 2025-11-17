@@ -13,10 +13,12 @@ import { StatsCharts } from '../components/dashboard/StatsCharts';
 import { statsService } from '../services/stats.service';
 import { searchService } from '../services/search.service';
 import { preferencesService } from '../services/preferences.service';
-import { Stats } from '../types/api.types';
+import { ComplexSearchParams, Stats } from '../types/api.types';
+import { useAuthStore } from '../store/authStore';
 
 export const DashboardPage = () => {
   const { t } = useTranslation();
+  const user = useAuthStore((state) => state.user);
   const [stats, setStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,36 +29,64 @@ export const DashboardPage = () => {
   const [allTags, setAllTags] = useState<Array<{ tag: string; count: number }>>([]);
   const [showUnspecified, setShowUnspecified] = useState(true);
   const [excludedTags, setExcludedTags] = useState<string[]>([]);
+  const [myPromptsOnly, setMyPromptsOnly] = useState(false);
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadPreferences();
-    loadStats();
-  }, []);
+    let isMounted = true;
 
-  const loadPreferences = async () => {
-    try {
-      const prefs = await preferencesService.getPreferences();
-      setShowUnspecified(prefs.show_unspecified);
-      setExcludedTags(prefs.excluded_tags);
-    } catch (err) {
-      console.error(t('common.errors.loadingPreferences'), err);
-      // Use defaults if preferences not available
-      setShowUnspecified(true);
-      setExcludedTags(['high quality', 'masterpiece', 'best quality']);
-    }
-  };
+    const fetchPreferences = async () => {
+      try {
+        const prefs = await preferencesService.getPreferences();
+        if (!isMounted) return;
+        setShowUnspecified(prefs.show_unspecified);
+        setExcludedTags(prefs.excluded_tags);
+        setMyPromptsOnly(prefs.my_prompts_only);
+      } catch (err) {
+        if (!isMounted) return;
+        console.error(t('common.errors.loadingPreferences'), err);
+        setShowUnspecified(true);
+        setExcludedTags(['high quality', 'masterpiece', 'best quality']);
+      } finally {
+        if (isMounted) {
+          setPreferencesLoaded(true);
+        }
+      }
+    };
 
-  const loadStats = async () => {
-    try {
-      const data = await statsService.getStats();
-      setStats(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load stats');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    fetchPreferences();
+    return () => {
+      isMounted = false;
+    };
+  }, [t]);
+
+  useEffect(() => {
+    if (!preferencesLoaded) return;
+    let isMounted = true;
+
+    const fetchStats = async () => {
+      setIsLoading(true);
+      try {
+        const data = await statsService.getStats(myPromptsOnly);
+        if (!isMounted) return;
+        setStats(data);
+        setError('');
+      } catch (err) {
+        if (!isMounted) return;
+        setError(err instanceof Error ? err.message : t('dashboard.errors.load'));
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchStats();
+    return () => {
+      isMounted = false;
+    };
+  }, [preferencesLoaded, myPromptsOnly, t]);
 
   // Filter function to exclude unspecified
   const filterUnspecified = (styles: Array<{ style: string; count: number }>) => {
@@ -78,10 +108,14 @@ export const DashboardPage = () => {
     }
   };
 
-  const _loadAllTags = async () => {
+  const loadAllTags = async () => {
     try {
       // Get all tags by querying with empty filters
-      const response = await searchService.complexSearch({ limit: 1000 });
+      const params: ComplexSearchParams = { limit: 1000 };
+      if (myPromptsOnly && user) {
+        params.my_prompts = true;
+      }
+      const response = await searchService.complexSearch(params);
       // Extract unique tags from results
       const tagCounts = new Map<string, number>();
       response.results.forEach((result) => {
@@ -134,6 +168,27 @@ export const DashboardPage = () => {
           <h2 className="text-3xl font-bold text-white mb-2">{t('dashboard.title')}</h2>
           <p className="text-gray-400">{t('dashboard.subtitle')}</p>
         </div>
+
+        {user && (
+          <div className="mb-8">
+            <label className="flex items-start gap-3 p-4 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={myPromptsOnly}
+                onChange={(e) => setMyPromptsOnly(e.target.checked)}
+                className="mt-1 w-5 h-5 bg-slate-700 border border-slate-600 rounded text-violet-600 focus:ring-2 focus:ring-violet-600"
+              />
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  {t('dashboard.filters.myPrompts')}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {t('dashboard.filters.myPromptsDesc')}
+                </p>
+              </div>
+            </label>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -203,6 +258,7 @@ export const DashboardPage = () => {
               if (stats?.top_tags && stats.top_tags.length > 0) {
                 setAllTags(stats.top_tags);
               }
+              loadAllTags();
             }}
             className="bg-slate-800 rounded-lg p-6 border border-slate-700 cursor-pointer hover:bg-slate-750 hover:border-green-600 transition-all duration-200 hover:shadow-lg hover:shadow-green-600/20"
           >

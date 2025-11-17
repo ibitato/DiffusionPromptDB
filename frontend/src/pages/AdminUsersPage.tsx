@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { adminUsersService, AdminUser } from '../services/adminUsers.service';
-import { useToast } from '../components/ui/Toast';
+import { useToast } from '../hooks/useToast';
 import { Loading } from '../components/ui/Loading';
 
 export const AdminUsersPage = () => {

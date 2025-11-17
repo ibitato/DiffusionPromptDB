@@ -5,8 +5,9 @@ Configuration settings for the FastAPI application.
 """
 
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 from pathlib import Path
+from pydantic import EmailStr, Field, field_validator
 
 
 class Settings(BaseSettings):
@@ -30,10 +31,20 @@ class Settings(BaseSettings):
     users_db_path: str = "../data/users.db"
 
     # Security
-    api_keys: List[str] = ["demo-read-key-12345"]  # Change in production!
-    jwt_secret_key: str = "your-secret-key-change-this-in-production"
+    api_keys: List[str] = Field(default_factory=list)
+    jwt_secret_key: str = Field(..., description="JWT secret key")
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60
+
+    # Email / SMTP
+    smtp_host: Optional[str] = None
+    smtp_port: int = 587
+    smtp_username: Optional[str] = None
+    smtp_password: Optional[str] = None
+    smtp_sender: Optional[EmailStr] = None
+    smtp_use_tls: bool = True
+    email_debug_mode: bool = True  # When true, include tokens in API responses for dev
+    public_app_url: str = "https://www.diffusionprompt.net"
 
     # Rate Limiting
     rate_limit_per_minute: int = 100
@@ -63,6 +74,66 @@ class Settings(BaseSettings):
     password_rotation_days: int = 90
     password_min_length: int = 12
     password_history_limit: int = 5
+
+    @field_validator("jwt_secret_key")
+    @classmethod
+    def validate_jwt_secret_key(cls, value: str) -> str:
+        if not value or value == "your-secret-key-change-this-in-production":
+            raise ValueError(
+                "JWT secret key must be provided via the JWT_SECRET_KEY environment variable."
+            )
+        return value
+
+    @field_validator("api_keys")
+    @classmethod
+    def validate_api_keys(cls, value: List[str]) -> List[str]:
+        if not value:
+            raise ValueError(
+                "API_KEYS environment variable must define at least one API key."
+            )
+        return value
+
+    @field_validator("smtp_port")
+    @classmethod
+    def validate_smtp_port(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("SMTP port must be greater than zero.")
+        return value
+
+    @field_validator("smtp_host", "smtp_username", "smtp_password", mode="before")
+    @classmethod
+    def blank_to_none(cls, value):
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @field_validator("smtp_sender", mode="before")
+    @classmethod
+    def validate_smtp_config(cls, value, values):
+        if isinstance(value, str) and not value.strip():
+            value = None
+        host = values.data.get("smtp_host")
+        username = values.data.get("smtp_username")
+        password = values.data.get("smtp_password")
+
+        if any([host, username, password, value]):
+            missing = [
+                name
+                for name, present in [
+                    ("smtp_host", bool(host)),
+                    ("smtp_username", bool(username)),
+                    ("smtp_password", bool(password)),
+                    ("smtp_sender", bool(value)),
+                ]
+                if not present
+            ]
+            if missing:
+                raise ValueError(
+                    "SMTP configuration incomplete: missing "
+                    + ", ".join(missing)
+                    + ". Provide all SMTP_* variables or none."
+                )
+        return value
 
     class Config:
         env_file = ".env"

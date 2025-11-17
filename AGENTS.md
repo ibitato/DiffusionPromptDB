@@ -6,7 +6,7 @@
 **Description**: SQLite database for Stability Diffusion Prompts  
 **Author**: ibitato (ibitato@gmail.com)  
 **Version**: 0.1.0  
-**License**: MIT
+**License**: Apache 2.0
 
 ## Technology Stack
 
@@ -546,11 +546,11 @@ cd src/api && python start_server.py
 cd frontend && npm run dev
 
 # 4. Test full stack
-# Backend tests
-make test
+# Backend tests (ensure auth/profile/dashboard suites pass)
+source .venv/bin/activate && pytest tests/unit/api/test_profile_admin.py
 
-# Frontend tests (when added)
-cd frontend && npm test
+# Frontend tests
+cd frontend && npm run lint && npm run test
 
 # 5. Commit changes
 git add .
@@ -574,7 +574,8 @@ git checkout -b feature/new-feature
 make check
 
 # 5. Run tests
-make test
+source .venv/bin/activate && pytest
+cd frontend && npm run lint && npm run test
 
 # 6. Update documentation
 # Edit README.md, AGENTS.md, or docstrings

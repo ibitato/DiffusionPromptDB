@@ -9,6 +9,8 @@ from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
 
+from src.api.config import settings
+
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -25,9 +27,10 @@ app = main_module.app
 client = TestClient(app)
 
 # Test credentials
+DEMO_PASSWORD = "1302Quiter@#"
 TEST_USER = "test"
-TEST_PASS = "test"
-API_KEY = "demo-read-key-12345"
+TEST_PASS = DEMO_PASSWORD
+API_KEY = settings.api_keys[0]
 
 
 class TestAuthentication:

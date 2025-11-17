@@ -7,9 +7,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
-import { useToast } from '../components/ui/Toast';
+import { useToast } from '../hooks/useToast';
 import { useAuthStore } from '../store/authStore';
-import { preferencesService, UserPreferences } from '../services/preferences.service';
+import { preferencesService } from '../services/preferences.service';
 import { profileService } from '../services/profile.service';
 import { landingPageLabels } from '../utils/landingPageLabels';
 import { DeleteAccountPayload, UserProfile } from '../types/api.types';
@@ -30,7 +30,6 @@ export const ProfilePage = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [deletionForm, setDeletionForm] = useState({ password: '', confirm: false });
 
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [showUnspecified, setShowUnspecified] = useState(true);
   const [myPromptsOnly, setMyPromptsOnly] = useState(false);
   const [excludedTags, setExcludedTags] = useState<string[]>([]);
@@ -56,7 +55,6 @@ export const ProfilePage = () => {
           language: profileData.language ?? 'en',
         });
         setDefaultLanding(profileData.default_landing_page ?? 'dashboard');
-        setPreferences(prefs);
         setShowUnspecified(prefs.show_unspecified);
         setMyPromptsOnly(prefs.my_prompts_only);
         setExcludedTags(prefs.excluded_tags);
@@ -122,12 +120,11 @@ export const ProfilePage = () => {
   const handlePreferencesSave = async () => {
     setSavingPreferences(true);
     try {
-      const updated = await preferencesService.updatePreferences({
+      await preferencesService.updatePreferences({
         show_unspecified: showUnspecified,
         my_prompts_only: myPromptsOnly,
         excluded_tags: excludedTags,
       });
-      setPreferences(updated);
       toast.success(t('profile.messages.preferencesUpdated'));
     } catch (error) {
       toast.error(t('profile.errors.preferencesUpdate'));

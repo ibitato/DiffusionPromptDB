@@ -13,14 +13,34 @@
  * - Session persistence
  * - No mocking - always uses real authentication
  *
- * Security credentials:
- * - test/test123 (regular user)
- * - admin/admin123 (admin user)
- * - user/user123 (regular user)
+ * Demo credentials (shared strong pass for HTTPS testing):
+ * - test / 1302Quiter@#
+ * - admin / 1302Quiter@#
+ * - user / 1302Quiter@#
  */
 
+import axios from 'axios';
 import api, { handleApiError } from './api';
-import { LoginRequest, LoginResponse, User } from '../types/api.types';
+import {
+  LoginRequest,
+  LoginResponse,
+  RegistrationRequest,
+  RegistrationResponse,
+  User,
+} from '../types/api.types';
+
+export class PasswordExpiredError extends Error {
+  constructor(public username: string, message: string) {
+    super(message);
+    this.name = 'PasswordExpiredError';
+  }
+}
+
+interface ForcePasswordChangePayload {
+  username: string;
+  current_password: string;
+  new_password: string;
+}
 
 /**
  * Secure authentication service
@@ -40,7 +60,7 @@ export const authService = {
    * try {
    *   const response = await authService.login({
    *     username: 'admin',
-   *     password: 'admin123'
+   *     password: '1302Quiter@#'
    *   });
    *   // Store token securely
    *   localStorage.setItem('auth_token', response.access_token);
@@ -63,6 +83,12 @@ export const authService = {
 
       return response.data;
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const expiredHeader = error.response?.headers?.['x-password-expired'];
+        if (error.response?.status === 403 && expiredHeader === 'true') {
+          throw new PasswordExpiredError(credentials.username, handleApiError(error));
+        }
+      }
       // Clear any existing auth data on login failure
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
@@ -103,6 +129,17 @@ export const authService = {
   },
 
   /**
+   * Updates an expired password before allowing login.
+   */
+  forcePasswordChange: async (payload: ForcePasswordChangePayload): Promise<void> => {
+    try {
+      await api.post('/auth/password/expired', payload);
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
    * Logs out the user by clearing authentication data
    */
   logout: () => {
@@ -135,5 +172,28 @@ export const authService = {
    */
   isAuthenticated: (): boolean => {
     return !!localStorage.getItem('auth_token');
+  },
+
+  /**
+   * Registers a new account (requires email verification).
+   */
+  register: async (payload: RegistrationRequest): Promise<RegistrationResponse> => {
+    try {
+      const response = await api.post<RegistrationResponse>('/auth/register', payload);
+      return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
+   * Completes account verification using a token.
+   */
+  verifyAccount: async (token: string): Promise<void> => {
+    try {
+      await api.post('/auth/verify', { token });
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
   },
 };

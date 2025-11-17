@@ -17,7 +17,7 @@ print("\n1. Login as 'test' user")
 print("-" * 70)
 response = requests.post(
     f"{BASE_URL}/auth/login",
-    json={"username": "test", "password": "test123"},
+    json={"username": "test", "password": "1302Quiter@#"},
     headers={"X-API-Key": API_KEY},
 )
 print(f"Status: {response.status_code}")

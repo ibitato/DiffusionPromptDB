@@ -65,8 +65,6 @@
       "login": "Kehre zur Anmeldeseite zurück und logge dich mit deinen neuen Zugangsdaten ein."
     },
     "verifyPending": "Sende zuerst das Formular ab, um die Verifizierungs-E-Mail zu erhalten.",
-    "debugTitle": "Token (Debug-Modus)",
-    "debugDescription": "Wird nur angezeigt, solange EMAIL_DEBUG_MODE=True ist. Teile ihn nur mit vertrauenswürdigen Admins.",
     "haveAccount": "Bereits verifiziert?",
     "backToLogin": "Zurück zum Login",
     "errors": {
@@ -81,6 +79,26 @@
       "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein",
       "passwordRequired": "Passwort ist erforderlich"
     }
+  },
+  "verifyAccount": {
+    "title": "Kontoverifizierung",
+    "description": "Folge den Schritten unten, um die Aktivierung abzuschließen.",
+    "messages": {
+      "processing": "Wir verarbeiten gerade deine Kontoverifizierung...",
+      "success": "Dein Konto wurde aktiviert! Du kannst dich jetzt anmelden.",
+      "genericError": "Dein Konto konnte nicht aktiviert werden. Versuche es erneut oder fordere einen neuen Link an."
+    },
+    "errors": {
+      "missingToken": "Der Verifizierungs-Token fehlt oder ist ungültig. Verwende den neuesten Link aus der E-Mail."
+    },
+    "status": {
+      "validating": "Link wird überprüft..."
+    },
+    "actions": {
+      "goToLogin": "Zum Login",
+      "requestNew": "Neuen Link anfordern"
+    },
+    "support": "Wenn das Problem weiterhin besteht, kontaktiere die Administration."
   },
   "dashboard": {
     "title": "Dashboard",

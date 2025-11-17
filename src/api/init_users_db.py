@@ -65,11 +65,25 @@ CREATE TABLE IF NOT EXISTS account_deletion_audit (
 """
 )
 
+cursor.execute(
+    """
+CREATE TABLE IF NOT EXISTS user_verification_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+)
+"""
+)
+
 # Create demo users with bcrypt passwords
+DEMO_PASSWORD = "1302Quiter@#"
 demo_users = [
-    ("test", "test@example.com", "test123", "user"),
-    ("admin", "admin@example.com", "admin123", "admin"),
-    ("user", "user@example.com", "user123", "user"),
+    ("test", "test@example.com", DEMO_PASSWORD, "user"),
+    ("admin", "admin@example.com", DEMO_PASSWORD, "admin"),
+    ("user", "user@example.com", DEMO_PASSWORD, "user"),
 ]
 
 for username, email, plain, role in demo_users:

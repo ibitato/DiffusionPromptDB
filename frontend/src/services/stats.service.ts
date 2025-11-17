@@ -9,11 +9,13 @@ import { Stats } from '../types/api.types';
 export const statsService = {
   /**
    * Get overall statistics
-   * Public endpoint - no auth required
+   * Public endpoint - auth only required when requesting personal stats
    */
-  getStats: async (): Promise<Stats> => {
+  getStats: async (myPromptsOnly: boolean = false): Promise<Stats> => {
     try {
-      const response = await api.get<Stats>('/admin/stats');
+      const response = await api.get<Stats>('/admin/stats', {
+        params: myPromptsOnly ? { my_prompts_only: true } : undefined,
+      });
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));

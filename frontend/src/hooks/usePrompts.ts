@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { promptsService } from '../services/prompts.service';
 import { CreatePromptRequest } from '../types/api.types';
-import { useToast } from '../components/ui/Toast';
+import { useToast } from './useToast';
 
 // Query keys
 export const promptKeys = {

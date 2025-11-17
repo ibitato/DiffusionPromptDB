@@ -84,18 +84,29 @@ def upgrade():
         """,
     )
 
+    ensure_table(
+        cursor,
+        "user_verification_tokens",
+        """
+        CREATE TABLE user_verification_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token_hash TEXT NOT NULL UNIQUE,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+        """,
+    )
+
     # Upgrade default demo accounts to bcrypt hashes if they still use SHA
     cursor.execute("SELECT id, username, password_hash FROM users")
     for user_id, username, password_hash in cursor.fetchall():
         if password_hash and password_hash.startswith("$2b$"):
             continue  # Already bcrypt
         plain = None
-        if username == "test":
-            plain = "test123"
-        elif username == "admin":
-            plain = "admin123"
-        elif username == "user":
-            plain = "user123"
+        if username in {"test", "admin", "user"}:
+            plain = "1302Quiter@#"
         if plain:
             new_hash = pwd_context.hash(plain)
             cursor.execute(

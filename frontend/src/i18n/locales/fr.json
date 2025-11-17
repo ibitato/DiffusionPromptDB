@@ -65,8 +65,6 @@
       "login": "Retourne sur la page de connexion et connecte-toi avec tes nouveaux identifiants."
     },
     "verifyPending": "Envoie d'abord le formulaire pour recevoir l'e-mail de vérification.",
-    "debugTitle": "Jeton (mode debug)",
-    "debugDescription": "Visible uniquement lorsque EMAIL_DEBUG_MODE=True. Ne le partage qu'avec des admins de confiance.",
     "haveAccount": "Compte déjà vérifié ?",
     "backToLogin": "Retour au login",
     "errors": {
@@ -81,6 +79,26 @@
       "emailInvalid": "Entre une adresse e-mail valide",
       "passwordRequired": "Le mot de passe est obligatoire"
     }
+  },
+  "verifyAccount": {
+    "title": "Vérification du compte",
+    "description": "Suis les étapes ci-dessous pour terminer l'activation de ton accès.",
+    "messages": {
+      "processing": "Traitement de la vérification de ton compte...",
+      "success": "Ton compte est actif ! Tu peux maintenant te connecter.",
+      "genericError": "Impossible d'activer ton compte. Réessaie ou demande un nouveau lien."
+    },
+    "errors": {
+      "missingToken": "Le jeton de vérification est manquant ou invalide. Utilise le dernier lien reçu par e-mail."
+    },
+    "status": {
+      "validating": "Validation du lien..."
+    },
+    "actions": {
+      "goToLogin": "Aller à la connexion",
+      "requestNew": "Demander un nouveau lien"
+    },
+    "support": "Si le problème persiste, contacte l'administrateur."
   },
   "dashboard": {
     "title": "Tableau de Bord",
