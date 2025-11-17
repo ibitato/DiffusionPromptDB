@@ -65,8 +65,6 @@
       "login": "Regresa al login e inicia sesión con tus credenciales nuevas."
     },
     "verifyPending": "Completa el formulario para recibir el correo de verificación.",
-    "debugTitle": "Token (modo depuración)",
-    "debugDescription": "Solo se muestra con EMAIL_DEBUG_MODE=True. Compártelo únicamente con administradores.",
     "haveAccount": "¿Ya verificaste tu cuenta?",
     "backToLogin": "Volver al login",
     "errors": {
@@ -81,6 +79,26 @@
       "emailInvalid": "Ingresa un correo válido",
       "passwordRequired": "La contraseña es obligatoria"
     }
+  },
+  "verifyAccount": {
+    "title": "Verificación de cuenta",
+    "description": "Sigue estos pasos para completar la activación de tu acceso.",
+    "messages": {
+      "processing": "Procesando la verificación de tu cuenta...",
+      "success": "¡Tu cuenta ha sido activada! Ya puedes iniciar sesión.",
+      "genericError": "No pudimos activar la cuenta. Intenta nuevamente o solicita un nuevo enlace."
+    },
+    "errors": {
+      "missingToken": "Falta el token de verificación o es inválido. Usa el enlace más reciente que te enviamos."
+    },
+    "status": {
+      "validating": "Validando enlace..."
+    },
+    "actions": {
+      "goToLogin": "Ir a iniciar sesión",
+      "requestNew": "Solicitar un nuevo enlace"
+    },
+    "support": "Si el problema persiste, contacta al administrador."
   },
   "dashboard": {
     "title": "Dashboard",

@@ -16,7 +16,6 @@ export const RegisterPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registerMessage, setRegisterMessage] = useState('');
   const [registerError, setRegisterError] = useState('');
-  const [verificationToken, setVerificationToken] = useState<string | null>(null);
   const [registrationComplete, setRegistrationComplete] = useState(false);
 
   const handleInvalidInput = (
@@ -41,17 +40,13 @@ export const RegisterPage = () => {
     e.preventDefault();
     setRegisterError('');
     setRegisterMessage('');
-    setVerificationToken(null);
-     setRegistrationComplete(false);
+    setRegistrationComplete(false);
     setIsSubmitting(true);
     try {
       const response = await authService.register(form);
       setRegisterMessage(response.detail);
       if (response.warning) {
         setRegisterMessage((prev) => `${prev}\n${response.warning}`);
-      }
-      if (response.verification_token) {
-        setVerificationToken(response.verification_token);
       }
       setRegistrationComplete(true);
     } catch (error) {
@@ -188,14 +183,6 @@ export const RegisterPage = () => {
             >
               {registrationComplete ? t('register.messages.verifySuccess') : t('register.verifyPending')}
             </div>
-
-            {verificationToken && (
-              <div className="bg-yellow-500/10 border border-yellow-500 rounded-lg p-3 text-sm text-yellow-300 space-y-1">
-                <p className="font-semibold">{t('register.debugTitle')}</p>
-                <p className="text-xs break-words">{verificationToken}</p>
-                <p className="text-xs text-yellow-200">{t('register.debugDescription')}</p>
-              </div>
-            )}
 
             <Link
               to="/login"

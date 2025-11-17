@@ -55,9 +55,9 @@ def main():
 
     # Test accounts with new passwords
     test_accounts = [
-        ("test", "test123"),  # Regular user
-        ("admin", "admin123"),  # Admin user
-        ("user", "user123"),  # Another regular user
+        ("test", "REDACTED_PASSWORD"),  # Regular user
+        ("admin", "REDACTED_PASSWORD"),  # Admin user
+        ("user", "REDACTED_PASSWORD"),  # Another regular user
         ("test", "wrong"),  # Wrong password test
         ("nonexistent", "test"),  # Non-existent user test
     ]
@@ -79,9 +79,9 @@ def main():
         print("  ✓ Plain text passwords eliminated")
         print("  ✓ Login verification uses secure comparison")
         print("\n⚠️ Note: Update frontend to use new passwords:")
-        print("  - test/test123")
-        print("  - admin/admin123")
-        print("  - user/user123")
+        print("  - test / REDACTED_PASSWORD")
+        print("  - admin / REDACTED_PASSWORD")
+        print("  - user / REDACTED_PASSWORD")
     else:
         print("⚠️ Some tests failed. Check the implementation.")
 

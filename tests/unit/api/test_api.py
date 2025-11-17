@@ -10,13 +10,15 @@ from pathlib import Path
 import sqlite3
 import sys
 
+from src.api.config import settings
+
 # Import app correctly
 from src.api.main import app
 
 client = TestClient(app)
 
 # Test API key
-TEST_API_KEY = "REDACTED_API_KEY"
+TEST_API_KEY = settings.api_keys[0]
 
 
 class TestRoot:

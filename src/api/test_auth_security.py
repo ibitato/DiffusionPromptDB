@@ -13,7 +13,11 @@ def test_password_hashing():
     print("=" * 50)
 
     # Test passwords
-    test_passwords = {"test": "test123", "admin": "admin123", "user": "user123"}
+    test_passwords = {
+        "test": "REDACTED_PASSWORD",
+        "admin": "REDACTED_PASSWORD",
+        "user": "REDACTED_PASSWORD",
+    }
 
     print("\n📝 Generating secure password hashes:")
     print("-" * 50)

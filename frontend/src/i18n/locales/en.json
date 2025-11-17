@@ -65,8 +65,6 @@
       "login": "Return to the login page and sign in with your new credentials."
     },
     "verifyPending": "Submit the registration form to receive your verification email.",
-    "debugTitle": "Token (debug mode)",
-    "debugDescription": "Only shown while EMAIL_DEBUG_MODE=True. Share it only with trusted admins.",
     "haveAccount": "Already verified?",
     "backToLogin": "Return to login",
     "errors": {
@@ -81,6 +79,26 @@
       "emailInvalid": "Enter a valid email address",
       "passwordRequired": "Password is required"
     }
+  },
+  "verifyAccount": {
+    "title": "Account verification",
+    "description": "Follow the steps below to finish activating your access.",
+    "messages": {
+      "processing": "Processing your account verification...",
+      "success": "Your account is active! You can now sign in.",
+      "genericError": "We could not activate your account. Try again or request a fresh link."
+    },
+    "errors": {
+      "missingToken": "Verification token is missing or invalid. Please use the latest link we emailed you."
+    },
+    "status": {
+      "validating": "Validating link..."
+    },
+    "actions": {
+      "goToLogin": "Go to login",
+      "requestNew": "Request a new link"
+    },
+    "support": "If the problem persists, contact the administrator."
   },
   "profile": {
     "title": "User Profile",

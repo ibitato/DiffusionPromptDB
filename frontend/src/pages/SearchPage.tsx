@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
 import { ConfirmModal } from '../components/ui/Modal';
-import { useToast } from '../components/ui/Toast';
+import { useToast } from '../hooks/useToast';
 import { PromptDetailModal } from '../components/prompts/PromptDetailModal';
 import { PromptFormModal } from '../components/prompts/PromptFormModal';
 import { searchService } from '../services/search.service';
@@ -331,11 +331,11 @@ export const SearchPage = () => {
       setSelectedPrompt(null);
     } catch (err) {
       console.error('Error updating prompt:', err); // Debug log
-      const message = err instanceof Error ? err.message : 'Failed to update prompt';
+      const message = err instanceof Error ? err.message : t('search.errors.update');
 
       // Check if it's a permission error
       if (message.includes('403') || message.includes('Forbidden')) {
-        toast.error('No tienes permisos para editar este prompt');
+        toast.error(t('search.errors.permissionEdit'));
       } else {
         toast.error(message);
       }
@@ -365,11 +365,11 @@ export const SearchPage = () => {
       setPromptToDelete(null);
     } catch (err) {
       console.error('Error deleting prompt:', err); // Debug log
-      const message = err instanceof Error ? err.message : 'Failed to delete prompt';
+      const message = err instanceof Error ? err.message : t('search.errors.delete');
 
       // Check if it's a permission error
       if (message.includes('403') || message.includes('Forbidden')) {
-        toast.error('No tienes permisos para eliminar este prompt');
+        toast.error(t('search.errors.permissionDelete'));
       } else {
         toast.error(message);
       }
@@ -488,7 +488,9 @@ export const SearchPage = () => {
                   onChange={(e) => setMyPromptsOnly(e.target.checked)}
                   className="w-5 h-5 bg-slate-700 border border-slate-600 rounded text-violet-600 focus:ring-2 focus:ring-violet-600"
                 />
-                <span className="text-sm font-medium text-gray-300">📝 Solo mis prompts</span>
+                <span className="text-sm font-medium text-gray-300">
+                  📝 {t('search.filters.myPrompts')}
+                </span>
               </label>
             </div>
           )}
@@ -578,7 +580,7 @@ export const SearchPage = () => {
               )}
               {myPromptsOnly && (
                 <span className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm flex items-center gap-2">
-                  📝 Solo mis prompts
+                  📝 {t('search.chips.myPrompts')}
                   <button onClick={() => setMyPromptsOnly(false)} className="hover:text-purple-300">
                     ×
                   </button>
@@ -591,7 +593,7 @@ export const SearchPage = () => {
         {/* Results Section */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loading size="lg" text="Buscando..." />
+            <Loading size="lg" text={t('search.actions.searching')} />
           </div>
         ) : hasSearched ? (
           <>

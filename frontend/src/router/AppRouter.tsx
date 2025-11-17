@@ -7,11 +7,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { LoadingScreen } from '../components/ui/Loading';
 import { LoginPage } from '../pages/LoginPage';
+import { RegisterPage } from '../pages/RegisterPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { PromptsPage } from '../pages/PromptsPage';
 import { SearchPage } from '../pages/SearchPage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { AdminUsersPage } from '../pages/AdminUsersPage';
+import { VerifyAccountPage } from '../pages/VerifyAccountPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -63,6 +65,22 @@ export const AppRouter = () => {
           element={
             <PublicRoute>
               <LoginPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <RegisterPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/verify"
+          element={
+            <PublicRoute>
+              <VerifyAccountPage />
             </PublicRoute>
           }
         />

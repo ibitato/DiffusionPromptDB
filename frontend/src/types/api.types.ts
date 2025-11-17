@@ -36,6 +36,19 @@ export interface LoginResponse {
   user: User;
 }
 
+export interface RegistrationRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface RegistrationResponse {
+  detail: string;
+  verification_token?: string | null;
+  warning?: string;
+  expires_at?: string;
+}
+
 export type LandingPage = 'dashboard' | 'search';
 
 export interface User {

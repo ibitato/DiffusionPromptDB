@@ -1,10 +1,13 @@
 import json
 import urllib.request
 import urllib.error
+import os
+
+from src.api.config import settings
 
 # Get prompt #10384
 prompt_id = 10384
-api_key = "REDACTED_API_KEY"
+api_key = os.getenv("API_TEST_KEY", settings.api_keys[0])
 url = f"http://localhost:8000/api/v1/prompts/{prompt_id}"
 
 try:

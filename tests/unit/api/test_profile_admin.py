@@ -72,6 +72,15 @@ def _create_users_db(path: Path):
             dump_path TEXT,
             reason TEXT
         );
+
+        CREATE TABLE user_verification_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token_hash TEXT NOT NULL UNIQUE,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
         """
     )
     conn.commit()
@@ -100,6 +109,11 @@ def _create_prompts_db(path: Path):
         CREATE TABLE art_styles (
             prompt_id INTEGER,
             primary_style TEXT
+        );
+
+        CREATE TABLE nsfw_content (
+            prompt_id INTEGER,
+            level TEXT
         );
 
         CREATE TABLE main_tags (
@@ -166,7 +180,7 @@ def api_client(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "catalog_db_path", str(prompts_db))
     account_service.DUMP_DIR = tmp_path / "account_dumps"
 
-    admin_id = _seed_user(users_db, "admin", "admin123", role="admin")
+    admin_id = _seed_user(users_db, "admin", "REDACTED_PASSWORD", role="admin")
     user_id = _seed_user(users_db, "tester", "testpass", role="user")
 
     client = TestClient(app)
@@ -318,3 +332,173 @@ class TestAdminUsers:
             headers=headers,
         )
         assert delete_resp.status_code == 204
+
+
+class TestAuthPasswordExpiry:
+    def test_expired_password_flow(self, api_client):
+        client, users_db, _, _, user_id = api_client
+
+        conn = sqlite3.connect(users_db)
+        conn.execute("UPDATE users SET must_change_password=1 WHERE id=?", (user_id,))
+        conn.commit()
+        conn.close()
+
+        login_resp = client.post(
+            "/api/v1/auth/login", json={"username": "tester", "password": "testpass"}
+        )
+        assert login_resp.status_code == 403
+        assert login_resp.headers.get("X-Password-Expired") == "true"
+
+        reset_resp = client.post(
+            "/api/v1/auth/password/expired",
+            json={
+                "username": "tester",
+                "current_password": "testpass",
+                "new_password": "NewPassword!123",
+            },
+        )
+        assert reset_resp.status_code == 200, reset_resp.text
+
+        new_login = client.post(
+            "/api/v1/auth/login",
+            json={"username": "tester", "password": "NewPassword!123"},
+        )
+        assert new_login.status_code == 200, new_login.text
+
+
+class TestDashboardStats:
+    def test_my_prompts_requires_auth(self, api_client):
+        client, _, _, _, _ = api_client
+        resp = client.get("/api/v1/admin/stats?my_prompts_only=true")
+        assert resp.status_code == 401
+
+    def test_my_prompts_statistics_filtered(self, api_client):
+        client, _, prompts_db, _, user_id = api_client
+
+        conn = sqlite3.connect(prompts_db)
+        now = datetime.utcnow().isoformat()
+        conn.execute(
+            """
+            INSERT INTO prompts (id, original_prompt, processed_at, model_used, created_by)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (101, "User prompt", now, "sd15", user_id),
+        )
+        conn.execute(
+            """
+            INSERT INTO prompts (id, original_prompt, processed_at, model_used, created_by)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (202, "Global prompt", now, "sdxl", None),
+        )
+        conn.execute(
+            "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, ?)",
+            (101, "safe"),
+        )
+        conn.execute(
+            "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, ?)",
+            (202, "explicit"),
+        )
+        conn.execute(
+            "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
+            (101, "forest"),
+        )
+        conn.execute(
+            "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
+            (202, "city"),
+        )
+        conn.execute(
+            "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
+            (101, "anime"),
+        )
+        conn.execute(
+            "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
+            (202, "realistic"),
+        )
+        conn.execute(
+            "INSERT INTO characters (prompt_id, number_of_people) VALUES (?, ?)",
+            (101, 1),
+        )
+        conn.execute(
+            "INSERT INTO characters (prompt_id, number_of_people) VALUES (?, ?)",
+            (202, 2),
+        )
+        conn.commit()
+        conn.close()
+
+        token = _manual_token("tester", user_id, "user")
+        filtered = client.get(
+            "/api/v1/admin/stats?my_prompts_only=true",
+            headers=_auth_headers(token),
+        )
+        assert filtered.status_code == 200, filtered.text
+        data = filtered.json()
+        assert data["total_prompts"] == 1
+        assert data["top_tags"][0]["tag"] == "forest"
+        assert data["total_tags"] == 1
+        assert "safe" in data["nsfw_distribution"]
+        assert "explicit" not in data["nsfw_distribution"]
+        assert data["top_art_styles"][0]["style"] == "anime"
+
+
+class TestRegistrationFlow:
+    def test_register_and_verify(self, api_client):
+        client, _, _, _, _ = api_client
+        payload = {
+            "username": "newtester",
+            "email": "newtester@example.com",
+            "password": "StrongPass!23",
+        }
+
+        register_resp = client.post("/api/v1/auth/register", json=payload)
+        assert register_resp.status_code == 201, register_resp.text
+        token = register_resp.json().get("verification_token")
+        assert token
+
+        # Cannot login until verification is completed
+        login_resp = client.post(
+            "/api/v1/auth/login",
+            json={"username": payload["username"], "password": payload["password"]},
+        )
+        assert login_resp.status_code == 403
+
+        verify_resp = client.post("/api/v1/auth/verify", json={"token": token})
+        assert verify_resp.status_code == 200, verify_resp.text
+
+        login_resp = client.post(
+            "/api/v1/auth/login",
+            json={"username": payload["username"], "password": payload["password"]},
+        )
+        assert login_resp.status_code == 200
+        assert login_resp.json()["user"]["username"] == payload["username"]
+
+    def test_register_duplicate_email(self, api_client):
+        client, _, _, _, _ = api_client
+        payload = {
+            "username": "uniqueuser",
+            "email": "unique@example.com",
+            "password": "StrongPass!23",
+        }
+
+        first = client.post("/api/v1/auth/register", json=payload)
+        assert first.status_code == 201
+
+        duplicate_username = client.post(
+            "/api/v1/auth/register",
+            json={
+                "username": payload["username"],
+                "email": "another@example.com",
+                "password": payload["password"],
+            },
+        )
+        assert duplicate_username.status_code == 400
+
+        duplicate_email = client.post(
+            "/api/v1/auth/register",
+            json={
+                "username": "differentuser",
+                "email": payload["email"],
+                "password": payload["password"],
+            },
+        )
+        assert duplicate_email.status_code == 400

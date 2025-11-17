@@ -19,7 +19,7 @@ BASE_URL = "http://localhost:8000"
 API_KEY = "REDACTED_TEST_KEY"  # From .env.example
 
 # Test user credentials
-TEST_USER = {"username": "test", "password": "test123"}
+TEST_USER = {"username": "test", "password": "REDACTED_PASSWORD"}
 
 
 def print_section(title):
