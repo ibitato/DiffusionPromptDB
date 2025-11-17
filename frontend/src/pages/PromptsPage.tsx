@@ -16,7 +16,7 @@ import { promptsService } from '../services/prompts.service';
 import { preferencesService } from '../services/preferences.service';
 import { Prompt, CreatePromptRequest } from '../types/api.types';
 import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
-import { logError } from '../utils/logger';
+import { logError, logDebug } from '../utils/logger';
 
 export const PromptsPage = () => {
   const { t } = useTranslation();
@@ -161,6 +161,22 @@ export const PromptsPage = () => {
       toast.error(message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCopyPrompt = async (prompt: Prompt | null) => {
+    if (!prompt) {
+      return;
+    }
+    try {
+      logDebug('Copying prompt from Prompts page detail modal', { promptId: prompt.id });
+      await promptsService.copyPrompt(prompt.id);
+      toast.success(t('search.messages.copySuccess'));
+      await loadPrompts();
+    } catch (err) {
+      logError('Error copying prompt from Prompts page', err);
+      const message = err instanceof Error ? err.message : t('search.messages.copyError');
+      toast.error(message);
     }
   };
 
@@ -468,6 +484,7 @@ export const PromptsPage = () => {
         onDelete={handleDelete}
         canModify={promptToView ? canModify(promptToView) : false}
         canCopy={Boolean(user && promptToView && promptToView.created_by !== user.id)}
+        onCopy={handleCopyPrompt}
       />
 
       {/* Form Modal */}
