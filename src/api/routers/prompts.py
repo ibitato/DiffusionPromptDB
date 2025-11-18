@@ -5,20 +5,28 @@ CRUD operations for original prompts.
 """
 
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List, Optional, Dict, Any
+import json
+import re
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, status
+from typing import List, Optional, Dict, Any, Sequence
 import sqlite3
 from pathlib import Path
 
 from ..models import PromptCreate, PromptUpdate, PromptResponse, PromptListResponse
+from ..models.ingestion_models import BatchImageIngestionResponse, ImageIngestionResult
 from ..auth import (
     verify_api_key,
     verify_token,
-    verify_admin,
     verify_ownership_or_admin,
     optional_auth,
 )
 from ..config import settings
+from ..services.image_metadata import (
+    MetadataExtractionError,
+    ExtractedMetadata,
+    extract_png_metadata,
+)
+from ..services.image_storage import ImageStorageError, save_image_and_thumbnail
 
 router = APIRouter()
 
@@ -90,6 +98,8 @@ async def list_prompts(
             a.primary_style as art_style,
             p.negative_prompt,
             p.parameters,
+            p.image_path,
+            p.thumbnail_path,
             GROUP_CONCAT(DISTINCT t.tag) as tags,
             p.rating,
             p.notes
@@ -204,6 +214,143 @@ async def create_prompt(
     return created
 
 
+@router.post(
+    "/ingest",
+    response_model=BatchImageIngestionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def ingest_prompts_from_images(
+    files: List[UploadFile] = File(..., description="Stable Diffusion PNG files"),
+    tags: Optional[str] = Form(
+        None, description="Comma-separated tags that already exist in the catalog"
+    ),
+    category: Optional[str] = Form(
+        None, description="Category to apply to every ingested prompt"
+    ),
+    art_style: Optional[str] = Form(
+        None, description="Art style to store alongside the prompt"
+    ),
+    rating: Optional[int] = Form(
+        None, description="Optional rating (1-5) applied to every prompt"
+    ),
+    notes: Optional[str] = Form(
+        None, description="Additional notes stored with each prompt"
+    ),
+    db: sqlite3.Connection = Depends(get_prompts_db),
+    auth: dict = Depends(verify_token),
+):
+    """
+    Allow any authenticated user to import SD PNGs into their own prompt catalog.
+    """
+
+    if not files:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one PNG file must be provided.",
+        )
+
+    if rating is not None and (rating < 1 or rating > 5):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Rating must be between 1 and 5.",
+        )
+
+    user_id = auth.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Authenticated user context required.")
+
+    user_defined_tags = _prepare_tags(db, tags)
+    results: List[ImageIngestionResult] = []
+    created = 0
+
+    for upload in files:
+        filename = upload.filename or "unnamed.png"
+        saved_paths: Optional[Sequence[Optional[str]]] = None
+
+        try:
+            data = await upload.read()
+            if not data:
+                raise MetadataExtractionError("Uploaded file is empty.")
+
+            metadata = extract_png_metadata(data)
+            prompt_text = metadata.positive_prompt or metadata.raw_parameters
+            model_name = (
+                metadata.settings.get("Model")
+                or metadata.settings.get("model")
+                or "unknown-model"
+            )
+
+            parameters_payload = json.dumps(
+                {
+                    "raw": metadata.raw_parameters,
+                    "settings": metadata.settings,
+                },
+                ensure_ascii=False,
+            )
+
+            image_path, thumbnail_path = save_image_and_thumbnail(data, filename)
+            saved_paths = (image_path, thumbnail_path)
+
+            inferred_tags = _infer_tags_from_prompt(prompt_text, db)
+            tags_for_prompt = _merge_tag_lists(user_defined_tags, inferred_tags)
+            inferred_style = _infer_art_style(metadata)
+            art_style_value = art_style or category or inferred_style
+
+            prompt_id = _insert_ingested_prompt(
+                db=db,
+                text=prompt_text,
+                negative_prompt=metadata.negative_prompt or None,
+                model=model_name,
+                parameters=parameters_payload,
+                rating=rating,
+                notes=notes,
+                art_style=art_style_value,
+                tags=tags_for_prompt,
+                user_id=user_id,
+                image_path=image_path,
+                thumbnail_path=thumbnail_path,
+            )
+            db.commit()
+            created += 1
+            results.append(
+                ImageIngestionResult(
+                    filename=filename,
+                    status="created",
+                    detail="Prompt stored successfully.",
+                    prompt_id=prompt_id,
+                )
+            )
+        except MetadataExtractionError as exc:
+            results.append(
+                ImageIngestionResult(
+                    filename=filename, status="failed", detail=str(exc), prompt_id=None
+                )
+            )
+        except ImageStorageError as exc:
+            _cleanup_files(saved_paths)
+            results.append(
+                ImageIngestionResult(
+                    filename=filename, status="failed", detail=str(exc), prompt_id=None
+                )
+            )
+        except sqlite3.Error as exc:
+            db.rollback()
+            _cleanup_files(saved_paths)
+            results.append(
+                ImageIngestionResult(
+                    filename=filename,
+                    status="failed",
+                    detail="Database error while creating prompt.",
+                    prompt_id=None,
+                )
+            )
+        finally:
+            await upload.close()
+
+    failed = sum(1 for item in results if item.status != "created")
+    return BatchImageIngestionResponse(created=created, failed=failed, results=results)
+
+
 @router.post("/{prompt_id}/copy", response_model=PromptResponse, status_code=201)
 async def copy_prompt(
     prompt_id: int,
@@ -218,7 +365,7 @@ async def copy_prompt(
     source = db.execute(
         """
         SELECT id, original_prompt, model_used, input_tokens, output_tokens,
-               negative_prompt, parameters, rating, notes
+               negative_prompt, parameters, rating, notes, image_path, thumbnail_path
         FROM prompts
         WHERE id = ?
     """,
@@ -242,9 +389,11 @@ async def copy_prompt(
             negative_prompt,
             parameters,
             rating,
-            notes
+            notes,
+            image_path,
+            thumbnail_path
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """,
         (
             next_id,
@@ -258,6 +407,8 @@ async def copy_prompt(
             source["parameters"],
             source["rating"],
             source["notes"],
+            source["image_path"],
+            source["thumbnail_path"],
         ),
     )
 
@@ -467,6 +618,8 @@ PROMPT_DETAILS_QUERY = """
             a.primary_style as art_style,
             p.negative_prompt,
             p.parameters,
+            p.image_path,
+            p.thumbnail_path,
             GROUP_CONCAT(DISTINCT t.tag) as tags,
             p.rating,
             p.notes
@@ -516,3 +669,235 @@ def _clone_related_rows(db: sqlite3.Connection, source_id: int, target_id: int) 
                 f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({placeholders})",
                 values,
             )
+
+
+def _prepare_tags(db: sqlite3.Connection, tags_csv: Optional[str]) -> List[str]:
+    """Normalize user-provided tags without enforcing catalog existence."""
+
+    raw_tags: List[str] = []
+    if tags_csv:
+        raw_tags.extend([tag.strip() for tag in tags_csv.split(",") if tag.strip()])
+    if settings.ingestion_default_tags:
+        raw_tags.extend(
+            [tag.strip() for tag in settings.ingestion_default_tags if tag.strip()]
+        )
+
+    ordered_unique: List[str] = []
+    seen = set()
+    for tag in raw_tags:
+        if tag and tag not in seen:
+            ordered_unique.append(tag)
+            seen.add(tag)
+
+    return ordered_unique
+
+
+def _insert_ingested_prompt(
+    *,
+    db: sqlite3.Connection,
+    text: str,
+    negative_prompt: Optional[str],
+    model: str,
+    parameters: str,
+    rating: Optional[int],
+    notes: Optional[str],
+    art_style: Optional[str],
+    tags: List[str],
+    user_id: int,
+    image_path: Optional[str],
+    thumbnail_path: str,
+) -> int:
+    """Persist a prompt and its related rows."""
+
+    prompt_text = text.strip() or "Imported prompt"
+    prompt_id = _get_next_prompt_id(db)
+    processed_at = datetime.utcnow().isoformat()
+
+    db.execute(
+        """
+        INSERT INTO prompts (
+            id,
+            original_prompt,
+            processed_at,
+            model_used,
+            input_tokens,
+            output_tokens,
+            created_by,
+            negative_prompt,
+            parameters,
+            rating,
+            notes,
+            image_path,
+            thumbnail_path
+        )
+        VALUES (?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?)
+    """,
+        (
+            prompt_id,
+            prompt_text,
+            processed_at,
+            model,
+            user_id,
+            negative_prompt,
+            parameters,
+            rating,
+            notes,
+            image_path,
+            thumbnail_path,
+        ),
+    )
+
+    db.execute(
+        "INSERT INTO characters (prompt_id, number_of_people, breast_size) VALUES (?, 1, 'unspecified')",
+        (prompt_id,),
+    )
+    db.execute(
+        "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, 'safe')",
+        (prompt_id,),
+    )
+
+    if art_style:
+        db.execute(
+            "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
+            (prompt_id, art_style),
+        )
+
+    for tag in tags:
+        db.execute(
+            "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
+            (prompt_id, tag),
+        )
+
+    return prompt_id
+
+
+def _cleanup_files(paths: Optional[Sequence[Optional[str]]]) -> None:
+    """Delete stored thumbnails when ingestion fails."""
+
+    if not paths:
+        return
+
+    media_root = Path(settings.media_root).expanduser()
+    for rel in paths:
+        if not rel:
+            continue
+        try:
+            target = media_root / rel
+            if target.exists():
+                target.unlink()
+        except OSError:
+            pass
+
+
+TAG_SPLIT_RE = re.compile(r"[,\n]+")
+TAG_SANITIZE_RE = re.compile(r"[()\[\]{}<>:\"'|*]")
+STOPWORDS = {
+    "and",
+    "with",
+    "the",
+    "of",
+    "in",
+    "at",
+    "by",
+    "for",
+    "to",
+    "a",
+    "an",
+    "on",
+}
+ART_STYLE_KEYWORDS = [
+    ("anime", "Anime"),
+    ("manga", "Anime"),
+    ("comic", "Comic Book"),
+    ("mangastyle", "Anime"),
+    ("watercolor", "Watercolor"),
+    ("oil painting", "Oil Painting"),
+    ("digital painting", "Digital Painting"),
+    ("painterly", "Digital Painting"),
+    ("cinematic", "Cinematic"),
+    ("film still", "Cinematic"),
+    ("photograph", "Photorealistic"),
+    ("photo", "Photorealistic"),
+    ("realistic", "Realistic"),
+    ("hyperrealistic", "Photorealistic"),
+    ("fantasy", "Fantasy Art"),
+    ("cyberpunk", "Cyberpunk"),
+    ("pixel", "Pixel Art"),
+    ("low poly", "Low Poly"),
+    ("3d render", "3D Render"),
+    ("render", "3D Render"),
+]
+
+
+MAX_INFERRED_TAGS = 25
+
+
+def _infer_tags_from_prompt(prompt_text: str, db: sqlite3.Connection) -> List[str]:
+    candidates = _extract_candidate_tags(prompt_text or "")
+    if not candidates:
+        return []
+
+    matched = _match_existing_tags(db, candidates)
+    if not matched:
+        # Nothing in catalog yet: keep original candidates so new tags surface.
+        return candidates[:MAX_INFERRED_TAGS]
+
+    matched_set = set(matched)
+    extended = matched + [tag for tag in candidates if tag not in matched_set]
+    return extended[:MAX_INFERRED_TAGS]
+
+
+def _extract_candidate_tags(prompt_text: str) -> List[str]:
+    if not prompt_text:
+        return []
+    candidates: List[str] = []
+    seen = set()
+    for chunk in TAG_SPLIT_RE.split(prompt_text):
+        cleaned = TAG_SANITIZE_RE.sub("", chunk).strip().lower()
+        if not cleaned:
+            continue
+        for raw_token in cleaned.split():
+            token = raw_token.strip().strip("-_")
+            if not token or token in STOPWORDS or len(token) < 2:
+                continue
+            if token not in seen:
+                seen.add(token)
+                candidates.append(token)
+    return candidates[:60]
+
+
+def _match_existing_tags(db: sqlite3.Connection, candidates: List[str]) -> List[str]:
+    if not candidates:
+        return []
+    placeholders = ", ".join("?" * len(candidates))
+    rows = db.execute(
+        f"SELECT DISTINCT tag FROM main_tags WHERE tag IN ({placeholders})",
+        candidates,
+    ).fetchall()
+    existing = {row[0] for row in rows}
+    return [tag for tag in candidates if tag in existing]
+
+
+def _merge_tag_lists(primary: List[str], secondary: List[str]) -> List[str]:
+    merged: List[str] = []
+    seen = set()
+    for source in (primary, secondary):
+        for tag in source:
+            if tag and tag not in seen:
+                seen.add(tag)
+                merged.append(tag)
+    return merged
+
+
+def _infer_art_style(metadata: ExtractedMetadata) -> Optional[str]:
+    corpus = " ".join(
+        [
+            (metadata.positive_prompt or "").lower(),
+            (metadata.raw_parameters or "").lower(),
+            (metadata.settings.get("Model") or metadata.settings.get("model") or "").lower(),
+        ]
+    )
+    for keyword, style in ART_STYLE_KEYWORDS:
+        if keyword in corpus:
+            return style
+    return None

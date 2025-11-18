@@ -17,6 +17,7 @@ import { preferencesService } from '../services/preferences.service';
 import { Prompt, CreatePromptRequest } from '../types/api.types';
 import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
 import { logError, logDebug } from '../utils/logger';
+import { buildMediaUrl } from '../services/api';
 
 export const PromptsPage = () => {
   const { t } = useTranslation();
@@ -325,98 +326,114 @@ export const PromptsPage = () => {
           <>
             {/* Prompts List */}
             <div className="space-y-4 mb-8">
-              {prompts.map((prompt) => (
-                <div
-                  key={prompt.id}
-                  className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-slate-600 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-white">Prompt #{prompt.id}</h3>
-                        {isPreloaded(prompt) && (
-                          <span className="px-2 py-1 bg-orange-600/20 text-orange-400 text-xs rounded-full">
-                            Precargado
-                          </span>
-                        )}
-                        {prompt.category && (
-                          <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full">
-                            {prompt.category}
-                          </span>
-                        )}
-                        {prompt.rating && (
-                          <div className="flex items-center">
-                            {[...Array(5)].map((_, i) => (
-                              <svg
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < prompt.rating! ? 'text-yellow-400' : 'text-gray-600'
-                                }`}
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
+              {prompts.map((prompt) => {
+                const thumbnailUrl = buildMediaUrl(prompt.thumbnail_path);
+                return (
+                  <div
+                    key={prompt.id}
+                    className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-slate-600 transition-colors"
+                  >
+                    <div className="flex flex-col lg:flex-row gap-6 mb-4">
+                      {thumbnailUrl && (
+                        <div className="w-full lg:w-56">
+                          <div className="bg-slate-900/40 border border-slate-700 rounded-lg overflow-hidden">
+                            <img
+                              src={thumbnailUrl}
+                              alt={t('prompts.thumbnail.alt', { id: prompt.id })}
+                              className="w-full h-48 object-cover"
+                              loading="lazy"
+                            />
                           </div>
+                          <p className="text-xs text-gray-500 mt-2">{t('prompts.thumbnail.label')}</p>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-white">Prompt #{prompt.id}</h3>
+                          {isPreloaded(prompt) && (
+                            <span className="px-2 py-1 bg-orange-600/20 text-orange-400 text-xs rounded-full">
+                              Precargado
+                            </span>
+                          )}
+                          {prompt.category && (
+                            <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full">
+                              {prompt.category}
+                            </span>
+                          )}
+                          {prompt.rating && (
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <svg
+                                  key={i}
+                                  className={`w-4 h-4 ${
+                                    i < prompt.rating! ? 'text-yellow-400' : 'text-gray-600'
+                                  }`}
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-gray-300 leading-relaxed">{truncateText(prompt.text)}</p>
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    {prompt.tags && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {prompt.tags.split(',').map((tag, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-slate-700 text-gray-300 text-xs rounded"
+                          >
+                            {tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Footer */}
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-4 border-t border-slate-700">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                        {prompt.model && (
+                          <span>
+                            <strong>Model:</strong> {prompt.model}
+                          </span>
+                        )}
+                        <span>{formatDate(prompt.created_at)}</span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => handleView(prompt)}
+                          className="px-3 py-1 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded transition-colors"
+                        >
+                          {t('prompts.actions.view')}
+                        </button>
+                        {canModify(prompt) && (
+                          <>
+                            <button
+                              onClick={() => handleEdit(prompt)}
+                              className="px-3 py-1 text-green-400 hover:text-green-300 hover:bg-green-400/10 rounded transition-colors"
+                            >
+                              {t('prompts.actions.edit')}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(prompt)}
+                              className="px-3 py-1 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
+                            >
+                              {t('prompts.actions.delete')}
+                            </button>
+                          </>
                         )}
                       </div>
-                      <p className="text-gray-300 leading-relaxed">{truncateText(prompt.text)}</p>
                     </div>
                   </div>
-
-                  {/* Tags */}
-                  {prompt.tags && (
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {prompt.tags.split(',').map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-slate-700 text-gray-300 text-xs rounded"
-                        >
-                          {tag.trim()}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
-                      {prompt.model && (
-                        <span>
-                          <strong>Model:</strong> {prompt.model}
-                        </span>
-                      )}
-                      <span>{formatDate(prompt.created_at)}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleView(prompt)}
-                        className="px-3 py-1 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 rounded transition-colors"
-                      >
-                        {t('prompts.actions.view')}
-                      </button>
-                      {canModify(prompt) && (
-                        <>
-                          <button
-                            onClick={() => handleEdit(prompt)}
-                            className="px-3 py-1 text-green-400 hover:text-green-300 hover:bg-green-400/10 rounded transition-colors"
-                          >
-                            {t('prompts.actions.edit')}
-                          </button>
-                          <button
-                            onClick={() => handleDelete(prompt)}
-                            className="px-3 py-1 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded transition-colors"
-                          >
-                            {t('prompts.actions.delete')}
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Pagination */}

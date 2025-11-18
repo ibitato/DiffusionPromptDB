@@ -51,6 +51,12 @@ class PromptResponse(PromptBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    image_path: Optional[str] = Field(
+        None, description="Relative path to the stored source image"
+    )
+    thumbnail_path: Optional[str] = Field(
+        None, description="Relative path to the generated thumbnail"
+    )
     created_by: Optional[int] = Field(
         None, description="User ID of creator (NULL for preloaded)"
     )

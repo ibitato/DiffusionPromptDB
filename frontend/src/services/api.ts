@@ -91,6 +91,14 @@ api.interceptors.response.use(
   }
 );
 
+const deriveApiRootUrl = (): string => {
+  const normalized = API_BASE_URL.replace(/\/$/, '');
+  const root = normalized.replace(/\/api\/v1$/i, '');
+  return root || normalized;
+};
+
+const MEDIA_BASE_URL = `${deriveApiRootUrl()}/media`;
+
 export const handleApiError = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
     if (error.response?.data?.detail) {
@@ -99,6 +107,14 @@ export const handleApiError = (error: unknown): string => {
     return error.message;
   }
   return 'An unexpected error occurred';
+};
+
+export const buildMediaUrl = (relativePath?: string | null): string | null => {
+  if (!relativePath) {
+    return null;
+  }
+  const sanitized = relativePath.replace(/^\/+/, '');
+  return `${MEDIA_BASE_URL}/${sanitized}`;
 };
 
 export default api;

@@ -28,7 +28,13 @@ def init_catalog_db():
             model_used TEXT,
             input_tokens INTEGER DEFAULT 0,
             output_tokens INTEGER DEFAULT 0,
-            created_by INTEGER DEFAULT NULL
+            created_by INTEGER DEFAULT NULL,
+            negative_prompt TEXT,
+            parameters TEXT,
+            rating INTEGER,
+            notes TEXT,
+            image_path TEXT,
+            thumbnail_path TEXT
         )
         """,
         """

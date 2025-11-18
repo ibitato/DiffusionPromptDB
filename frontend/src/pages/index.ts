@@ -10,3 +10,4 @@ export { SearchPage } from './SearchPage';
 export { ProfilePage } from './ProfilePage';
 export { AdminUsersPage } from './AdminUsersPage';
 export { VerifyAccountPage } from './VerifyAccountPage';
+export { PromptIngestionPage } from './PromptIngestionPage';

@@ -16,6 +16,7 @@ SQLite database for Stability Diffusion Prompts
 - 🔄 **Version Control**: Git-ready with proper .gitignore
 - 🔐 **Account Management**: JWT auth with profile page, password rotation, and admin tooling
 - 📈 **Personalized Metrics**: “Only my prompts” preference automatically scopes Dashboard, Search, and Prompts to your own catalog
+- 🖼️ **Prompt Ingestion Pipeline**: Upload Stable Diffusion PNGs, auto-extract metadata, and persist lightweight thumbnails only
 
 ## NEW: Complete Catalogation System 🚀
 
@@ -153,6 +154,56 @@ curl -H "Authorization: Bearer $TOKEN" \
 curl -H "X-API-Key: $API_KEY" \
   "http://localhost:8000/api/v1/search/complex?nsfw_level=explicit&art_style=anime"
 ```
+
+### 4️⃣ Prompt Ingestion & Thumbnail Pipeline
+
+**Backend (`POST /api/v1/prompts/ingest`)**
+
+- Accepts up to 5 Stable Diffusion PNGs per request plus optional `tags`, `category`, `art_style`, `rating` (1‑5) and `notes`.
+- `src/api/services/image_metadata.py` reads the `parameters` chunk to capture positive prompt, negative prompt, and sampler/model settings. The payload that lands in the DB keeps the raw text plus a parsed `settings` dict.
+- New tags are **no longer rejected**: `_infer_tags_from_prompt()` merges catalog hits with any brand-new keywords (perfect for LoRA names such as `annitaxyz`), so every ingestion stays searchable immediately.
+- `_infer_art_style()` inspects the prompt/model metadata and fills `art_styles.primary_style` whenever the user did not pick a value manually.
+- `src/api/services/image_storage.py` throws away the original PNG and only persists an optimized JPEG thumbnail (`MEDIA_ROOT/MEDIA_THUMBNAILS_SUBDIR/YYYY/MM/DD/<uuid>.jpg`). Configure the storage knobs via:
+
+| Env var | Default | Notes |
+|---------|---------|-------|
+| `MEDIA_ROOT` | `media` | Base folder created automatically (git-ignored) |
+| `MEDIA_THUMBNAILS_SUBDIR` | `thumbnails` | Nested directory that keeps the JPEG previews |
+| `THUMBNAIL_MAX_SIZE` | `512` | Longest thumbnail edge (px) |
+| `INGESTION_DEFAULT_TAGS` | _(empty)_ | Comma-separated tags always appended to ingested prompts |
+
+**Frontend (`/ingest`)**
+
+- Protected route; any authenticated user can drop up to five PNGs (other types are rejected in-browser).
+- Client-side parser (`frontend/src/utils/pngMetadata.ts`) previews the metadata and suggests tags/art styles in real time. Suggestions are only applied when the user clicks “Apply”.
+- Art-style selection now uses the same dropdown styling as the rest of the app and auto-populates from `/api/v1/admin/filters`.
+- Upload progress, per-file status messages, and the resulting prompt IDs are rendered immediately so the user can jump to the prompt detail modal.
+
+**CLI helper**
+
+Need to triage thousands of PNGs first? `tools/sd_metadata_dump/export_sd_metadata.py` walks any folder (e.g., SD-Matrix’s `Data/Images`) and dumps every `parameters` block to JSONL so you can pre-filter before uploading.
+
+### Local Hot-Reload Setup
+
+```bash
+# Backend
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+python src/api/init_users_db.py
+python src/api/init_preferences_table.py
+JWT_SECRET_KEY=devsecret \
+API_KEYS='["test_key"]' \
+USERS_DB_PATH="data/users.db" \
+MEDIA_ROOT="media" \
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Frontend (separate terminal)
+cd frontend
+npm install
+VITE_API_KEY=test_key npm run dev -- --host 0.0.0.0 --port 5173
+```
+
+Visit `http://localhost:5173/ingest` and sign in as `test / REDACTED_PASSWORD` to exercise the ingestion flow end-to-end; prompts appear under “My Prompts” instantly.
 
 ### Account & User Management
 

@@ -23,12 +23,14 @@ Version: 1.0.0
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import logging
 from datetime import datetime
 import os
+from pathlib import Path
 
 from .config import settings
 from .routers import prompts, catalog, search, admin, auth, preferences, profile, admin_users
@@ -72,6 +74,15 @@ app.add_middleware(
     allow_credentials=settings.cors_allow_credentials,  # Allow cookies/auth headers
     allow_methods=settings.cors_allow_methods,  # Allowed HTTP methods
     allow_headers=settings.cors_allow_headers,  # Allowed request headers
+)
+
+# Serve media files (thumbnails) under /media
+media_directory = Path(settings.media_root).expanduser()
+media_directory.mkdir(parents=True, exist_ok=True)
+app.mount(
+    "/media",
+    StaticFiles(directory=str(media_directory)),
+    name="media",
 )
 
 

@@ -5,6 +5,8 @@ User service utilities for authentication, profiles, and password policies.
 import sqlite3
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
+import hashlib
+import bcrypt
 
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
@@ -32,7 +34,25 @@ def get_user_by_id(db: sqlite3.Connection, user_id: int) -> Optional[Dict[str, A
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    """
+    Verify password with backward compatibility for legacy SHA256 hashes.
+    """
+    if hashed_password.startswith("$2"):
+        try:
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception:
+            return bcrypt.checkpw(
+                plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+            )
+
+    if len(hashed_password) == 64:
+        digest = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
+        return digest == hashed_password
+
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Password hash format is not supported.",
+    )
 
 
 def hash_password(password: str) -> str:

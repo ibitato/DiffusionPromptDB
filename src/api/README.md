@@ -21,9 +21,11 @@ cd src/api
 # Instalar dependencias
 pip install -r requirements.txt
 
-# Configurar
+# Configurar (credenciales + bases SQLite)
 cp .env.example .env
-# Editar .env con tus configuraciones
+# Editar .env con tus configuraciones y luego inicializa:
+python init_users_db.py
+python init_preferences_table.py
 
 # Ejecutar
 python -m uvicorn main:app --reload
@@ -118,7 +120,37 @@ GET    /api/v1/search/tags/{tag}    # Por tag específico
 GET    /api/v1/admin/health         # Health check (público)
 GET    /api/v1/admin/stats          # Estadísticas (JWT)
 GET    /api/v1/admin/filters        # Valores para filtros (JWT)
+POST   /api/v1/prompts/ingest       # Ingestar PNGs de SD en prompts (JWT)
 ```
+
+## 🖼️ Ingesta de PNGs (SD → Catalog)
+
+- **Endpoint**: `POST /api/v1/prompts/ingest`
+- **Auth**: JWT (cualquier usuario autenticado puede importar a su propio catálogo).
+- **Payload**: `multipart/form-data` con hasta 5 archivos (`files=@imagen.png`) más campos opcionales `tags`, `category`, `art_style`, `rating` (1-5) y `notes`.
+- **Metadatos**: `src/api/services/image_metadata.py` lee el chunk `parameters` de cada PNG para extraer prompt positivo, prompt negativo y configuraciones (Steps, Seed, Sampler, modelo, etc.). Esa información se guarda como JSON (`parameters`).
+- **Etiquetas / estilos**:
+  - `_infer_tags_from_prompt()` agrega automáticamente tokens relevantes y **ya no exige** que existan en `main_tags`, por lo que LoRAs como `annitaxyz` quedan disponibles para búsqueda desde el primer upload.
+  - `_infer_art_style()` completa estilos conocidos cuando el usuario no elige uno manualmente.
+  - Las etiquetas manuales se combinan con `INGESTION_DEFAULT_TAGS` (si está configurado).
+- **Imágenes**: `src/api/services/image_storage.py` descarta el PNG original y genera únicamente un thumbnail JPEG (`MEDIA_ROOT/MEDIA_THUMBNAILS_SUBDIR/AAAA/MM/DD/<uuid>.jpg`). Controla la ruta y el tamaño con las variables `MEDIA_ROOT`, `MEDIA_THUMBNAILS_SUBDIR` y `THUMBNAIL_MAX_SIZE`.
+- **Respuesta**: `BatchImageIngestionResponse` con conteo `created/failed` y detalle por archivo.
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"REDACTED_PASSWORD"}' | jq -r '.access_token')
+
+curl -X POST http://localhost:8000/api/v1/prompts/ingest \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "files=@sample.png" \
+  -F "tags=annitaxyz,portrait" \
+  -F "category=portrait" \
+  -F "rating=5" \
+  -F "notes=Import via CLI"
+```
+
+> Consejo: Usa `tools/sd_metadata_dump/export_sd_metadata.py` para explorar directorios masivos (p.ej. SD-Matrix) y decidir qué PNGs merecen ser ingeridos antes de subirlos.
 
 ## 💡 Ejemplos de Uso
 
@@ -194,6 +226,46 @@ curl -H "X-API-Key: $API_KEY" \
 curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   http://localhost:8000/api/v1/admin/stats
 ```
+Batch Size: 5 archivos subidos, 5 procesados correctamente
+```
+
+## 🖼️ Importación de PNGs (Backoffice)
+
+Nuevo endpoint para convertir las imágenes generadas por Stable Diffusion en prompts del catálogo.
+
+1. **Configura almacenamiento** (opcional):
+   - `MEDIA_ROOT` (env: `MEDIA_ROOT`): carpeta donde guardar los thumbnails (default: `media/`)
+   - `MEDIA_THUMBNAILS_SUBDIR`: subcarpeta donde se almacenan los JPEG reducidos (default: `thumbnails`)
+   - `THUMBNAIL_MAX_SIZE`: tamaño máximo del lado mayor en píxeles (default: 512)
+   - `INGESTION_DEFAULT_TAGS`: lista separada por comas con tags ya existentes que quieras aplicar automáticamente
+   - Las imágenes originales se descartan después de generar el thumbnail para minimizar almacenamiento; solo se guarda la versión reducida.
+
+2. **Migración** (si tu base ya existía):
+   ```bash
+   cd src/api
+   python add_prompt_image_fields.py
+   ```
+
+3. **Llamada al endpoint (cualquier usuario autenticado)**:
+   ```bash
+   curl -X POST http://localhost:8000/api/v1/prompts/ingest \
+     -H "Authorization: Bearer USER_JWT" \
+     -F "files=@/ruta/imagen1.png" \
+     -F "files=@/ruta/imagen2.png" \
+     -F "tags=portrait,studio" \
+     -F "art_style=realistic" \
+     -F "rating=4"
+   ```
+   - Solo acepta PNGs con el chunk `parameters` (como los generados por Stability Matrix / A1111).
+   - Extrae prompt positivo, negativo y settings (steps, sampler, seed, etc.) y los guarda en `parameters` como JSON.
+   - Genera un JPEG reducido y lo referencia en `thumbnail_path`.
+   - Solo permite tags que ya existan en `main_tags`. Si necesitas nuevos, créalos primero desde tools o DB.
+
+4. **Entorno de desarrollo local**:
+   - Copia algunas imágenes con metadatos a una carpeta local (ej. `/mnt/d/sd-matrix/Data/Images/...`).
+   - Ejecuta la API con `python src/api/start_server.py` (usar `.venv` activado).
+   - Usa el mismo endpoint anterior apuntando al servidor local. Los thumbnails quedarán en `media/thumbnails/...`.
+
 
 **Response:**
 ```json

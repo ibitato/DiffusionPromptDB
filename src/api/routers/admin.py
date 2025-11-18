@@ -58,87 +58,126 @@ async def get_statistics(
 
     # NSFW distribution
     stats["nsfw_distribution"] = {}
-    nsfw_query = """
-        SELECT nc.level, COUNT(*)
-        FROM nsfw_content nc
-        JOIN prompts p ON p.id = nc.prompt_id
-    """
-    nsfw_params = []
     if my_prompts_only:
-        nsfw_query += " WHERE p.created_by = ?"
-        nsfw_params.append(user_id)
-    nsfw_query += " GROUP BY nc.level"
+        nsfw_query = """
+            SELECT nc.level, COUNT(*)
+            FROM nsfw_content nc
+            JOIN prompts p ON p.id = nc.prompt_id
+            WHERE p.created_by = ?
+            GROUP BY nc.level
+        """
+        nsfw_params = [user_id]
+    else:
+        nsfw_query = """
+            SELECT level, COUNT(*)
+            FROM nsfw_content
+            GROUP BY level
+        """
+        nsfw_params = []
     for row in db.execute(nsfw_query, nsfw_params):
         stats["nsfw_distribution"][row[0]] = row[1]
 
     # Top tags
     stats["top_tags"] = []
-    top_tags_query = """
-        SELECT mt.tag, COUNT(*) as count
-        FROM main_tags mt
-        JOIN prompts p ON p.id = mt.prompt_id
-    """
-    tag_params = []
     if my_prompts_only:
-        top_tags_query += " WHERE p.created_by = ?"
-        tag_params.append(user_id)
-    top_tags_query += " GROUP BY mt.tag ORDER BY count DESC LIMIT 200"
+        top_tags_query = """
+            SELECT mt.tag, COUNT(*) as count
+            FROM main_tags mt
+            JOIN prompts p ON p.id = mt.prompt_id
+            WHERE p.created_by = ?
+            GROUP BY mt.tag
+            ORDER BY count DESC
+            LIMIT 200
+        """
+        tag_params = [user_id]
+    else:
+        top_tags_query = """
+            SELECT tag, COUNT(*) as count
+            FROM main_tags
+            GROUP BY tag
+            ORDER BY count DESC
+            LIMIT 200
+        """
+        tag_params = []
     for row in db.execute(top_tags_query, tag_params):
         stats["top_tags"].append({"tag": row[0], "count": row[1]})
 
     # All art styles (no limit)
     stats["top_art_styles"] = []
-    art_styles_query = """
-        SELECT ast.primary_style, COUNT(*) as count
-        FROM art_styles ast
-        JOIN prompts p ON p.id = ast.prompt_id
-        WHERE ast.primary_style IS NOT NULL
-    """
-    art_style_params = []
     if my_prompts_only:
-        art_styles_query += " AND p.created_by = ?"
-        art_style_params.append(user_id)
-    art_styles_query += " GROUP BY ast.primary_style ORDER BY count DESC"
+        art_styles_query = """
+            SELECT ast.primary_style, COUNT(*) as count
+            FROM art_styles ast
+            JOIN prompts p ON p.id = ast.prompt_id
+            WHERE ast.primary_style IS NOT NULL
+              AND p.created_by = ?
+            GROUP BY ast.primary_style
+            ORDER BY count DESC
+        """
+        art_style_params = [user_id]
+    else:
+        art_styles_query = """
+            SELECT primary_style, COUNT(*) as count
+            FROM art_styles
+            WHERE primary_style IS NOT NULL
+            GROUP BY primary_style
+            ORDER BY count DESC
+        """
+        art_style_params = []
     for row in db.execute(art_styles_query, art_style_params):
         stats["top_art_styles"].append({"style": row[0], "count": row[1]})
 
     # Total unique art styles count
-    total_arts_query = """
-        SELECT COUNT(DISTINCT ast.primary_style)
-        FROM art_styles ast
-        JOIN prompts p ON p.id = ast.prompt_id
-        WHERE ast.primary_style IS NOT NULL
-    """
     total_art_params = []
     if my_prompts_only:
-        total_arts_query += " AND p.created_by = ?"
+        total_arts_query = """
+            SELECT COUNT(DISTINCT ast.primary_style)
+            FROM art_styles ast
+            JOIN prompts p ON p.id = ast.prompt_id
+            WHERE ast.primary_style IS NOT NULL
+              AND p.created_by = ?
+        """
         total_art_params.append(user_id)
+    else:
+        total_arts_query = """
+            SELECT COUNT(DISTINCT primary_style)
+            FROM art_styles
+            WHERE primary_style IS NOT NULL
+        """
     stats["total_art_styles"] = db.execute(total_arts_query, total_art_params).fetchone()[0]
 
     # Total unique tags count
-    total_tags_query = """
-        SELECT COUNT(DISTINCT mt.tag)
-        FROM main_tags mt
-        JOIN prompts p ON p.id = mt.prompt_id
-    """
-    total_tag_params = []
     if my_prompts_only:
-        total_tags_query += " WHERE p.created_by = ?"
-        total_tag_params.append(user_id)
+        total_tags_query = """
+            SELECT COUNT(DISTINCT mt.tag)
+            FROM main_tags mt
+            JOIN prompts p ON p.id = mt.prompt_id
+            WHERE p.created_by = ?
+        """
+        total_tag_params = [user_id]
+    else:
+        total_tags_query = "SELECT COUNT(DISTINCT tag) FROM main_tags"
+        total_tag_params = []
     stats["total_tags"] = db.execute(total_tags_query, total_tag_params).fetchone()[0]
 
     # Character distribution
     stats["character_distribution"] = {}
-    characters_query = """
-        SELECT ch.number_of_people, COUNT(*)
-        FROM characters ch
-        JOIN prompts p ON p.id = ch.prompt_id
-    """
-    character_params = []
     if my_prompts_only:
-        characters_query += " WHERE p.created_by = ?"
-        character_params.append(user_id)
-    characters_query += " GROUP BY ch.number_of_people"
+        characters_query = """
+            SELECT ch.number_of_people, COUNT(*)
+            FROM characters ch
+            JOIN prompts p ON p.id = ch.prompt_id
+            WHERE p.created_by = ?
+            GROUP BY ch.number_of_people
+        """
+        character_params = [user_id]
+    else:
+        characters_query = """
+            SELECT number_of_people, COUNT(*)
+            FROM characters
+            GROUP BY number_of_people
+        """
+        character_params = []
     for row in db.execute(characters_query, character_params):
         stats["character_distribution"][str(row[0])] = row[1]
 

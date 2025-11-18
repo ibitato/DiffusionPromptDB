@@ -10,6 +10,7 @@
     "settings": "Configuración",
     "profile": "Perfil",
     "admin": "Admin",
+    "ingest": "Ingesta",
     "logout": "Cerrar Sesión"
   },
   "login": {
@@ -169,6 +170,10 @@
       "load": "No se pudieron cargar los prompts",
       "save": "No se pudo guardar el prompt",
       "delete": "No se pudo eliminar el prompt"
+    },
+    "thumbnail": {
+      "label": "Miniatura",
+      "alt": "Miniatura del prompt #{{id}}"
     }
   },
   "promptForm": {
@@ -230,6 +235,11 @@
       "close": "Cerrar",
       "edit": "Editar",
       "delete": "Eliminar"
+    },
+    "preview": {
+      "title": "Vista previa",
+      "hint": "Miniatura almacenada para identificar el prompt.",
+      "alt": "Miniatura del prompt #{{id}}"
     }
   },
   "deleteConfirm": {
@@ -282,7 +292,8 @@
       "tryDifferent": "Intenta con diferentes criterios de búsqueda",
       "selectFilters": "Selecciona filtros y haz click en Buscar",
       "previous": "Anterior",
-      "next": "Siguiente"
+      "next": "Siguiente",
+      "mine": "Mi prompt"
     },
     "chips": {
       "nsfw": "NSFW",
@@ -419,6 +430,71 @@
     "prompts": {
       "newPassword": "Ingresa la nueva contraseña para {{username}}",
       "delete": "¿Eliminar al usuario {{username}}?"
+    }
+  },
+  "ingest": {
+    "badge": "Backoffice · Ingesta",
+    "title": "Ingesta de prompts",
+    "subtitle": "Sube hasta cinco PNGs de Stable Diffusion con metadatos embebidos y envíalos directamente a tu catálogo personal.",
+    "limitLabel": "PNGs seleccionados",
+    "dropzone": {
+      "title": "Arrastra tus PNGs aquí",
+      "hint": "Solo se admiten PNGs generados por Stability Matrix o AUTOMATIC1111.",
+      "action": "Seleccionar PNGs",
+      "helper": "Asegúrate de que el archivo conserve el bloque de metadatos \"parameters\"."
+    },
+    "preview": {
+      "title": "Imágenes seleccionadas ({{count}})",
+      "clear": "Vaciar lote",
+      "remove": "Quitar"
+    },
+    "form": {
+      "tags": "Tags",
+      "tagsPlaceholder": "retrato, estudio, luz volumétrica",
+      "tagsHelp": "Solo se aplicarán tags que ya existan en el sistema.",
+      "category": "Categoría",
+      "categoryPlaceholder": "ej: retrato",
+      "artStyle": "Estilo",
+      "artStylePlaceholder": "ej: realista",
+      "rating": "Valoración",
+      "ratingPlaceholder": "Sin valoración",
+      "notes": "Notas",
+      "notesPlaceholder": "Notas opcionales que se guardarán con el prompt",
+      "helper": "Máximo {{max}} archivos PNG por lote."
+    },
+    "actions": {
+      "reset": "Reiniciar formulario",
+      "submit": "Ingerir prompts",
+      "submitting": "Procesando..."
+    },
+    "errors": {
+      "maxFiles": "Solo puedes subir hasta {{max}} imágenes por lote.",
+      "selectFiles": "Agrega al menos un PNG antes de enviar.",
+      "generic": "La ingesta falló. Intenta nuevamente."
+    },
+    "messages": {
+      "completed": "Ingesta finalizada: {{created}} creados, {{failed}} fallidos."
+    },
+    "results": {
+      "title": "Resumen de procesamiento",
+      "subtitle": "Estado por archivo",
+      "created": "Creados",
+      "failed": "Fallidos",
+      "empty": "Ejecuta la ingesta para ver resultados detallados.",
+      "status": {
+        "created": "Importado",
+        "failed": "Fallido",
+        "skipped": "Omitido"
+      },
+      "viewPrompt": "Abrir prompt"
+    },
+    "suggestions": {
+      "analyzing": "Analizando metadatos del PNG...",
+      "tagsTitle": "Tags sugeridos",
+      "applyTags": "Usar tags sugeridos",
+      "styleTitle": "Estilo sugerido",
+      "applyStyle": "Usar estilo sugerido",
+      "failed": "No pudimos extraer metadatos de esta imagen."
     }
   },
   "settings": {

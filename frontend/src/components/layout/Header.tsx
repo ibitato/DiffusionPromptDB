@@ -32,6 +32,7 @@ export const Header = () => {
           <nav className="flex items-center space-x-4">
             <HeaderLink label={t('nav.dashboard')} onClick={() => navigate('/dashboard')} />
             <HeaderLink label={t('nav.prompts')} onClick={() => navigate('/prompts')} />
+            <HeaderLink label={t('nav.ingest')} onClick={() => navigate('/ingest')} />
             <HeaderLink label={t('nav.search')} onClick={() => navigate('/search')} />
             <HeaderLink label={t('nav.profile')} onClick={() => navigate('/profile')} />
             {user?.role === 'admin' && (

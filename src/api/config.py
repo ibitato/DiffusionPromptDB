@@ -68,6 +68,12 @@ class Settings(BaseSettings):
     default_page_size: int = 20
     max_page_size: int = 100
 
+    # Media / ingestion
+    media_root: str = "media"
+    media_thumbnails_subdir: str = "thumbnails"
+    thumbnail_max_size: int = 512
+    ingestion_default_tags: List[str] = Field(default_factory=list)
+
     # Logging
     log_level: str = "INFO"
     log_file: str = "api.log"
@@ -91,6 +97,20 @@ class Settings(BaseSettings):
             raise ValueError(
                 "API_KEYS environment variable must define at least one API key."
             )
+        return value
+
+    @field_validator("thumbnail_max_size")
+    @classmethod
+    def validate_thumbnail_size(cls, value: int) -> int:
+        if value <= 0:
+            raise ValueError("thumbnail_max_size must be greater than zero.")
+        return value
+
+    @field_validator("ingestion_default_tags", mode="before")
+    @classmethod
+    def parse_default_tags(cls, value):
+        if isinstance(value, str):
+            return [tag.strip() for tag in value.split(",") if tag.strip()]
         return value
 
     @field_validator("smtp_port")

@@ -10,6 +10,7 @@
     "settings": "Paramètres",
     "profile": "Profil",
     "admin": "Admin",
+    "ingest": "Ingestion",
     "logout": "Déconnexion"
   },
   "login": {
@@ -169,6 +170,10 @@
       "load": "Impossible de charger les prompts",
       "save": "Impossible d'enregistrer le prompt",
       "delete": "Impossible de supprimer le prompt"
+    },
+    "thumbnail": {
+      "label": "Miniature",
+      "alt": "Miniature du prompt #{{id}}"
     }
   },
   "promptForm": {
@@ -230,6 +235,11 @@
       "close": "Fermer",
       "edit": "Modifier",
       "delete": "Supprimer"
+    },
+    "preview": {
+      "title": "Miniature",
+      "hint": "Aperçu enregistré pour identifier rapidement le prompt.",
+      "alt": "Miniature du prompt #{{id}}"
     }
   },
   "profile": {
@@ -343,6 +353,71 @@
       "delete": "Supprimer l'utilisateur {{username}}?"
     }
   },
+  "ingest": {
+    "badge": "Backoffice · Import",
+    "title": "Ingestion de prompts",
+    "subtitle": "Télécharge jusqu'à cinq PNG Stable Diffusion avec métadonnées intégrées et enregistre-les directement dans ton catalogue personnel.",
+    "limitLabel": "PNGs sélectionnés",
+    "dropzone": {
+      "title": "Dépose tes PNGs ici",
+      "hint": "Seuls les PNGs générés par Stability Matrix / AUTOMATIC1111 sont supportés.",
+      "action": "Choisir des PNGs",
+      "helper": "Assure-toi que le fichier conserve le bloc de métadonnées \"parameters\"."
+    },
+    "preview": {
+      "title": "Images sélectionnées ({{count}})",
+      "clear": "Effacer le lot",
+      "remove": "Retirer"
+    },
+    "form": {
+      "tags": "Tags",
+      "tagsPlaceholder": "portrait, studio, lumière volumétrique",
+      "tagsHelp": "Seuls les tags déjà présents dans le système seront appliqués.",
+      "category": "Catégorie",
+      "categoryPlaceholder": "ex: portrait",
+      "artStyle": "Style",
+      "artStylePlaceholder": "ex: réaliste",
+      "rating": "Note",
+      "ratingPlaceholder": "Aucune note",
+      "notes": "Notes",
+      "notesPlaceholder": "Notes optionnelles enregistrées avec le prompt",
+      "helper": "Maximum {{max}} fichiers PNG par lot."
+    },
+    "actions": {
+      "reset": "Réinitialiser le formulaire",
+      "submit": "Ingestion",
+      "submitting": "Traitement..."
+    },
+    "errors": {
+      "maxFiles": "Tu peux envoyer au plus {{max}} images par lot.",
+      "selectFiles": "Ajoute au moins un PNG avant d'envoyer.",
+      "generic": "L'ingestion a échoué. Réessaie."
+    },
+    "messages": {
+      "completed": "Ingestion terminée : {{created}} créés, {{failed}} en échec."
+    },
+    "results": {
+      "title": "Résumé du traitement",
+      "subtitle": "Statut par fichier",
+      "created": "Créés",
+      "failed": "Échecs",
+      "empty": "Lance une ingestion pour voir les résultats.",
+      "status": {
+        "created": "Importé",
+        "failed": "Échec",
+        "skipped": "Ignoré"
+      },
+      "viewPrompt": "Ouvrir le prompt"
+    },
+    "suggestions": {
+      "analyzing": "Analyse des métadonnées PNG...",
+      "tagsTitle": "Tags suggérés",
+      "applyTags": "Utiliser ces tags",
+      "styleTitle": "Style suggéré",
+      "applyStyle": "Utiliser ce style",
+      "failed": "Impossible d'extraire les métadonnées de cette image."
+    }
+  },
   "deleteConfirm": {
     "title": "Supprimer le Prompt",
     "message": "Êtes-vous sûr de vouloir supprimer le prompt",
@@ -393,7 +468,8 @@
       "tryDifferent": "Essayez différents critères de recherche",
       "selectFilters": "Sélectionnez des filtres et cliquez sur Rechercher",
       "previous": "Précédent",
-      "next": "Suivant"
+      "next": "Suivant",
+      "mine": "Mon prompt"
     },
     "chips": {
       "nsfw": "NSFW",

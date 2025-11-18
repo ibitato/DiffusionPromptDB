@@ -68,6 +68,7 @@ async def complex_search(
             p.id, 
             p.original_prompt,
             p.created_by,
+            p.thumbnail_path,
             nc.level as nsfw_level,
             ast.primary_style as art_style,
             ch.number_of_people,
@@ -136,7 +137,7 @@ async def complex_search(
         query += " WHERE " + " AND ".join(conditions)
 
     # Add GROUP BY for aggregation - include created_by
-    query += " GROUP BY p.id, p.original_prompt, p.created_by, nc.level, ast.primary_style, ch.number_of_people"
+    query += " GROUP BY p.id, p.original_prompt, p.created_by, p.thumbnail_path, nc.level, ast.primary_style, ch.number_of_people"
 
     # Get total count first - need to include necessary LEFT JOINs
     count_query = f"""
@@ -196,6 +197,8 @@ async def search_by_tag(
             SELECT DISTINCT 
                 p.id, 
                 p.original_prompt,
+                p.created_by,
+                p.thumbnail_path,
                 nc.level as nsfw_level,
                 ast.primary_style as art_style,
                 ch.number_of_people,
@@ -207,15 +210,22 @@ async def search_by_tag(
             LEFT JOIN characters ch ON p.id = ch.prompt_id
             LEFT JOIN main_tags mt ON p.id = mt.prompt_id
             WHERE t.tag LIKE ?
-            GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people
+            GROUP BY p.id, p.original_prompt, p.created_by, p.thumbnail_path, nc.level, ast.primary_style, ch.number_of_people
         """
         params = [f"%{safe_tag}%"]
+        count_params = list(params)
 
         # Get total count
-        count_query = query.replace(
-            "SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)"
-        )
-        total_count = db.execute(count_query, params).fetchone()[0]
+        count_query = """
+            SELECT COUNT(DISTINCT p.id)
+            FROM prompts p
+            JOIN main_tags t ON p.id = t.prompt_id
+            LEFT JOIN nsfw_content nc ON p.id = nc.prompt_id
+            LEFT JOIN art_styles ast ON p.id = ast.prompt_id
+            LEFT JOIN characters ch ON p.id = ch.prompt_id
+            WHERE t.tag LIKE ?
+        """
+        total_count = db.execute(count_query, count_params).fetchone()[0]
 
         # Add pagination
         query += " LIMIT ? OFFSET ?"
@@ -227,6 +237,8 @@ async def search_by_tag(
             SELECT DISTINCT 
                 p.id, 
                 p.original_prompt,
+                p.created_by,
+                p.thumbnail_path,
                 nc.level as nsfw_level,
                 ast.primary_style as art_style,
                 ch.number_of_people,
@@ -245,16 +257,21 @@ async def search_by_tag(
 
         conditions = [f"t{i}.tag LIKE ?" for i in range(len(tags))]
         query += " WHERE " + " AND ".join(conditions)
-        query += " GROUP BY p.id, p.original_prompt, nc.level, ast.primary_style, ch.number_of_people"
+        query += " GROUP BY p.id, p.original_prompt, p.created_by, p.thumbnail_path, nc.level, ast.primary_style, ch.number_of_people"
 
         # Escape each tag for LIKE pattern
         params = [f"%{escape_like_pattern(t)}%" for t in tags]
+        count_params = list(params)
 
         # Get total count
-        count_query = query.replace(
-            "SELECT DISTINCT p.id, p.original_prompt", "SELECT COUNT(DISTINCT p.id)"
-        )
-        total_count = db.execute(count_query, params).fetchone()[0]
+        count_query = """
+            SELECT COUNT(DISTINCT p.id)
+            FROM prompts p
+        """
+        for i in range(len(tags)):
+            count_query += f" JOIN main_tags t{i} ON p.id = t{i}.prompt_id"
+        count_query += " WHERE " + " AND ".join(conditions)
+        total_count = db.execute(count_query, count_params).fetchone()[0]
 
         # Add pagination
         query += " LIMIT ? OFFSET ?"

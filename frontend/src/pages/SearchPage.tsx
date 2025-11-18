@@ -20,6 +20,7 @@ import { useAuthStore } from '../store/authStore';
 import { CatalogPrompt, Prompt, CreatePromptRequest } from '../types/api.types';
 import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
 import { logDebug, logError } from '../utils/logger';
+import { buildMediaUrl } from '../services/api';
 
 export const SearchPage = () => {
   const { t } = useTranslation();
@@ -264,7 +265,8 @@ export const SearchPage = () => {
       parameters: '', // Not available in CatalogPrompt
       created_at: new Date().toISOString(), // Not available in CatalogPrompt
       updated_at: new Date().toISOString(), // Not available in CatalogPrompt
-      created_by: null, // Not available in CatalogPrompt - treat as preloaded for safety
+      created_by: catalogPrompt.created_by ?? null,
+      thumbnail_path: catalogPrompt.thumbnail_path ?? null,
     };
   };
 
@@ -690,55 +692,90 @@ export const SearchPage = () => {
             {results.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  {results.map((result, index) => (
-                    <div
-                      key={result.id || index}
-                      onClick={() => {
-                        const fullPrompt = convertToPrompt(result);
-                        setSelectedPrompt(fullPrompt);
-                        setIsDetailModalOpen(true);
-                      }}
-                      className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-violet-600 hover:shadow-lg transition-all cursor-pointer transform hover:scale-[1.02]"
-                    >
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="text-lg font-semibold text-white">Prompt #{result.id}</h4>
-                          {result.nsfw_level && (
-                            <span className="px-2 py-1 bg-orange-600/20 text-orange-400 text-xs rounded-full">
-                              {result.nsfw_level}
-                            </span>
+                  {results.map((result, index) => {
+                    const ownsPrompt = Boolean(
+                      user && result.created_by !== null && result.created_by === user.id
+                    );
+                    const showThumbnail = Boolean(
+                      result.thumbnail_path && (myPromptsOnly || ownsPrompt)
+                    );
+                    const thumbnailUrl = showThumbnail
+                      ? buildMediaUrl(result.thumbnail_path)
+                      : null;
+                    return (
+                      <div
+                        key={result.id || index}
+                        onClick={() => {
+                          const fullPrompt = convertToPrompt(result);
+                          setSelectedPrompt(fullPrompt);
+                          setIsDetailModalOpen(true);
+                        }}
+                        className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-violet-600 hover:shadow-lg transition-all cursor-pointer transform hover:scale-[1.02]"
+                      >
+                        <div className="flex flex-col gap-4 md:flex-row">
+                          {thumbnailUrl && (
+                            <div className="md:w-40 shrink-0">
+                              <div className="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden">
+                                <img
+                                  src={thumbnailUrl}
+                                  alt={t('prompts.thumbnail.alt', { id: result.id })}
+                                  className="w-full h-32 object-cover"
+                                  loading="lazy"
+                                />
+                              </div>
+                              <p className="text-xs text-gray-500 mt-2">
+                                {t('prompts.thumbnail.label')}
+                              </p>
+                            </div>
                           )}
-                          {result.art_style && (
-                            <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full">
-                              {result.art_style}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-gray-300 text-sm leading-relaxed">
-                          {result.original_prompt.substring(0, 200)}
-                          {result.original_prompt.length > 200 && '...'}
-                        </p>
-                      </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <h4 className="text-lg font-semibold text-white">
+                                Prompt #{result.id}
+                              </h4>
+                              {result.nsfw_level && (
+                                <span className="px-2 py-1 bg-orange-600/20 text-orange-400 text-xs rounded-full">
+                                  {result.nsfw_level}
+                                </span>
+                              )}
+                              {result.art_style && (
+                                <span className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full">
+                                  {result.art_style}
+                                </span>
+                              )}
+                              {ownsPrompt && (
+                                <span className="px-2 py-1 bg-emerald-600/20 text-emerald-300 text-xs rounded-full">
+                                  {t('search.results.mine')}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              {result.original_prompt.substring(0, 200)}
+                              {result.original_prompt.length > 200 && '...'}
+                            </p>
 
-                      {result.tags && result.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {result.tags.slice(0, 5).map((tag, i) => (
-                            <span
-                              key={i}
-                              className="px-2 py-1 bg-slate-700 text-gray-300 text-xs rounded"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                          {result.tags.length > 5 && (
-                            <span className="px-2 py-1 bg-slate-700 text-gray-400 text-xs rounded">
-                              +{result.tags.length - 5} más
-                            </span>
-                          )}
+                            {result.tags && result.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-3">
+                                {result.tags.slice(0, 5).map((tag, i) => (
+                                  <span
+                                    key={i}
+                                    className="px-2 py-1 bg-slate-700 text-gray-300 text-xs rounded"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                                {result.tags.length > 5 && (
+                                  <span className="px-2 py-1 bg-slate-700 text-gray-400 text-xs rounded">
+                                    +{result.tags.length - 5} más
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Pagination */}

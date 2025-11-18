@@ -14,6 +14,7 @@ import { SearchPage } from '../pages/SearchPage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { AdminUsersPage } from '../pages/AdminUsersPage';
 import { VerifyAccountPage } from '../pages/VerifyAccountPage';
+import { PromptIngestionPage } from '../pages/PromptIngestionPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -128,6 +129,14 @@ export const AppRouter = () => {
             <AdminRoute>
               <AdminUsersPage />
             </AdminRoute>
+          }
+        />
+        <Route
+          path="/ingest"
+          element={
+            <ProtectedRoute>
+              <PromptIngestionPage />
+            </ProtectedRoute>
           }
         />
 

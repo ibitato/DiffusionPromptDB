@@ -54,7 +54,9 @@ export const promptsService = {
         params.append('my_prompts', 'true');
       }
 
-      const response = await api.get<PaginatedResponse<Prompt>>(`/prompts?${params.toString()}`);
+      const response = await api.get<PaginatedResponse<Prompt>>(
+        `/prompts/?${params.toString()}`
+      );
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -99,7 +101,7 @@ export const promptsService = {
    */
   createPrompt: async (prompt: CreatePromptRequest): Promise<Prompt> => {
     try {
-      const response = await api.post<Prompt>('/prompts', prompt);
+      const response = await api.post<Prompt>('/prompts/', prompt);
       return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));

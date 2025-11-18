@@ -55,6 +55,10 @@ source .venv/bin/activate
 # Verify activation
 python --version  # Should show Python 3.8+
 which python     # Should point to .venv/
+
+# Seed local sqlite databases the first time
+python src/api/init_users_db.py
+python src/api/init_preferences_table.py
 ```
 
 ### 2. Dependencies Management
@@ -169,6 +173,10 @@ pytest tests/test_database.py
 
 # Run specific test
 pytest tests/test_database.py::test_add_prompt
+
+# Ingestion regression tests
+pytest tests/unit/api/test_image_metadata.py
+pytest tests/unit/api/test_prompt_tag_inference.py
 ```
 
 **Test Coverage Requirements**:
@@ -557,6 +565,22 @@ git add .
 git commit -m "feat: add full-stack feature"
 ```
 
+### Prompt ingestion workflow (dev)
+
+1. **Backend** – launch FastAPI with live reload and media storage enabled:
+   ```bash
+   source .venv/bin/activate
+   JWT_SECRET_KEY=devsecret \
+   API_KEYS='["test_key"]' \
+   USERS_DB_PATH="data/users.db" \
+   MEDIA_ROOT="media" \
+   uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+2. **Frontend** – from `frontend/` run `VITE_API_KEY=test_key npm run dev -- --host 0.0.0.0 --port 5173`.
+3. Open `http://localhost:5173/ingest`, authenticate, and drop up to **five PNGs** (other formats are rejected client-side). The UI parses metadata, suggests tags & art style, and only uploads once the user approves.
+4. Originals are deleted right after thumbnail generation (`media/thumbnails/...`). Keep copies elsewhere if you still need the full-resolution image.
+5. Need to audit giant folders before uploading? `python tools/sd_metadata_dump/export_sd_metadata.py --input <folder> --output dump.jsonl` walks SD-Matrix style directories and dumps every `parameters` block for review.
+
 ### Adding a New Feature
 
 ```bash
@@ -688,10 +712,11 @@ For questions about this project, contact: REDACTED_EMAIL
 
 ---
 
-**Last Updated**: November 14, 2025  
-**Version**: 1.2
+**Last Updated**: November 18, 2025  
+**Version**: 1.3
 
 ### Changelog
 
+- v1.3 (2025-11-18): Documented PNG ingestion workflow, sqlite seeding, and ingestion regression tests
 - v1.2 (2025-11-14): Added hot-reloading documentation for backend development
 - v1.1 (2025-11-13): Initial comprehensive documentation

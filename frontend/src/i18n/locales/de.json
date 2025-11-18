@@ -10,6 +10,7 @@
     "settings": "Einstellungen",
     "profile": "Profil",
     "admin": "Admin",
+    "ingest": "Import",
     "logout": "Abmelden"
   },
   "login": {
@@ -169,6 +170,10 @@
       "load": "Prompts konnten nicht geladen werden",
       "save": "Prompt konnte nicht gespeichert werden",
       "delete": "Prompt konnte nicht gelöscht werden"
+    },
+    "thumbnail": {
+      "label": "Miniaturansicht",
+      "alt": "Miniatur für Prompt #{{id}}"
     }
   },
   "promptForm": {
@@ -230,6 +235,11 @@
       "close": "Schließen",
       "edit": "Bearbeiten",
       "delete": "Löschen"
+    },
+    "preview": {
+      "title": "Miniatur",
+      "hint": "Gespeicherte Vorschau zur schnellen Identifikation.",
+      "alt": "Miniatur für Prompt #{{id}}"
     }
   },
   "profile": {
@@ -343,6 +353,71 @@
       "delete": "Benutzer {{username}} löschen?"
     }
   },
+  "ingest": {
+    "badge": "Backoffice · Import",
+    "title": "Prompt-Import",
+    "subtitle": "Lade bis zu fünf Stable-Diffusion-PNGs mit eingebetteten Metadaten hoch und speichere sie direkt in deinem persönlichen Katalog.",
+    "limitLabel": "Ausgewählte PNGs",
+    "dropzone": {
+      "title": "Ziehe deine PNGs hierher",
+      "hint": "Nur PNGs aus Stability Matrix oder AUTOMATIC1111 werden unterstützt.",
+      "action": "PNGs auswählen",
+      "helper": "Stelle sicher, dass der Metadatenblock \"parameters\" erhalten bleibt."
+    },
+    "preview": {
+      "title": "Ausgewählte Bilder ({{count}})",
+      "clear": "Stapel leeren",
+      "remove": "Entfernen"
+    },
+    "form": {
+      "tags": "Tags",
+      "tagsPlaceholder": "portrait, studio, volumetrisches Licht",
+      "tagsHelp": "Es werden nur Tags angewendet, die bereits im System existieren.",
+      "category": "Kategorie",
+      "categoryPlaceholder": "z. B. Portrait",
+      "artStyle": "Stil",
+      "artStylePlaceholder": "z. B. realistisch",
+      "rating": "Bewertung",
+      "ratingPlaceholder": "Keine Bewertung",
+      "notes": "Notizen",
+      "notesPlaceholder": "Optionale Notizen, die beim Prompt gespeichert werden",
+      "helper": "Maximal {{max}} PNG-Dateien pro Stapel."
+    },
+    "actions": {
+      "reset": "Formular zurücksetzen",
+      "submit": "Prompts importieren",
+      "submitting": "In Arbeit..."
+    },
+    "errors": {
+      "maxFiles": "Es können höchstens {{max}} Bilder pro Stapel hochgeladen werden.",
+      "selectFiles": "Füge mindestens ein PNG hinzu, bevor du startest.",
+      "generic": "Import fehlgeschlagen. Bitte erneut versuchen."
+    },
+    "messages": {
+      "completed": "Import abgeschlossen: {{created}} erstellt, {{failed}} fehlgeschlagen."
+    },
+    "results": {
+      "title": "Verarbeitungsübersicht",
+      "subtitle": "Status pro Datei",
+      "created": "Erstellt",
+      "failed": "Fehlgeschlagen",
+      "empty": "Starte einen Import, um Ergebnisse zu sehen.",
+      "status": {
+        "created": "Importiert",
+        "failed": "Fehlgeschlagen",
+        "skipped": "Übersprungen"
+      },
+      "viewPrompt": "Prompt öffnen"
+    },
+    "suggestions": {
+      "analyzing": "PNG-Metadaten werden analysiert...",
+      "tagsTitle": "Vorgeschlagene Tags",
+      "applyTags": "Tags übernehmen",
+      "styleTitle": "Vorgeschlagener Stil",
+      "applyStyle": "Stil übernehmen",
+      "failed": "Metadaten konnten nicht aus diesem Bild gelesen werden."
+    }
+  },
   "deleteConfirm": {
     "title": "Prompt Löschen",
     "message": "Sind Sie sicher, dass Sie den Prompt löschen möchten",
@@ -393,7 +468,8 @@
       "tryDifferent": "Versuchen Sie andere Suchkriterien",
       "selectFilters": "Wählen Sie Filter und klicken Sie auf Suchen",
       "previous": "Zurück",
-      "next": "Weiter"
+      "next": "Weiter",
+      "mine": "Mein Prompt"
     },
     "chips": {
       "nsfw": "NSFW",

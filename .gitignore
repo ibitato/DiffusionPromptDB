@@ -56,6 +56,8 @@ a.out
 # Logs
 *.log
 backend.pid
+backend-dev.log
+frontend-dev.log
 
 # Environment variables
 .env
@@ -90,3 +92,8 @@ deploy/README.md
 deploy/server_setup.sh
 deploy/.env
 deploy/secrets.txt
+
+# Media / runtime artifacts
+backend-dev.pid
+frontend-dev.pid
+media/

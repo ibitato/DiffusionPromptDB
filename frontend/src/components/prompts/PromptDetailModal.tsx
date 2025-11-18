@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal } from '../ui/Modal';
 import { Prompt } from '../../types/api.types';
 import { motion } from 'framer-motion';
+import { buildMediaUrl } from '../../services/api';
 
 interface PromptDetailModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const PromptDetailModal = ({
 }: PromptDetailModalProps) => {
   const { t } = useTranslation();
   if (!prompt) return null;
+  const thumbnailUrl = buildMediaUrl(prompt.thumbnail_path);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -112,6 +114,31 @@ export const PromptDetailModal = ({
               </button>
             )}
           </div>
+
+          {/* Thumbnail */}
+          {thumbnailUrl && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
+              <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                <span role="img" aria-hidden="true">
+                  🖼️
+                </span>
+                {t('promptDetail.preview.title')}
+              </h4>
+              <div className="bg-slate-900/40 border border-slate-700 rounded-lg p-2">
+                <img
+                  src={thumbnailUrl}
+                  alt={t('promptDetail.preview.alt', { id: prompt.id })}
+                  className="w-full h-auto max-h-[460px] object-contain rounded-md"
+                  loading="lazy"
+                />
+                <p className="text-xs text-gray-400 mt-2">{t('promptDetail.preview.hint')}</p>
+              </div>
+            </motion.div>
+          )}
 
           {/* Prompt Text */}
           <motion.div

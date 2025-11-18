@@ -96,6 +96,8 @@ export interface Prompt {
   created_at: string;
   updated_at: string;
   created_by?: number | null; // NULL = preloaded, number = user_id
+  image_path?: string | null;
+  thumbnail_path?: string | null;
 }
 
 export interface CreatePromptRequest {
@@ -152,8 +154,23 @@ export interface Stats {
 export interface CatalogPrompt {
   id: number;
   original_prompt: string;
+  created_by?: number | null;
   nsfw_level?: string;
   art_style?: string;
   number_of_people?: number;
   tags?: string[];
+  thumbnail_path?: string | null;
+}
+
+export interface ImageIngestionResult {
+  filename: string;
+  status: 'created' | 'failed' | 'skipped';
+  detail: string;
+  prompt_id?: number | null;
+}
+
+export interface BatchImageIngestionResponse {
+  created: number;
+  failed: number;
+  results: ImageIngestionResult[];
 }
