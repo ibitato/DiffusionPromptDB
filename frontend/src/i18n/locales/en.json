@@ -416,6 +416,11 @@
       "title": "Thumbnail",
       "hint": "Stored preview for quick identification.",
       "alt": "Thumbnail for prompt #{{id}}"
+    },
+    "messages": {
+      "promptCopied": "Prompt copied to clipboard",
+      "negativeCopied": "Negative prompt copied to clipboard",
+      "copyFailed": "Could not copy to clipboard"
     }
   },
   "deleteConfirm": {

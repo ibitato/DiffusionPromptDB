@@ -8,6 +8,8 @@ import { Modal } from '../ui/Modal';
 import { Prompt } from '../../types/api.types';
 import { motion } from 'framer-motion';
 import { buildMediaUrl } from '../../services/api';
+import { copyTextToClipboard } from '../../utils/clipboard';
+import { useToast } from '../../hooks/useToast';
 
 interface PromptDetailModalProps {
   isOpen: boolean;
@@ -31,6 +33,7 @@ export const PromptDetailModal = ({
   onCopy,
 }: PromptDetailModalProps) => {
   const { t } = useTranslation();
+  const toast = useToast();
   if (!prompt) return null;
   const thumbnailUrl = buildMediaUrl(prompt.thumbnail_path);
 
@@ -54,9 +57,13 @@ export const PromptDetailModal = ({
     onDelete(prompt);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // Could show a toast here
+  const copyWithFeedback = async (text: string, successKey: string) => {
+    const succeeded = await copyTextToClipboard(text);
+    if (succeeded) {
+      toast.success(t(successKey));
+    } else {
+      toast.error(t('promptDetail.messages.copyFailed'));
+    }
   };
 
   return (
@@ -149,7 +156,9 @@ export const PromptDetailModal = ({
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-semibold text-gray-300">Prompt Text</h4>
               <button
-                onClick={() => copyToClipboard(prompt.text)}
+                onClick={() =>
+                  copyWithFeedback(prompt.text, 'promptDetail.messages.promptCopied')
+                }
                 className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +187,12 @@ export const PromptDetailModal = ({
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-semibold text-gray-300">Negative Prompt</h4>
                 <button
-                  onClick={() => copyToClipboard(prompt.negative_prompt!)}
+                  onClick={() =>
+                    copyWithFeedback(
+                      prompt.negative_prompt!,
+                      'promptDetail.messages.negativeCopied'
+                    )
+                  }
                   className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

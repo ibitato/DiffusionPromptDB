@@ -240,6 +240,11 @@
       "title": "Vista previa",
       "hint": "Miniatura almacenada para identificar el prompt.",
       "alt": "Miniatura del prompt #{{id}}"
+    },
+    "messages": {
+      "promptCopied": "Prompt copiado al portapapeles",
+      "negativeCopied": "Negative prompt copiado al portapapeles",
+      "copyFailed": "No se pudo copiar al portapapeles"
     }
   },
   "deleteConfirm": {

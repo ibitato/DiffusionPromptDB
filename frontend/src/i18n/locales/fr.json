@@ -240,6 +240,11 @@
       "title": "Miniature",
       "hint": "Aperçu enregistré pour identifier rapidement le prompt.",
       "alt": "Miniature du prompt #{{id}}"
+    },
+    "messages": {
+      "promptCopied": "Prompt copié dans le presse-papiers",
+      "negativeCopied": "Prompt négatif copié dans le presse-papiers",
+      "copyFailed": "Impossible de copier dans le presse-papiers"
     }
   },
   "profile": {

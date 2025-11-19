@@ -240,6 +240,11 @@
       "title": "Miniatur",
       "hint": "Gespeicherte Vorschau zur schnellen Identifikation.",
       "alt": "Miniatur für Prompt #{{id}}"
+    },
+    "messages": {
+      "promptCopied": "Prompt in die Zwischenablage kopiert",
+      "negativeCopied": "Negativer Prompt in die Zwischenablage kopiert",
+      "copyFailed": "Konnte nicht in die Zwischenablage kopiert werden"
     }
   },
   "profile": {
