@@ -461,7 +461,8 @@
       "modelLabel": "Model",
       "modelAll": "All models",
       "modelLoading": "Loading your models…",
-      "modelEmpty": "No models detected yet"
+      "modelEmpty": "No models detected yet",
+      "modelDisabled": "Enable “Only my prompts” to pick a model"
     },
     "actions": {
       "search": "Search",

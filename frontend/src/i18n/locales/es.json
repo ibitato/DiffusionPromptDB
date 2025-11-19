@@ -176,7 +176,8 @@
       "modelLabel": "Modelo",
       "modelAll": "Todos los modelos",
       "modelLoading": "Cargando modelos…",
-      "modelEmpty": "Aún no hay modelos detectados"
+      "modelEmpty": "Aún no hay modelos detectados",
+      "modelDisabled": "Activa \"Solo mis prompts\" para elegir un modelo"
     },
     "thumbnail": {
       "label": "Miniatura",

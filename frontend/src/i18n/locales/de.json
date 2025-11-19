@@ -461,7 +461,8 @@
       "modelLabel": "Modell",
       "modelAll": "Alle Modelle",
       "modelLoading": "Modelle werden geladen…",
-      "modelEmpty": "Noch keine Modelle erkannt"
+      "modelEmpty": "Noch keine Modelle erkannt",
+      "modelDisabled": "Aktiviere „Nur meine Prompts“, um ein Modell zu wählen"
     },
     "actions": {
       "search": "Suchen",

@@ -3,7 +3,7 @@
  * Search prompts with multiple filters
  */
 
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
@@ -61,6 +61,7 @@ export const SearchPage = () => {
 
   const toast = useToast();
   const isAdmin = user?.role === 'admin';
+  const userToggledMyPromptsRef = useRef(false);
 
   // Load user preferences and available filters on mount
   useEffect(() => {
@@ -71,10 +72,12 @@ export const SearchPage = () => {
   const loadPreferences = async () => {
     try {
       const prefs = await preferencesService.getPreferences();
-      setMyPromptsOnly(prefs.my_prompts_only);
-      if (!prefs.my_prompts_only) {
-        setSelectedModel('');
-        setAvailableModels([]);
+      if (!userToggledMyPromptsRef.current) {
+        setMyPromptsOnly(prefs.my_prompts_only);
+        if (!prefs.my_prompts_only) {
+          setSelectedModel('');
+          setAvailableModels([]);
+        }
       }
     } catch (err) {
       logError('Error loading preferences', err);
@@ -226,8 +229,6 @@ export const SearchPage = () => {
     setSearchTag('');
     setMyPromptsOnly(false);
     setSelectedModel('');
-    setAvailableModels([]);
-    setIsModelsLoading(false);
     setResults([]);
     setHasSearched(false);
     setCurrentPage(1);
@@ -244,10 +245,9 @@ export const SearchPage = () => {
   ].filter(Boolean).length;
 
   useEffect(() => {
-    if (!myPromptsOnly) {
-      setSelectedModel('');
+    if (!user) {
       setAvailableModels([]);
-      setIsModelsLoading(false);
+      setSelectedModel('');
       return;
     }
 
@@ -279,7 +279,7 @@ export const SearchPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [myPromptsOnly, t, toast]);
+  }, [user, t, toast]);
 
   const handleModelChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setSelectedModel(event.target.value);
@@ -570,43 +570,48 @@ export const SearchPage = () => {
                 <input
                   type="checkbox"
                   checked={myPromptsOnly}
-                  onChange={(e) => setMyPromptsOnly(e.target.checked)}
+                  onChange={(e) => {
+                    userToggledMyPromptsRef.current = true;
+                    setMyPromptsOnly(e.target.checked);
+                  }}
                   className="w-5 h-5 bg-slate-700 border border-slate-600 rounded text-violet-600 focus:ring-2 focus:ring-violet-600"
                 />
                 <span className="text-sm font-medium text-gray-300">
                   📝 {t('search.filters.myPrompts')}
                 </span>
               </label>
-              {myPromptsOnly && (
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    {t('search.filters.modelLabel')}
-                  </label>
-                  <select
-                    value={selectedModel}
-                    onChange={handleModelChange}
-                    disabled={isModelsLoading || availableModels.length === 0}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-600 disabled:opacity-60"
-                  >
-                    <option value="">{t('search.filters.modelAll')}</option>
-                    {availableModels.map((modelOption) => (
-                      <option key={modelOption} value={modelOption}>
-                        {modelOption}
-                      </option>
-                    ))}
-                  </select>
-                  {isModelsLoading && (
-                    <p className="text-xs text-gray-400 mt-2">
-                      {t('search.filters.modelLoading')}
-                    </p>
-                  )}
-                  {!isModelsLoading && availableModels.length === 0 && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      {t('search.filters.modelEmpty')}
-                    </p>
-                  )}
-                </div>
-              )}
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {t('search.filters.modelLabel')}
+                </label>
+                <select
+                  value={selectedModel}
+                  onChange={handleModelChange}
+                  disabled={!myPromptsOnly || isModelsLoading || availableModels.length === 0}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-600 disabled:opacity-60"
+                >
+                  <option value="">{t('search.filters.modelAll')}</option>
+                  {availableModels.map((modelOption) => (
+                    <option key={modelOption} value={modelOption}>
+                      {modelOption}
+                    </option>
+                  ))}
+                </select>
+                {!myPromptsOnly ? (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {t('search.filters.modelDisabled')}
+                  </p>
+                ) : isModelsLoading ? (
+                  <p className="text-xs text-gray-400 mt-2">
+                    {t('search.filters.modelLoading')}
+                  </p>
+                ) : availableModels.length === 0 ? (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {t('search.filters.modelEmpty')}
+                  </p>
+                ) : null}
+              </div>
             </div>
           )}
 
