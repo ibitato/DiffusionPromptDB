@@ -457,7 +457,11 @@
       "tagPlaceholder": "Suche nach Tag (z.B.: 1girl, anime, etc)...",
       "tagHelp": "Suche nach Prompts mit einem bestimmten Tag. Mehrere Tags durch Komma getrennt.",
       "all": "Alle",
-      "myPrompts": "Nur meine Prompts"
+      "myPrompts": "Nur meine Prompts",
+      "modelLabel": "Modell",
+      "modelAll": "Alle Modelle",
+      "modelLoading": "Modelle werden geladen…",
+      "modelEmpty": "Noch keine Modelle erkannt"
     },
     "actions": {
       "search": "Suchen",
@@ -489,7 +493,8 @@
       "people": "Personen",
       "text": "Text",
       "tag": "Tag",
-      "myPrompts": "Meine Prompts"
+      "myPrompts": "Meine Prompts",
+      "model": "Modell"
     },
     "activeFilters": "aktiver Filter",
     "activeFiltersPlural": "aktive Filter",
@@ -506,7 +511,8 @@
       "update": "Prompt konnte nicht aktualisiert werden",
       "delete": "Prompt konnte nicht gelöscht werden",
       "permissionEdit": "Du hast keine Berechtigung, diesen Prompt zu bearbeiten",
-      "permissionDelete": "Du hast keine Berechtigung, diesen Prompt zu löschen"
+      "permissionDelete": "Du hast keine Berechtigung, diesen Prompt zu löschen",
+      "loadModels": "Deine Modellliste konnte nicht geladen werden"
     }
   },
   "settings": {

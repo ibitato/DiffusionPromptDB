@@ -45,6 +45,9 @@ async def complex_search(
     number_of_people: Optional[int] = Query(None),
     art_style: Optional[str] = Query(None),
     indoor_outdoor: Optional[str] = Query(None),
+    model: Optional[str] = Query(
+        None, description="Filter to prompts generated with a specific model"
+    ),
     my_prompts: Optional[bool] = Query(
         None, description="Filter to only show user's own prompts"
     ),
@@ -116,6 +119,10 @@ async def complex_search(
         joins.append("INNER JOIN settings s ON p.id = s.prompt_id")
         conditions.append("s.indoor_outdoor = ?")
         params.append(indoor_outdoor)
+
+    if model:
+        conditions.append("p.model_used = ?")
+        params.append(model)
 
     # My prompts only filter - only show user's own prompts
     print(f"DEBUG: my_prompts={my_prompts}, auth_info={auth_info}")  # Debug

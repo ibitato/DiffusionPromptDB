@@ -457,7 +457,11 @@
       "tagPlaceholder": "Search by tag (ex: 1girl, anime, etc)...",
       "tagHelp": "Search prompts containing a specific tag. Multiple tags separated by comma.",
       "all": "All",
-      "myPrompts": "Only my prompts"
+      "myPrompts": "Only my prompts",
+      "modelLabel": "Model",
+      "modelAll": "All models",
+      "modelLoading": "Loading your models…",
+      "modelEmpty": "No models detected yet"
     },
     "actions": {
       "search": "Search",
@@ -489,7 +493,8 @@
       "people": "People",
       "text": "Text",
       "tag": "Tag",
-      "myPrompts": "My prompts"
+      "myPrompts": "My prompts",
+      "model": "Model"
     },
     "activeFilters": "active filter",
     "activeFiltersPlural": "active filters",
@@ -506,7 +511,8 @@
       "update": "Failed to update prompt",
       "delete": "Failed to delete prompt",
       "permissionEdit": "You don't have permission to edit this prompt",
-      "permissionDelete": "You don't have permission to delete this prompt"
+      "permissionDelete": "You don't have permission to delete this prompt",
+      "loadModels": "Failed to load your model list"
     }
   },
   "settings": {

@@ -457,7 +457,11 @@
       "tagPlaceholder": "Recherche par étiquette (ex: 1girl, anime, etc)...",
       "tagHelp": "Rechercher des prompts contenant une étiquette spécifique. Plusieurs étiquettes séparées par virgule.",
       "all": "Tous",
-      "myPrompts": "Uniquement mes prompts"
+      "myPrompts": "Uniquement mes prompts",
+      "modelLabel": "Modèle",
+      "modelAll": "Tous les modèles",
+      "modelLoading": "Chargement des modèles…",
+      "modelEmpty": "Aucun modèle détecté pour le moment"
     },
     "actions": {
       "search": "Rechercher",
@@ -489,7 +493,8 @@
       "people": "Personnes",
       "text": "Texte",
       "tag": "Étiquette",
-      "myPrompts": "Mes prompts"
+      "myPrompts": "Mes prompts",
+      "model": "Modèle"
     },
     "activeFilters": "filtre actif",
     "activeFiltersPlural": "filtres actifs",
@@ -506,7 +511,8 @@
       "update": "Impossible de mettre à jour le prompt",
       "delete": "Impossible de supprimer le prompt",
       "permissionEdit": "Tu n'as pas l'autorisation de modifier ce prompt",
-      "permissionDelete": "Tu n'as pas l'autorisation de supprimer ce prompt"
+      "permissionDelete": "Tu n'as pas l'autorisation de supprimer ce prompt",
+      "loadModels": "Impossible de charger votre liste de modèles"
     }
   },
   "settings": {

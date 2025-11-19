@@ -281,7 +281,11 @@
       "tagPlaceholder": "Buscar por tag (ej: 1girl, anime, etc)...",
       "tagHelp": "Busca prompts que contengan un tag específico. Múltiples tags separados por coma.",
       "all": "Todos",
-      "myPrompts": "Solo mis prompts"
+      "myPrompts": "Solo mis prompts",
+      "modelLabel": "Modelo",
+      "modelAll": "Todos los modelos",
+      "modelLoading": "Cargando modelos…",
+      "modelEmpty": "Aún no hay modelos detectados"
     },
     "actions": {
       "search": "Buscar",
@@ -313,7 +317,8 @@
       "people": "Personas",
       "text": "Texto",
       "tag": "Etiqueta",
-      "myPrompts": "Mis prompts"
+      "myPrompts": "Mis prompts",
+      "model": "Modelo"
     },
     "activeFilters": "filtro activo",
     "activeFiltersPlural": "filtros activos",
@@ -330,7 +335,8 @@
       "update": "No se pudo actualizar el prompt",
       "delete": "No se pudo eliminar el prompt",
       "permissionEdit": "No tienes permisos para editar este prompt",
-      "permissionDelete": "No tienes permisos para eliminar este prompt"
+      "permissionDelete": "No tienes permisos para eliminar este prompt",
+      "loadModels": "No se pudo cargar tu lista de modelos"
     }
   },
   "profile": {

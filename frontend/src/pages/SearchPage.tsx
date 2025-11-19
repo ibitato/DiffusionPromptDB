@@ -3,7 +3,7 @@
  * Search prompts with multiple filters
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
@@ -42,6 +42,9 @@ export const SearchPage = () => {
   const [searchText, setSearchText] = useState('');
   const [searchTag, setSearchTag] = useState('');
   const [myPromptsOnly, setMyPromptsOnly] = useState(false);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState('');
+  const [isModelsLoading, setIsModelsLoading] = useState(false);
 
   // Modal states
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
@@ -69,6 +72,10 @@ export const SearchPage = () => {
     try {
       const prefs = await preferencesService.getPreferences();
       setMyPromptsOnly(prefs.my_prompts_only);
+      if (!prefs.my_prompts_only) {
+        setSelectedModel('');
+        setAvailableModels([]);
+      }
     } catch (err) {
       logError('Error loading preferences', err);
     }
@@ -180,6 +187,10 @@ export const SearchPage = () => {
         if (myPromptsOnly && user) {
           params.my_prompts = true;
           logDebug('Search: applying my_prompts filter', { userId: user.id });
+          if (selectedModel) {
+            params.model = selectedModel;
+            logDebug('Search: applying model filter', { model: selectedModel });
+          }
         }
 
         // Pagination
@@ -214,6 +225,9 @@ export const SearchPage = () => {
     setSearchText('');
     setSearchTag('');
     setMyPromptsOnly(false);
+    setSelectedModel('');
+    setAvailableModels([]);
+    setIsModelsLoading(false);
     setResults([]);
     setHasSearched(false);
     setCurrentPage(1);
@@ -226,7 +240,50 @@ export const SearchPage = () => {
     searchText,
     searchTag,
     myPromptsOnly,
+    selectedModel && myPromptsOnly ? selectedModel : '',
   ].filter(Boolean).length;
+
+  useEffect(() => {
+    if (!myPromptsOnly) {
+      setSelectedModel('');
+      setAvailableModels([]);
+      setIsModelsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    const fetchModels = async () => {
+      setIsModelsLoading(true);
+      try {
+        const models = await promptsService.getMyModels();
+        if (!isMounted) return;
+        setAvailableModels(models);
+        setSelectedModel((currentValue) =>
+          currentValue && !models.includes(currentValue) ? '' : currentValue
+        );
+      } catch (err) {
+        if (isMounted) {
+          logError('Error loading user model list', err);
+          toast.error(t('search.errors.loadModels'));
+          setAvailableModels([]);
+          setSelectedModel('');
+        }
+      } finally {
+        if (isMounted) {
+          setIsModelsLoading(false);
+        }
+      }
+    };
+
+    void fetchModels();
+    return () => {
+      isMounted = false;
+    };
+  }, [myPromptsOnly, t, toast]);
+
+  const handleModelChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedModel(event.target.value);
+  };
 
   // Convert CatalogPrompt to full Prompt for modal with rich data
   const convertToPrompt = (catalogPrompt: CatalogPrompt): Prompt => {
@@ -520,6 +577,36 @@ export const SearchPage = () => {
                   📝 {t('search.filters.myPrompts')}
                 </span>
               </label>
+              {myPromptsOnly && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {t('search.filters.modelLabel')}
+                  </label>
+                  <select
+                    value={selectedModel}
+                    onChange={handleModelChange}
+                    disabled={isModelsLoading || availableModels.length === 0}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-600 disabled:opacity-60"
+                  >
+                    <option value="">{t('search.filters.modelAll')}</option>
+                    {availableModels.map((modelOption) => (
+                      <option key={modelOption} value={modelOption}>
+                        {modelOption}
+                      </option>
+                    ))}
+                  </select>
+                  {isModelsLoading && (
+                    <p className="text-xs text-gray-400 mt-2">
+                      {t('search.filters.modelLoading')}
+                    </p>
+                  )}
+                  {!isModelsLoading && availableModels.length === 0 && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      {t('search.filters.modelEmpty')}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -610,6 +697,14 @@ export const SearchPage = () => {
                 <span className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm flex items-center gap-2">
                   📝 {t('search.chips.myPrompts')}
                   <button onClick={() => setMyPromptsOnly(false)} className="hover:text-purple-300">
+                    ×
+                  </button>
+                </span>
+              )}
+              {myPromptsOnly && selectedModel && (
+                <span className="px-3 py-1 bg-teal-600/20 text-teal-400 rounded-full text-sm flex items-center gap-2">
+                  {t('search.chips.model')}: {selectedModel}
+                  <button onClick={() => setSelectedModel('')} className="hover:text-teal-300">
                     ×
                   </button>
                 </span>
