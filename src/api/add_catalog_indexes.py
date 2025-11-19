@@ -11,6 +11,7 @@ from config import settings
 INDEX_DEFINITIONS = [
     ("idx_prompts_processed_at", "prompts", "processed_at"),
     ("idx_prompts_created_by", "prompts", "created_by"),
+    ("idx_prompts_model_used", "prompts", "model_used"),
     # Composite index accelerates "my prompts" queries that filter by user and
     # order by recency (processed_at DESC) without forcing a temp sort.
     (

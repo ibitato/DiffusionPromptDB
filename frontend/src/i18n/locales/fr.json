@@ -169,7 +169,14 @@
     "errors": {
       "load": "Impossible de charger les prompts",
       "save": "Impossible d'enregistrer le prompt",
-      "delete": "Impossible de supprimer le prompt"
+      "delete": "Impossible de supprimer le prompt",
+      "loadModels": "Impossible de charger votre liste de modèles"
+    },
+    "filters": {
+      "modelLabel": "Modèle",
+      "modelAll": "Tous les modèles",
+      "modelLoading": "Chargement des modèles…",
+      "modelEmpty": "Aucun modèle détecté pour le moment"
     },
     "thumbnail": {
       "label": "Miniature",

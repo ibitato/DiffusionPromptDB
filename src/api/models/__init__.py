@@ -11,6 +11,7 @@ from .prompt_models import (
     PromptResponse,
     PromptListResponse,
     PromptSearchRequest,
+    PromptModelListResponse,
 )
 
 from .catalog_models import (
@@ -46,6 +47,7 @@ __all__ = [
     "PromptResponse",
     "PromptListResponse",
     "PromptSearchRequest",
+    "PromptModelListResponse",
     "Character",
     "CharacterHair",
     "CharacterEyes",

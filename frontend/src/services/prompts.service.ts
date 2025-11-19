@@ -17,7 +17,12 @@
  */
 
 import api, { handleApiError } from './api';
-import { Prompt, CreatePromptRequest, PaginatedResponse } from '../types/api.types';
+import {
+  Prompt,
+  CreatePromptRequest,
+  PaginatedResponse,
+  PromptModelListResponse,
+} from '../types/api.types';
 
 /**
  * Prompts service object containing all prompt-related API methods
@@ -41,7 +46,8 @@ export const promptsService = {
   getPrompts: async (
     page: number = 1,
     pageSize: number = 20,
-    myPromptsOnly?: boolean
+    myPromptsOnly?: boolean,
+    model?: string
   ): Promise<PaginatedResponse<Prompt>> => {
     try {
       const params = new URLSearchParams({
@@ -52,6 +58,9 @@ export const promptsService = {
 
       if (myPromptsOnly) {
         params.append('my_prompts', 'true');
+      }
+      if (model) {
+        params.append('model', model);
       }
 
       const response = await api.get<PaginatedResponse<Prompt>>(
@@ -163,6 +172,18 @@ export const promptsService = {
     try {
       const response = await api.post<Prompt>(`/prompts/${id}/copy`);
       return response.data;
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  /**
+   * Retrieves distinct models available for the authenticated user.
+   */
+  getMyModels: async (): Promise<string[]> => {
+    try {
+      const response = await api.get<PromptModelListResponse>(`/prompts/models`);
+      return response.data.models;
     } catch (error) {
       throw new Error(handleApiError(error));
     }

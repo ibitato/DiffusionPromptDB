@@ -345,7 +345,14 @@
     "errors": {
       "load": "Failed to load prompts",
       "save": "Failed to save prompt",
-      "delete": "Failed to delete prompt"
+      "delete": "Failed to delete prompt",
+      "loadModels": "Failed to load your model list"
+    },
+    "filters": {
+      "modelLabel": "Model",
+      "modelAll": "All models",
+      "modelLoading": "Loading models…",
+      "modelEmpty": "No models detected yet"
     },
     "thumbnail": {
       "label": "Thumbnail preview",

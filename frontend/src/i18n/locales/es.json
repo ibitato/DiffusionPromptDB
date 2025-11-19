@@ -169,7 +169,14 @@
     "errors": {
       "load": "No se pudieron cargar los prompts",
       "save": "No se pudo guardar el prompt",
-      "delete": "No se pudo eliminar el prompt"
+      "delete": "No se pudo eliminar el prompt",
+      "loadModels": "No se pudo cargar tu lista de modelos"
+    },
+    "filters": {
+      "modelLabel": "Modelo",
+      "modelAll": "Todos los modelos",
+      "modelLoading": "Cargando modelos…",
+      "modelEmpty": "Aún no hay modelos detectados"
     },
     "thumbnail": {
       "label": "Miniatura",

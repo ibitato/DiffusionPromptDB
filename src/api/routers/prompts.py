@@ -12,7 +12,13 @@ from typing import List, Optional, Dict, Any, Sequence
 import sqlite3
 from pathlib import Path
 
-from ..models import PromptCreate, PromptUpdate, PromptResponse, PromptListResponse
+from ..models import (
+    PromptCreate,
+    PromptUpdate,
+    PromptResponse,
+    PromptListResponse,
+    PromptModelListResponse,
+)
 from ..models.ingestion_models import BatchImageIngestionResponse, ImageIngestionResult
 from ..auth import (
     verify_api_key,
@@ -49,6 +55,9 @@ async def list_prompts(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     category: str = Query(None),
+    model: Optional[str] = Query(
+        None, description="Filter to prompts generated with a specific model"
+    ),
     my_prompts: Optional[bool] = Query(
         None, description="Filter to only show user's own prompts"
     ),
@@ -63,11 +72,13 @@ async def list_prompts(
     """
     offset = (page - 1) * page_size
 
-    # Build WHERE clause for my_prompts filter
-    where_clause = ""
-    count_params = []
+    # Build WHERE clause
+    conditions: list[str] = []
+    filter_params: list[Any] = []
 
-    print(f"DEBUG PROMPTS: my_prompts={my_prompts}, auth_info={auth_info}")  # Debug
+    print(
+        f"DEBUG PROMPTS: my_prompts={my_prompts}, model={model}, auth_info={auth_info}"
+    )
 
     if auth_info is None:
         raise HTTPException(
@@ -78,17 +89,25 @@ async def list_prompts(
     if my_prompts and auth_info:
         user_id = auth_info.get("user_id")
         if user_id:
-            where_clause = "WHERE p.created_by = ?"
-            count_params = [user_id]
+            conditions.append("p.created_by = ?")
+            filter_params.append(user_id)
             print(f"DEBUG PROMPTS: ✅ Filtering by user_id={user_id}")  # Debug
         else:
             print(f"DEBUG PROMPTS: ⚠️  auth_info exists but no user_id: {auth_info}")
     elif my_prompts:
         print(f"DEBUG PROMPTS: ⚠️  my_prompts=true but auth_info is None")
 
+    if model:
+        conditions.append("p.model_used = ?")
+        filter_params.append(model)
+
+    where_clause = ""
+    if conditions:
+        where_clause = "WHERE " + " AND ".join(conditions)
+
     # Count total with filter
     count_query = f"SELECT COUNT(*) FROM prompts p {where_clause}"
-    total = db.execute(count_query, count_params).fetchone()[0]
+    total = db.execute(count_query, filter_params).fetchone()[0]
 
     # Get results - map catalog fields to expected frontend fields
     query = f"""
@@ -133,17 +152,43 @@ async def list_prompts(
         GROUP BY fp.id
         ORDER BY fp.created_at DESC
     """
-    params = count_params + [page_size, offset]
+    params = filter_params + [page_size, offset]
 
     # Get results
     results = db.execute(query, params).fetchall()
 
     prompts = [dict(row) for row in results]
     print(
-        f"DEBUG PROMPTS: response count={len(prompts)} total={total} using filter={where_clause!r}"
+        f"DEBUG PROMPTS: response count={len(prompts)} total={total} filter={conditions}"
     )
 
     return {"total": total, "page": page, "page_size": page_size, "results": prompts}
+
+
+@router.get("/models", response_model=PromptModelListResponse)
+async def list_user_models(
+    db: sqlite3.Connection = Depends(get_prompts_db),
+    auth: dict = Depends(verify_token),
+):
+    """
+    Return distinct models used by the authenticated user.
+    """
+
+    user_id = auth["user_id"]
+    rows = db.execute(
+        """
+        SELECT DISTINCT model_used as model
+        FROM prompts
+        WHERE created_by = ?
+          AND model_used IS NOT NULL
+          AND TRIM(model_used) != ''
+        ORDER BY LOWER(model_used)
+        """,
+        (user_id,),
+    ).fetchall()
+
+    models = [row["model"] for row in rows if row["model"]]
+    return {"models": models}
 
 
 @router.get("/{prompt_id}", response_model=PromptResponse)

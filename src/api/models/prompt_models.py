@@ -84,3 +84,9 @@ class PromptSearchRequest(BaseModel):
     tags: Optional[list[str]] = Field(None, description="Filter by tags")
     limit: int = Field(20, ge=1, le=100)
     offset: int = Field(0, ge=0)
+
+
+class PromptModelListResponse(BaseModel):
+    """List of distinct models available for a user."""
+
+    models: list[str]

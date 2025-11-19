@@ -16,6 +16,7 @@ SQLite database for Stability Diffusion Prompts
 - 🔄 **Version Control**: Git-ready with proper .gitignore
 - 🔐 **Account Management**: JWT auth with profile page, password rotation, and admin tooling
 - 📈 **Personalized Metrics**: “Only my prompts” preference automatically scopes Dashboard, Search, and Prompts to your own catalog
+- 🧰 **Model-Aware Filters**: When browsing “My prompts”, pick from your personal Stable Diffusion models to focus the list instantly
 - 🖼️ **Prompt Ingestion Pipeline**: Upload Stable Diffusion PNGs, auto-extract metadata, and persist lightweight thumbnails only
 
 ## NEW: Complete Catalogation System 🚀

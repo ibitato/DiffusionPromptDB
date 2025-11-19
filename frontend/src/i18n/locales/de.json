@@ -169,7 +169,14 @@
     "errors": {
       "load": "Prompts konnten nicht geladen werden",
       "save": "Prompt konnte nicht gespeichert werden",
-      "delete": "Prompt konnte nicht gelöscht werden"
+      "delete": "Prompt konnte nicht gelöscht werden",
+      "loadModels": "Deine Modellliste konnte nicht geladen werden"
+    },
+    "filters": {
+      "modelLabel": "Modell",
+      "modelAll": "Alle Modelle",
+      "modelLoading": "Modelle werden geladen…",
+      "modelEmpty": "Noch keine Modelle gefunden"
     },
     "thumbnail": {
       "label": "Miniaturansicht",

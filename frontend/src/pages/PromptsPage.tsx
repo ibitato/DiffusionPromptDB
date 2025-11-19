@@ -3,7 +3,7 @@
  * List and manage prompts with create, edit, delete functionality
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components/layout/Header';
 import { Loading } from '../components/ui/Loading';
@@ -28,6 +28,9 @@ export const PromptsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPrompts, setTotalPrompts] = useState(0);
   const [myPromptsOnly, setMyPromptsOnly] = useState(false);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState('');
+  const [isModelsLoading, setIsModelsLoading] = useState(false);
   const pageSize = 20;
 
   const isAdmin = user?.role === 'admin';
@@ -50,7 +53,7 @@ export const PromptsPage = () => {
 
   useEffect(() => {
     loadPrompts();
-  }, [currentPage, myPromptsOnly]);
+  }, [currentPage, myPromptsOnly, selectedModel]);
 
   const loadPreferences = async () => {
     try {
@@ -67,7 +70,14 @@ export const PromptsPage = () => {
     const requestId = ++latestRequestRef.current;
     setIsLoading(true);
     try {
-      const data = await promptsService.getPrompts(currentPage, pageSize, myPromptsOnly);
+      const modelFilter =
+        myPromptsOnly && selectedModel ? selectedModel : undefined;
+      const data = await promptsService.getPrompts(
+        currentPage,
+        pageSize,
+        myPromptsOnly,
+        modelFilter
+      );
       if (requestId !== latestRequestRef.current) {
         return;
       }
@@ -86,6 +96,49 @@ export const PromptsPage = () => {
         setIsLoading(false);
       }
     }
+  };
+
+  useEffect(() => {
+    if (!myPromptsOnly) {
+      setSelectedModel('');
+      setAvailableModels([]);
+      setIsModelsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    const fetchModels = async () => {
+      setIsModelsLoading(true);
+      try {
+        const models = await promptsService.getMyModels();
+        if (!isMounted) return;
+        setAvailableModels(models);
+        setSelectedModel((currentValue) =>
+          currentValue && !models.includes(currentValue) ? '' : currentValue
+        );
+      } catch (err) {
+        if (isMounted) {
+          logError('Error loading user model list', err);
+          toast.error(t('prompts.errors.loadModels'));
+          setAvailableModels([]);
+          setSelectedModel('');
+        }
+      } finally {
+        if (isMounted) {
+          setIsModelsLoading(false);
+        }
+      }
+    };
+
+    void fetchModels();
+    return () => {
+      isMounted = false;
+    };
+  }, [myPromptsOnly, t, toast]);
+
+  const handleModelChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedModel(event.target.value);
+    setCurrentPage(1);
   };
 
   const handleCreate = () => {
@@ -314,6 +367,37 @@ export const PromptsPage = () => {
                 📝 {t('common.filters.myPrompts')}
               </span>
             </label>
+
+            {myPromptsOnly && (
+              <div className="mt-4 max-w-sm">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  {t('prompts.filters.modelLabel')}
+                </label>
+                <select
+                  value={selectedModel}
+                  onChange={handleModelChange}
+                  disabled={isModelsLoading || availableModels.length === 0}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-600 disabled:opacity-60"
+                >
+                  <option value="">{t('prompts.filters.modelAll')}</option>
+                  {availableModels.map((modelOption) => (
+                    <option key={modelOption} value={modelOption}>
+                      {modelOption}
+                    </option>
+                  ))}
+                </select>
+                {isModelsLoading && (
+                  <p className="text-xs text-gray-400 mt-2">
+                    {t('prompts.filters.modelLoading')}
+                  </p>
+                )}
+                {!isModelsLoading && availableModels.length === 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {t('prompts.filters.modelEmpty')}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 

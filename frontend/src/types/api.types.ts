@@ -116,6 +116,10 @@ export interface UpdatePromptRequest extends CreatePromptRequest {
   id: number;
 }
 
+export interface PromptModelListResponse {
+  models: string[];
+}
+
 // Search Types
 export interface SearchFilters {
   text?: string;
