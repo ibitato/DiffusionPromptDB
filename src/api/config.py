@@ -9,6 +9,8 @@ from typing import List, Optional
 from pathlib import Path
 from pydantic import EmailStr, Field, field_validator
 
+BASE_DIR = Path(__file__).resolve().parents[2]
+
 
 class Settings(BaseSettings):
     """Application settings."""
@@ -26,9 +28,9 @@ class Settings(BaseSettings):
     reload: bool = False  # Set to True for development, False for production
 
     # Database (unified - catalog DB with 10,386 prompts, located in api/database/)
-    prompts_db_path: str = "database/prompts_catalog.db"
-    catalog_db_path: str = "database/prompts_catalog.db"
-    users_db_path: str = "../data/users.db"
+    prompts_db_path: str = str(BASE_DIR / "database/prompts_catalog.db")
+    catalog_db_path: str = str(BASE_DIR / "database/prompts_catalog.db")
+    users_db_path: str = str(BASE_DIR / "data/users.db")
 
     # Security
     api_keys: List[str] = Field(default_factory=list)
@@ -69,7 +71,7 @@ class Settings(BaseSettings):
     max_page_size: int = 100
 
     # Media / ingestion
-    media_root: str = "media"
+    media_root: str = str(BASE_DIR / "media")
     media_thumbnails_subdir: str = "thumbnails"
     thumbnail_max_size: int = 512
     ingestion_default_tags: List[str] = Field(default_factory=list)
@@ -119,6 +121,16 @@ class Settings(BaseSettings):
         if value <= 0:
             raise ValueError("SMTP port must be greater than zero.")
         return value
+
+    @field_validator(
+        "prompts_db_path", "catalog_db_path", "users_db_path", "media_root", mode="before"
+    )
+    @classmethod
+    def resolve_relative_paths(cls, value: str | Path) -> str:
+        path = Path(value)
+        if not path.is_absolute():
+            path = BASE_DIR / path
+        return str(path)
 
     @field_validator("smtp_host", "smtp_username", "smtp_password", mode="before")
     @classmethod

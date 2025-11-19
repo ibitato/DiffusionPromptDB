@@ -53,7 +53,6 @@ async def list_prompts(
         None, description="Filter to only show user's own prompts"
     ),
     db: sqlite3.Connection = Depends(get_prompts_db),
-    api_key: str = Depends(verify_api_key),
     auth_info: Optional[dict] = Depends(optional_auth),
 ):
     """
@@ -69,6 +68,12 @@ async def list_prompts(
     count_params = []
 
     print(f"DEBUG PROMPTS: my_prompts={my_prompts}, auth_info={auth_info}")  # Debug
+
+    if auth_info is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API key or authentication required",
+        )
 
     if my_prompts and auth_info:
         user_id = auth_info.get("user_id")
@@ -87,29 +92,46 @@ async def list_prompts(
 
     # Get results - map catalog fields to expected frontend fields
     query = f"""
+        WITH filtered_prompts AS (
+            SELECT 
+                p.id,
+                p.original_prompt as text,
+                p.model_used as model,
+                p.processed_at as created_at,
+                p.processed_at as updated_at,
+                p.created_by,
+                p.negative_prompt,
+                p.parameters,
+                p.image_path,
+                p.thumbnail_path,
+                p.rating,
+                p.notes
+            FROM prompts p
+            {where_clause}
+            ORDER BY p.processed_at DESC
+            LIMIT ? OFFSET ?
+        )
         SELECT 
-            p.id,
-            p.original_prompt as text,
-            p.model_used as model,
-            p.processed_at as created_at,
-            p.processed_at as updated_at,
-            p.created_by,
+            fp.id,
+            fp.text,
+            fp.model,
+            fp.created_at,
+            fp.updated_at,
+            fp.created_by,
             a.primary_style as category,
             a.primary_style as art_style,
-            p.negative_prompt,
-            p.parameters,
-            p.image_path,
-            p.thumbnail_path,
+            fp.negative_prompt,
+            fp.parameters,
+            fp.image_path,
+            fp.thumbnail_path,
             GROUP_CONCAT(DISTINCT t.tag) as tags,
-            p.rating,
-            p.notes
-        FROM prompts p
-        LEFT JOIN art_styles a ON p.id = a.prompt_id
-        LEFT JOIN main_tags t ON p.id = t.prompt_id
-        {where_clause}
-        GROUP BY p.id
-        ORDER BY p.processed_at DESC
-        LIMIT ? OFFSET ?
+            fp.rating,
+            fp.notes
+        FROM filtered_prompts fp
+        LEFT JOIN art_styles a ON fp.id = a.prompt_id
+        LEFT JOIN main_tags t ON fp.id = t.prompt_id
+        GROUP BY fp.id
+        ORDER BY fp.created_at DESC
     """
     params = count_params + [page_size, offset]
 

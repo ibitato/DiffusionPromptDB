@@ -11,6 +11,13 @@ from config import settings
 INDEX_DEFINITIONS = [
     ("idx_prompts_processed_at", "prompts", "processed_at"),
     ("idx_prompts_created_by", "prompts", "created_by"),
+    # Composite index accelerates "my prompts" queries that filter by user and
+    # order by recency (processed_at DESC) without forcing a temp sort.
+    (
+        "idx_prompts_created_by_processed_at",
+        "prompts",
+        "created_by, processed_at DESC",
+    ),
     ("idx_nsfw_content_prompt_id", "nsfw_content", "prompt_id"),
     ("idx_art_styles_prompt_id", "art_styles", "prompt_id"),
     ("idx_main_tags_prompt_id", "main_tags", "prompt_id"),
