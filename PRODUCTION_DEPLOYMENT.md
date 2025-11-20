@@ -135,7 +135,7 @@ cd /home/dlopez/DiffusionPromptDB   # repo editable
 
 # Sincronizar backend a /var/www/diffusionprompt/api (propietario diffusionprompt)
 sudo mkdir -p /var/www/diffusionprompt/api
-sudo rsync -a --delete --exclude '.venv' --exclude 'frontend/dist' ./ /var/www/diffusionprompt/api/
+sudo rsync -a --delete --exclude-from=deploy/rsync-exclude.txt ./ /var/www/diffusionprompt/api/
 sudo chown -R diffusionprompt:diffusionprompt /var/www/diffusionprompt/api
 
 # Crear venv de producción con usuario del servicio

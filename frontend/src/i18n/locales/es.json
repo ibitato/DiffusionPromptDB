@@ -481,8 +481,22 @@
       "notesPlaceholder": "Notas opcionales que se guardarán con el prompt",
       "helper": "Máximo {{max}} archivos PNG por lote."
     },
+    "defaults": {
+      "title": "Valores por defecto",
+      "description": "Estos valores se aplican como base a cada imagen que agregas a la cola.",
+      "apply": "Aplicar a las imágenes actuales"
+    },
+    "perFile": {
+      "title": "Configuración individual",
+      "description": "Revisa los metadatos detectados y personaliza tags, estilos y notas antes de ingerir.",
+      "applyDefaults": "Aplicar valores por defecto",
+      "metadata": "Sugerencias de metadatos",
+      "noMetadata": "No se detectaron metadatos en este PNG.",
+      "remove": "Quitar imagen"
+    },
     "actions": {
-      "reset": "Reiniciar formulario",
+      "reset": "Limpiar lote",
+      "clearAll": "Limpiar todo",
       "submit": "Ingerir prompts",
       "submitting": "Procesando..."
     },

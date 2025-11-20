@@ -1,0 +1,16 @@
+.git/
+.venv/
+__pycache__/
+*.pyc
+
+# Frontend build/deps are handled separately
+frontend/node_modules/
+frontend/dist/
+
+# Production-only artifacts that must not be overwritten
+.env
+api.log
+backend.log
+backend.pid
+media/
+data/

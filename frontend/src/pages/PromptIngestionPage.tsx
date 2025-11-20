@@ -1,10 +1,14 @@
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { useToast } from '../hooks/useToast';
-import { ingestionService } from '../services/ingestion.service';
-import { BatchImageIngestionResponse, ImageIngestionResult } from '../types/api.types';
+import {
+  ingestionService,
+  AggregatedIngestionResponse,
+  IngestionFilePayload,
+} from '../services/ingestion.service';
+import { ImageIngestionResult } from '../types/api.types';
 import { statsService } from '../services/stats.service';
 import { logError } from '../utils/logger';
 import { parseStableDiffusionMetadata } from '../utils/pngMetadata';
@@ -12,146 +16,49 @@ import { inferArtStyleFromMetadata, inferTagsFromPrompt } from '../utils/promptS
 
 const MAX_FILES = 5;
 
+type FileEntry = {
+  id: string;
+  file: File;
+  previewUrl: string;
+  tags: string;
+  category: string;
+  artStyle: string;
+  rating: string;
+  notes: string;
+  suggestions: { tags: string[]; artStyle: string };
+  isAnalyzing: boolean;
+  analysisError: string;
+  touched: { tags: boolean; artStyle: boolean };
+};
+
+const createClientId = () =>
+  typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `entry-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const revokePreviews = (entries: FileEntry[]) => {
+  entries.forEach((entry) => URL.revokeObjectURL(entry.previewUrl));
+};
+
 export const PromptIngestionPage = () => {
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
 
-  const [files, setFiles] = useState<File[]>([]);
-  const [tags, setTags] = useState('');
-  const [category, setCategory] = useState('');
-  const [artStyle, setArtStyle] = useState('');
-  const [rating, setRating] = useState('');
-  const [notes, setNotes] = useState('');
-  const [results, setResults] = useState<ImageIngestionResult[]>([]);
-  const [summary, setSummary] = useState<BatchImageIngestionResponse | null>(null);
+  const [entries, setEntries] = useState<FileEntry[]>([]);
+  const [batchDefaults, setBatchDefaults] = useState({
+    tags: '',
+    category: '',
+    artStyle: '',
+    rating: '',
+    notes: '',
+  });
+  const [results, setResults] = useState<
+    Array<ImageIngestionResult & { clientId: string }>
+  >([]);
+  const [summary, setSummary] = useState<AggregatedIngestionResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [artStyleOptions, setArtStyleOptions] = useState<string[]>([]);
-  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
-  const [suggestedArtStyle, setSuggestedArtStyle] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisError, setAnalysisError] = useState('');
-  const [tagsTouched, setTagsTouched] = useState(false);
-  const [artStyleTouched, setArtStyleTouched] = useState(false);
-
-  const previews = useMemo(() => files.map((file) => URL.createObjectURL(file)), [files]);
-
-  useEffect(
-    () => () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
-    },
-    [previews]
-  );
-
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(event.target.files ?? []);
-    if (selectedFiles.length > MAX_FILES) {
-      toast.error(t('ingest.errors.maxFiles', { max: MAX_FILES }));
-    }
-    const limited = selectedFiles.slice(0, MAX_FILES);
-    setFiles(limited);
-    setResults([]);
-    setSummary(null);
-    analyzeFileSelection(limited, {
-      canPrefillTags: !tagsTouched && !tags.trim(),
-      canPrefillStyle: !artStyleTouched && !artStyle.trim(),
-    });
-  };
-
-  const removeFile = (index: number) => {
-    setFiles((prev) => {
-      const next = prev.filter((_, idx) => idx !== index);
-      analyzeFileSelection(next, {
-        canPrefillTags: !tagsTouched && !tags.trim(),
-        canPrefillStyle: !artStyleTouched && !artStyle.trim(),
-      });
-      return next;
-    });
-  };
-
-  const analyzeFileSelection = (
-    fileList: File[],
-    options: { canPrefillTags: boolean; canPrefillStyle: boolean }
-  ) => {
-    if (!fileList.length) {
-      setTagSuggestions([]);
-      setSuggestedArtStyle('');
-      setAnalysisError('');
-      return;
-    }
-    void analyzeMetadata(fileList[0], options);
-  };
-
-  const analyzeMetadata = async (
-    file: File,
-    options: { canPrefillTags: boolean; canPrefillStyle: boolean }
-  ) => {
-    setIsAnalyzing(true);
-    setAnalysisError('');
-    try {
-      const metadata = await parseStableDiffusionMetadata(file);
-      const inferredTags = inferTagsFromPrompt(metadata.positivePrompt);
-      setTagSuggestions(inferredTags);
-      if (options.canPrefillTags && inferredTags.length) {
-        setTags(inferredTags.join(', '));
-      }
-
-      const inferredStyle = inferArtStyleFromMetadata(metadata);
-      setSuggestedArtStyle(inferredStyle);
-      if (options.canPrefillStyle && inferredStyle) {
-        setArtStyle(inferredStyle);
-      }
-    } catch (error) {
-      setTagSuggestions([]);
-      setSuggestedArtStyle('');
-      setAnalysisError(t('ingest.suggestions.failed'));
-      logError('Error parsing PNG metadata', error);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (files.length === 0) {
-      toast.error(t('ingest.errors.selectFiles'));
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const response = await ingestionService.ingestImages({
-        files,
-        tags: tags.trim(),
-        category: category.trim(),
-        artStyle: artStyle.trim(),
-        rating: rating ? Number(rating) : undefined,
-        notes: notes.trim(),
-      });
-      setResults(response.results);
-      setSummary(response);
-      toast.success(
-        t('ingest.messages.completed', {
-          created: response.created,
-          failed: response.failed,
-        })
-      );
-      setFiles([]);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('ingest.errors.generic'));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const clearSelection = () => {
-    setFiles([]);
-    setResults([]);
-    setSummary(null);
-    setTagSuggestions([]);
-    setSuggestedArtStyle('');
-    setAnalysisError('');
-  };
 
   useEffect(() => {
     const loadFilters = async () => {
@@ -163,8 +70,422 @@ export const PromptIngestionPage = () => {
         logError('Error loading art styles', error);
       }
     };
-    loadFilters();
+    void loadFilters();
   }, []);
+
+  useEffect(() => {
+    return () => revokePreviews(entries);
+  }, [entries]);
+
+  const buildEntry = (file: File): FileEntry => ({
+    id: createClientId(),
+    file,
+    previewUrl: URL.createObjectURL(file),
+    tags: batchDefaults.tags,
+    category: batchDefaults.category,
+    artStyle: batchDefaults.artStyle,
+    rating: batchDefaults.rating,
+    notes: batchDefaults.notes,
+    suggestions: { tags: [], artStyle: '' },
+    isAnalyzing: false,
+    analysisError: '',
+    touched: {
+      tags: Boolean(batchDefaults.tags.trim()),
+      artStyle: Boolean(batchDefaults.artStyle.trim()),
+    },
+  });
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    if (!selectedFiles.length) {
+      return;
+    }
+    if (selectedFiles.length > MAX_FILES) {
+      toast.error(t('ingest.errors.maxFiles', { max: MAX_FILES }));
+    }
+
+    const limited = selectedFiles.slice(0, MAX_FILES);
+    revokePreviews(entries);
+    const newEntries = limited.map(buildEntry);
+    setEntries(newEntries);
+    setResults([]);
+    setSummary(null);
+    newEntries.forEach((entry) => {
+      void analyzeEntry(entry.id, entry.file);
+    });
+  };
+
+  const removeEntry = (id: string) => {
+    setEntries((prev) => {
+      const entry = prev.find((item) => item.id === id);
+      if (entry) {
+        URL.revokeObjectURL(entry.previewUrl);
+      }
+      return prev.filter((item) => item.id !== id);
+    });
+  };
+
+  const clearSelection = () => {
+    revokePreviews(entries);
+    setEntries([]);
+    setResults([]);
+    setSummary(null);
+  };
+
+  const clearEverything = () => {
+    clearSelection();
+    setBatchDefaults({
+      tags: '',
+      category: '',
+      artStyle: '',
+      rating: '',
+      notes: '',
+    });
+  };
+
+  const updateEntry = (id: string, updater: (entry: FileEntry) => FileEntry) => {
+    setEntries((prev) => prev.map((entry) => (entry.id === id ? updater(entry) : entry)));
+  };
+
+  const handleEntryFieldChange = (
+    id: string,
+    field: 'tags' | 'category' | 'artStyle' | 'rating' | 'notes',
+    value: string
+  ) => {
+    updateEntry(id, (entry) => {
+      const next: FileEntry = { ...entry, [field]: value };
+      if (field === 'tags') {
+        next.touched = { ...next.touched, tags: true };
+      }
+      if (field === 'artStyle') {
+        next.touched = { ...next.touched, artStyle: true };
+      }
+      return next;
+    });
+  };
+
+  const handleBatchDefaultChange = (
+    field: keyof typeof batchDefaults,
+    value: string
+  ) => {
+    setBatchDefaults((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyDefaultsToAllEntries = () => {
+    if (!entries.length) return;
+    setEntries((prev) =>
+      prev.map((entry) => ({
+        ...entry,
+        tags: batchDefaults.tags,
+        category: batchDefaults.category,
+        artStyle: batchDefaults.artStyle,
+        rating: batchDefaults.rating,
+        notes: batchDefaults.notes,
+        touched: {
+          ...entry.touched,
+          tags: entry.touched.tags || Boolean(batchDefaults.tags.trim()),
+          artStyle: entry.touched.artStyle || Boolean(batchDefaults.artStyle.trim()),
+        },
+      }))
+    );
+  };
+
+  const applyDefaultsToEntry = (id: string) => {
+    updateEntry(id, (entry) => ({
+      ...entry,
+      tags: batchDefaults.tags,
+      category: batchDefaults.category,
+      artStyle: batchDefaults.artStyle,
+      rating: batchDefaults.rating,
+      notes: batchDefaults.notes,
+      touched: {
+        ...entry.touched,
+        tags: entry.touched.tags || Boolean(batchDefaults.tags.trim()),
+        artStyle: entry.touched.artStyle || Boolean(batchDefaults.artStyle.trim()),
+      },
+    }));
+  };
+
+  const applySuggestionToEntry = (id: string, type: 'tags' | 'artStyle') => {
+    updateEntry(id, (entry) => {
+      if (type === 'tags' && entry.suggestions.tags.length) {
+        return {
+          ...entry,
+          tags: entry.suggestions.tags.join(', '),
+          touched: { ...entry.touched, tags: true },
+        };
+      }
+      if (type === 'artStyle' && entry.suggestions.artStyle) {
+        return {
+          ...entry,
+          artStyle: entry.suggestions.artStyle,
+          touched: { ...entry.touched, artStyle: true },
+        };
+      }
+      return entry;
+    });
+  };
+
+  const analyzeEntry = async (entryId: string, file: File) => {
+    updateEntry(entryId, (entry) => ({ ...entry, isAnalyzing: true, analysisError: '' }));
+    try {
+      const metadata = await parseStableDiffusionMetadata(file);
+      const inferredTags = inferTagsFromPrompt(metadata.positivePrompt);
+      const inferredStyle = inferArtStyleFromMetadata(metadata);
+
+      setEntries((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== entryId) return entry;
+          let tags = entry.tags;
+          let artStyle = entry.artStyle;
+
+          if (!entry.touched.tags && !entry.tags.trim() && inferredTags.length) {
+            tags = inferredTags.join(', ');
+          }
+          if (!entry.touched.artStyle && !entry.artStyle.trim() && inferredStyle) {
+            artStyle = inferredStyle;
+          }
+
+          return {
+            ...entry,
+            tags,
+            artStyle,
+            isAnalyzing: false,
+            suggestions: {
+              tags: inferredTags,
+              artStyle: inferredStyle ?? '',
+            },
+          };
+        })
+      );
+    } catch (error) {
+      updateEntry(entryId, (entry) => ({
+        ...entry,
+        isAnalyzing: false,
+        suggestions: { tags: [], artStyle: '' },
+        analysisError: t('ingest.suggestions.failed'),
+      }));
+      logError('Error parsing PNG metadata', error);
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!entries.length) {
+      toast.error(t('ingest.errors.selectFiles'));
+      return;
+    }
+
+    setIsSubmitting(true);
+    setResults([]);
+    setSummary(null);
+
+    const payload: IngestionFilePayload[] = entries.map((entry) => ({
+      clientId: entry.id,
+      file: entry.file,
+      tags: entry.tags.trim() || undefined,
+      category: entry.category.trim() || undefined,
+      artStyle: entry.artStyle.trim() || undefined,
+      rating: entry.rating ? Number(entry.rating) : undefined,
+      notes: entry.notes.trim() || undefined,
+    }));
+
+    try {
+      const response = await ingestionService.ingestImages(payload);
+      setResults(response.results);
+      setSummary(response);
+      toast.success(
+        t('ingest.messages.completed', {
+          created: response.created,
+          failed: response.failed,
+        })
+      );
+      revokePreviews(entries);
+      setEntries([]);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('ingest.errors.generic'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const renderSuggestionBlock = (entry: FileEntry) => {
+    if (entry.isAnalyzing) {
+      return <p className="text-sm text-gray-400">{t('ingest.suggestions.analyzing')}</p>;
+    }
+
+    if (entry.analysisError) {
+      return <p className="text-sm text-red-400">{entry.analysisError}</p>;
+    }
+
+    if (!entry.suggestions.tags.length && !entry.suggestions.artStyle) {
+      return <p className="text-sm text-gray-400">{t('ingest.perFile.noMetadata')}</p>;
+    }
+
+    return (
+      <div className="space-y-3">
+        {entry.suggestions.tags.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between text-sm text-gray-300 mb-1">
+              <p>{t('ingest.suggestions.tagsTitle')}</p>
+              <button
+                type="button"
+                className="text-violet-300 hover:text-violet-100 text-xs"
+                onClick={() => applySuggestionToEntry(entry.id, 'tags')}
+              >
+                {t('ingest.suggestions.applyTags')}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {entry.suggestions.tags.map((tag) => (
+                <span
+                  key={`${entry.id}-${tag}`}
+                  className="px-2 py-1 rounded-full bg-slate-900/60 border border-slate-700 text-xs text-gray-200"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {entry.suggestions.artStyle && (
+          <div className="flex items-center justify-between text-sm text-gray-300">
+            <div>
+              <p>{t('ingest.suggestions.styleTitle')}</p>
+              <p className="text-white font-medium">{entry.suggestions.artStyle}</p>
+            </div>
+            <button
+              type="button"
+              className="text-violet-300 hover:text-violet-100 text-xs"
+              onClick={() => applySuggestionToEntry(entry.id, 'artStyle')}
+            >
+              {t('ingest.suggestions.applyStyle')}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderEntryCard = (entry: FileEntry, index: number) => (
+    <div
+      key={entry.id}
+      className="bg-slate-900/40 border border-slate-700 rounded-2xl p-5 space-y-4"
+    >
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex items-center gap-3 flex-1">
+          <img
+            src={entry.previewUrl}
+            alt={entry.file.name}
+            className="w-24 h-24 rounded-xl object-cover border border-slate-700"
+          />
+          <div>
+            <p className="text-sm text-gray-400">
+              {t('ingest.preview.title', { count: index + 1 })}
+            </p>
+            <p className="text-lg font-semibold text-white">{entry.file.name}</p>
+            <p className="text-xs text-gray-500">{(entry.file.size / 1024).toFixed(1)} KB</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => removeEntry(entry.id)}
+          className="self-start text-sm text-red-300 hover:text-red-100"
+        >
+          {t('ingest.perFile.remove')}
+        </button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            {t('ingest.form.tags')}
+          </label>
+          <input
+            type="text"
+            value={entry.tags}
+            onChange={(e) => handleEntryFieldChange(entry.id, 'tags', e.target.value)}
+            placeholder={t('ingest.form.tagsPlaceholder')}
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+          />
+          <p className="text-xs text-gray-500 mt-1">{t('ingest.form.tagsHelp')}</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            {t('ingest.form.category')}
+          </label>
+          <input
+            type="text"
+            value={entry.category}
+            onChange={(e) => handleEntryFieldChange(entry.id, 'category', e.target.value)}
+            placeholder={t('ingest.form.categoryPlaceholder')}
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            {t('ingest.form.artStyle')}
+          </label>
+          <select
+            value={entry.artStyle}
+            onChange={(e) => handleEntryFieldChange(entry.id, 'artStyle', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+          >
+            <option value="">{t('ingest.form.artStylePlaceholder')}</option>
+            {artStyleOptions.map((style) => (
+              <option key={style} value={style}>
+                {style}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            {t('ingest.form.rating')}
+          </label>
+          <select
+            value={entry.rating}
+            onChange={(e) => handleEntryFieldChange(entry.id, 'rating', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+          >
+            <option value="">{t('ingest.form.ratingPlaceholder')}</option>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-1">
+          {t('ingest.form.notes')}
+        </label>
+        <textarea
+          value={entry.notes}
+          onChange={(e) => handleEntryFieldChange(entry.id, 'notes', e.target.value)}
+          rows={3}
+          placeholder={t('ingest.form.notesPlaceholder')}
+          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+        />
+      </div>
+      <div>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-gray-300">{t('ingest.perFile.metadata')}</p>
+          <button
+            type="button"
+            className="text-xs text-violet-300 hover:text-violet-100"
+            onClick={() => applyDefaultsToEntry(entry.id)}
+          >
+            {t('ingest.perFile.applyDefaults')}
+          </button>
+        </div>
+        <div className="mt-2 rounded-xl border border-slate-700 bg-slate-900/50 p-3">
+          {renderSuggestionBlock(entry)}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -182,7 +503,7 @@ export const PromptIngestionPage = () => {
             <div className="bg-slate-900/40 border border-slate-700 rounded-xl p-4 min-w-[220px]">
               <p className="text-sm text-gray-400">{t('ingest.limitLabel')}</p>
               <p className="text-2xl font-semibold text-white">
-                {files.length} / {MAX_FILES}
+                {entries.length} / {MAX_FILES}
               </p>
             </div>
           </div>
@@ -200,12 +521,14 @@ export const PromptIngestionPage = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={1.5}
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                    d="M12 16V4m0 0L8 8m4-4l4 4M6 20h12"
                   />
                 </svg>
-                <p className="text-lg font-semibold text-white">{t('ingest.dropzone.title')}</p>
-                <p className="text-sm text-gray-400 mb-4">{t('ingest.dropzone.hint')}</p>
-                <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-full cursor-pointer transition-colors">
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  {t('ingest.dropzone.title')}
+                </h3>
+                <p className="text-gray-400 mb-4">{t('ingest.dropzone.hint')}</p>
+                <label className="inline-flex items-center gap-2 px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg cursor-pointer transition-colors">
                   <input
                     type="file"
                     accept=".png"
@@ -213,223 +536,116 @@ export const PromptIngestionPage = () => {
                     className="hidden"
                     onChange={handleFileChange}
                   />
-                  {t('ingest.dropzone.action')}
+                  <span>{t('ingest.dropzone.action')}</span>
                 </label>
-                <p className="text-xs text-gray-500 mt-3">{t('ingest.dropzone.helper')}</p>
+                <p className="text-xs text-gray-500 mt-4">{t('ingest.dropzone.helper')}</p>
               </div>
             </div>
 
-            {files.length > 0 && (
-              <div className="bg-slate-900/60 border border-slate-700 rounded-2xl p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">
-                    {t('ingest.preview.title', { count: files.length })}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={clearSelection}
-                    className="text-sm text-red-300 hover:text-red-200"
-                  >
-                    {t('ingest.preview.clear')}
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {files.map((file, index) => (
-                    <div
-                      key={`${file.name}-${index}`}
-                      className="bg-slate-800/80 border border-slate-700 rounded-xl p-3 flex flex-col gap-2"
-                    >
-                      {previews[index] && (
-                        <img
-                          src={previews[index]}
-                          alt={file.name}
-                          className="w-full h-36 object-cover rounded-lg border border-slate-700"
-                        />
-                      )}
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-sm text-white truncate">{file.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {(file.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            removeFile(index);
-                          }}
-                          className="text-xs text-red-300 hover:text-red-100"
-                        >
-                          {t('ingest.preview.remove')}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {isAnalyzing && (
-              <p className="text-sm text-violet-300">{t('ingest.suggestions.analyzing')}</p>
-            )}
-            {analysisError && <p className="text-sm text-red-400">{analysisError}</p>}
-
-            {tagSuggestions.length > 0 && (
-              <div className="bg-slate-900/40 border border-slate-700 rounded-xl p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-gray-200">
-                    {t('ingest.suggestions.tagsTitle')}
-                  </h4>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTags(tagSuggestions.join(', '));
-                      setTagsTouched(true);
-                    }}
-                    className="text-xs text-violet-300 hover:text-violet-100"
-                  >
-                    {t('ingest.suggestions.applyTags')}
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {tagSuggestions.slice(0, 15).map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-slate-800 text-xs text-gray-200 rounded-full"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {suggestedArtStyle && (
-              <div className="bg-slate-900/40 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
+            <div className="bg-slate-900/40 border border-slate-700 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-200">
-                    {t('ingest.suggestions.styleTitle')}
-                  </p>
-                  <p className="text-gray-400 text-sm">{suggestedArtStyle}</p>
+                  <p className="text-sm text-gray-400">{t('ingest.defaults.description')}</p>
+                  <h3 className="text-lg font-semibold text-white">
+                    {t('ingest.defaults.title')}
+                  </h3>
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setArtStyle(suggestedArtStyle);
-                    setArtStyleTouched(true);
-                  }}
-                  className="text-xs text-violet-300 hover:text-violet-100"
+                  className="text-sm text-violet-300 hover:text-violet-100"
+                  onClick={applyDefaultsToAllEntries}
+                  disabled={!entries.length}
                 >
-                  {t('ingest.suggestions.applyStyle')}
+                  {t('ingest.defaults.apply')}
                 </button>
               </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <span className="flex items-center gap-1">
-                    <span>🏷️</span>
-                    <span>{t('ingest.form.tags')}</span>
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  value={tags}
-                  onChange={(e) => {
-                    setTagsTouched(true);
-                    setTags(e.target.value);
-                  }}
-                  placeholder={t('ingest.form.tagsPlaceholder')}
-                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">{t('ingest.form.tagsHelp')}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    <span className="flex items-center gap-1">
-                      <span>📁</span>
-                      <span>{t('ingest.form.category')}</span>
-                    </span>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('ingest.form.tags')}
                   </label>
                   <input
                     type="text"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder={t('ingest.form.categoryPlaceholder')}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+                    value={batchDefaults.tags}
+                    onChange={(e) => handleBatchDefaultChange('tags', e.target.value)}
+                    placeholder={t('ingest.form.tagsPlaceholder')}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    <span className="flex items-center gap-1">
-                      <span>🎨</span>
-                      <span>{t('ingest.form.artStyle')}</span>
-                    </span>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('ingest.form.category')}
                   </label>
-                  <div className="relative">
-                    <select
-                      value={artStyle}
-                      onChange={(e) => {
-                        setArtStyleTouched(true);
-                        setArtStyle(e.target.value);
-                      }}
-                      className="w-full cursor-pointer appearance-none bg-slate-800 border border-slate-600 rounded-lg px-4 py-2.5 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                    >
-                      <option value="">{t('ingest.form.artStylePlaceholder')}</option>
-                      {artStyleOptions.map((style) => (
-                        <option key={style} value={style}>
-                          {style}
-                        </option>
-                      ))}
-                    </select>
-                    <svg
-                      className="w-4 h-4 text-gray-400 absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+                  <input
+                    type="text"
+                    value={batchDefaults.category}
+                    onChange={(e) => handleBatchDefaultChange('category', e.target.value)}
+                    placeholder={t('ingest.form.categoryPlaceholder')}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('ingest.form.artStyle')}
+                  </label>
+                  <input
+                    type="text"
+                    value={batchDefaults.artStyle}
+                    onChange={(e) => handleBatchDefaultChange('artStyle', e.target.value)}
+                    placeholder={t('ingest.form.artStylePlaceholder')}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('ingest.form.rating')}
+                  </label>
+                  <select
+                    value={batchDefaults.rating}
+                    onChange={(e) => handleBatchDefaultChange('rating', e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  >
+                    <option value="">{t('ingest.form.ratingPlaceholder')}</option>
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  {t('ingest.form.rating')}
-                </label>
-                <select
-                  value={rating}
-                  onChange={(e) => setRating(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
-                >
-                  <option value="">{t('ingest.form.ratingPlaceholder')}</option>
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   {t('ingest.form.notes')}
                 </label>
                 <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
                   rows={3}
+                  value={batchDefaults.notes}
+                  onChange={(e) => handleBatchDefaultChange('notes', e.target.value)}
                   placeholder={t('ingest.form.notesPlaceholder')}
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 />
               </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">{t('ingest.perFile.description')}</p>
+                  <h3 className="text-lg font-semibold text-white">
+                    {t('ingest.perFile.title')}
+                  </h3>
+                </div>
+              </div>
+              {entries.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">
+                  {t('ingest.results.empty')}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {entries.map((entry, index) => renderEntryCard(entry, index))}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -438,10 +654,23 @@ export const PromptIngestionPage = () => {
                 <button
                   type="button"
                   onClick={clearSelection}
-                  className="px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-                  disabled={files.length === 0 && !tags && !category && !artStyle && !notes}
+                  className="px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  disabled={!entries.length && Object.values(batchDefaults).every((value) => !value)}
                 >
                   {t('ingest.actions.reset')}
+                </button>
+                <button
+                  type="button"
+                  onClick={clearEverything}
+                  className="px-5 py-2 bg-slate-900 border border-slate-700 hover:border-slate-500 text-white rounded-lg transition-colors disabled:opacity-50"
+                  disabled={
+                    !entries.length &&
+                    Object.values(batchDefaults).every((value) => !value) &&
+                    results.length === 0 &&
+                    !summary
+                  }
+                >
+                  {t('ingest.actions.clearAll')}
                 </button>
                 <button
                   type="submit"
@@ -523,7 +752,7 @@ export const PromptIngestionPage = () => {
             <div className="space-y-3">
               {results.map((result) => (
                 <div
-                  key={`${result.filename}-${result.status}-${result.detail}`}
+                  key={`${result.clientId}-${result.filename}`}
                   className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-slate-900/60 border border-slate-700 rounded-xl px-4 py-3"
                 >
                   <div>

@@ -242,8 +242,22 @@
       "notesPlaceholder": "Optional notes stored with the prompt",
       "helper": "Maximum {{max}} PNG files per batch."
     },
+    "defaults": {
+      "title": "Batch defaults",
+      "description": "These values prefill every image you add to the queue.",
+      "apply": "Apply defaults to current images"
+    },
+    "perFile": {
+      "title": "Individual configuration",
+      "description": "Review metadata, adjust tags, and personalize notes for each PNG before ingesting.",
+      "applyDefaults": "Apply defaults",
+      "metadata": "Metadata suggestions",
+      "noMetadata": "No metadata was detected for this PNG.",
+      "remove": "Remove image"
+    },
     "actions": {
-      "reset": "Reset form",
+      "reset": "Clear batch",
+      "clearAll": "Clear everything",
       "submit": "Ingest prompts",
       "submitting": "Processing..."
     },

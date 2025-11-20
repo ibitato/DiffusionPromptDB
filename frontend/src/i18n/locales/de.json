@@ -395,8 +395,22 @@
       "notesPlaceholder": "Optionale Notizen, die beim Prompt gespeichert werden",
       "helper": "Maximal {{max}} PNG-Dateien pro Stapel."
     },
+    "defaults": {
+      "title": "Standardwerte",
+      "description": "Diese Werte werden automatisch auf jedes neu hinzugefügte Bild angewendet.",
+      "apply": "Auf aktuelle Bilder anwenden"
+    },
+    "perFile": {
+      "title": "Individuelle Konfiguration",
+      "description": "Prüfe die erkannten Metadaten und passe Tags, Stile und Notizen pro PNG an.",
+      "applyDefaults": "Standardwerte übernehmen",
+      "metadata": "Metadaten-Vorschläge",
+      "noMetadata": "Für dieses PNG wurden keine Metadaten gefunden.",
+      "remove": "Bild entfernen"
+    },
     "actions": {
-      "reset": "Formular zurücksetzen",
+      "reset": "Stapel leeren",
+      "clearAll": "Alles leeren",
       "submit": "Prompts importieren",
       "submitting": "In Arbeit..."
     },

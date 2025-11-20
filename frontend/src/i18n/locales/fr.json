@@ -396,8 +396,22 @@
       "notesPlaceholder": "Notes optionnelles enregistrées avec le prompt",
       "helper": "Maximum {{max}} fichiers PNG par lot."
     },
+    "defaults": {
+      "title": "Valeurs par défaut",
+      "description": "Ces valeurs préremplissent chaque image que tu ajoutes à la file.",
+      "apply": "Appliquer aux images actuelles"
+    },
+    "perFile": {
+      "title": "Configuration individuelle",
+      "description": "Vérifie les métadonnées détectées et personnalise tags, styles et notes pour chaque PNG.",
+      "applyDefaults": "Appliquer les valeurs par défaut",
+      "metadata": "Suggestions de métadonnées",
+      "noMetadata": "Aucune métadonnée détectée pour ce PNG.",
+      "remove": "Supprimer l'image"
+    },
     "actions": {
-      "reset": "Réinitialiser le formulaire",
+      "reset": "Vider le lot",
+      "clearAll": "Tout effacer",
       "submit": "Ingestion",
       "submitting": "Traitement..."
     },
