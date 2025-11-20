@@ -222,6 +222,13 @@ export const LoginPage = () => {
             >
               {t('login.requestAccessButton')}
             </Link>
+
+            <div className="text-center text-sm text-gray-400">
+              {t('login.learnMorePrompt')}{' '}
+              <Link to="/about" className="text-violet-400 hover:text-violet-300">
+                {t('login.learnMoreLink')}
+              </Link>
+            </div>
           </div>
 
           {showPasswordReset && (

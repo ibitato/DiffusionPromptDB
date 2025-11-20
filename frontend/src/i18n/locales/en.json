@@ -9,6 +9,7 @@
     "search": "Search",
     "settings": "Settings",
     "profile": "Profile",
+    "about": "Overview",
     "admin": "Admin",
     "ingest": "Ingest",
     "logout": "Logout"
@@ -34,6 +35,8 @@
     "noAccount": "Need an account?",
     "goToRegister": "Request access",
     "requestAccessButton": "Request access",
+    "learnMorePrompt": "New here?",
+    "learnMoreLink": "See what DiffusionPromptDB offers",
     "validation": {
       "usernameRequired": "Username is required",
       "passwordRequired": "Password is required"
@@ -79,6 +82,58 @@
       "emailRequired": "Email is required",
       "emailInvalid": "Enter a valid email address",
       "passwordRequired": "Password is required"
+    }
+  },
+  "info": {
+    "title": "What you can do in DiffusionPromptDB",
+    "subtitle": "Track Stable Diffusion prompts, references, and metadata in a shared yet access-controlled workspace.",
+    "audience": "For catalog contributors",
+    "highlights": [
+      "Secure catalog for Stable Diffusion prompts and PNG metadata",
+      "Searchable archive with tagging, filters, and ownership-aware views",
+      "Guided ingestion flow with automatic metadata extraction"
+    ],
+    "sections": {
+      "catalog": {
+        "title": "Catalog your creative prompts",
+        "description": "Build a trustworthy history of every experiment without losing context.",
+        "bullets": [
+          "Store prompts, art styles, models, and key settings with version continuity.",
+          "Attach curated tags and keep ownership so you can filter by author instantly.",
+          "Stay compliant: everything lives inside a private SQLite database."
+        ]
+      },
+      "search": {
+        "title": "Find the right prompt fast",
+        "description": "The search workspace is optimized for day-to-day research.",
+        "bullets": [
+          "Filter by tags, owners, metadata completeness, or creation date.",
+          "Save personal preferences so search, prompts, and dashboard open with your favorite view.",
+          "Compare prompts side by side to reuse the right parameters."
+        ]
+      },
+      "ingest": {
+        "title": "Ingest PNGs without friction",
+        "description": "Drag and drop up to five PNGs and let the system parse their metadata.",
+        "bullets": [
+          "Automatic extraction of Stable Diffusion metadata and suggested tags.",
+          "Manual review step so nothing is uploaded without your confirmation.",
+          "Original files stay local; we only keep thumbnails plus structured data."
+        ]
+      },
+      "workspace": {
+        "title": "Work inside a guided space",
+        "description": "Each authenticated user gets a predictable flow from login to dashboard.",
+        "bullets": [
+          "Dashboard surfaces your latest prompts and quick stats.",
+          "Profile page controls language, default landing, and personal filters.",
+          "Help and support links keep the admin contact one click away."
+        ]
+      }
+    },
+    "actions": {
+      "backToLogin": "Back to login",
+      "requestAccess": "Request access"
     }
   },
   "verifyAccount": {

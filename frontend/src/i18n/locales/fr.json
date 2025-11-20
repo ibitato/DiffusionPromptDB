@@ -9,6 +9,7 @@
     "search": "Recherche",
     "settings": "Paramètres",
     "profile": "Profil",
+    "about": "Fonctionnalités",
     "admin": "Admin",
     "ingest": "Ingestion",
     "logout": "Déconnexion"
@@ -34,6 +35,8 @@
     "noAccount": "Besoin d'un compte ?",
     "goToRegister": "Demander un accès",
     "requestAccessButton": "Demander un accès",
+    "learnMorePrompt": "Nouvel utilisateur ?",
+    "learnMoreLink": "Découvrir les fonctionnalités de DiffusionPromptDB",
     "validation": {
       "usernameRequired": "Le nom d'utilisateur est obligatoire",
       "passwordRequired": "Le mot de passe est obligatoire"
@@ -79,6 +82,58 @@
       "emailRequired": "L'e-mail est obligatoire",
       "emailInvalid": "Entre une adresse e-mail valide",
       "passwordRequired": "Le mot de passe est obligatoire"
+    }
+  },
+  "info": {
+    "title": "Ce que tu peux faire dans DiffusionPromptDB",
+    "subtitle": "Centralise prompts, références et métadonnées Stable Diffusion dans un espace partagé et sécurisé.",
+    "audience": "Pour les contributeurs du catalogue",
+    "highlights": [
+      "Catalogue sécurisé pour les prompts Stable Diffusion et les métadonnées PNG",
+      "Archive consultable avec étiquettes, filtres et vues orientées propriétaire",
+      "Flux d'ingestion guidé avec extraction automatique des métadonnées"
+    ],
+    "sections": {
+      "catalog": {
+        "title": "Catalogue tes prompts créatifs",
+        "description": "Construis un historique fiable de chaque expérimentation sans perdre le contexte.",
+        "bullets": [
+          "Enregistre prompts, styles, modèles et paramètres clés avec continuité de version.",
+          "Ajoute des étiquettes soignées et conserve la propriété pour filtrer par auteur instantanément.",
+          "Reste conforme : tout vit dans une base SQLite privée."
+        ]
+      },
+      "search": {
+        "title": "Trouve rapidement le bon prompt",
+        "description": "L'espace Recherche est optimisé pour les itérations quotidiennes.",
+        "bullets": [
+          "Filtre par étiquettes, propriétaires, complétude des métadonnées ou date de création.",
+          "Enregistre tes préférences pour que Recherche, Prompts et Tableau de bord s'ouvrent comme tu l'aimes.",
+          "Compare des prompts côte à côte pour réutiliser les bons paramètres."
+        ]
+      },
+      "ingest": {
+        "title": "Ingestion PNG sans friction",
+        "description": "Dépose jusqu'à cinq PNG et laisse le système analyser leurs métadonnées.",
+        "bullets": [
+          "Extraction automatique des métadonnées Stable Diffusion et suggestions d'étiquettes.",
+          "Étape de revue manuelle pour valider chaque envoi.",
+          "Les originaux restent chez toi ; nous stockons uniquement la miniature et les données structurées."
+        ]
+      },
+      "workspace": {
+        "title": "Travaille dans un espace guidé",
+        "description": "Chaque utilisateur authentifié suit un parcours prévisible du login au tableau de bord.",
+        "bullets": [
+          "Le tableau de bord affiche tes derniers prompts et des indicateurs rapides.",
+          "La page Profil contrôle la langue, la page d'accueil par défaut et les filtres personnels.",
+          "Les liens d'aide gardent le contact administrateur à portée de clic."
+        ]
+      }
+    },
+    "actions": {
+      "backToLogin": "Retour au login",
+      "requestAccess": "Demander un accès"
     }
   },
   "verifyAccount": {

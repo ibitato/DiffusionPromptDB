@@ -35,6 +35,7 @@ export const Header = () => {
             <HeaderLink label={t('nav.ingest')} onClick={() => navigate('/ingest')} />
             <HeaderLink label={t('nav.search')} onClick={() => navigate('/search')} />
             <HeaderLink label={t('nav.profile')} onClick={() => navigate('/profile')} />
+            <HeaderLink label={t('nav.about')} onClick={() => navigate('/about')} />
             {user?.role === 'admin' && (
               <HeaderLink label={t('nav.admin')} onClick={() => navigate('/admin/users')} />
             )}

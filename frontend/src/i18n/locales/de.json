@@ -9,6 +9,7 @@
     "search": "Suche",
     "settings": "Einstellungen",
     "profile": "Profil",
+    "about": "Überblick",
     "admin": "Admin",
     "ingest": "Import",
     "logout": "Abmelden"
@@ -34,6 +35,8 @@
     "noAccount": "Noch kein Konto?",
     "goToRegister": "Zugang anfordern",
     "requestAccessButton": "Zugang anfordern",
+    "learnMorePrompt": "Zum ersten Mal hier?",
+    "learnMoreLink": "Erfahre, was DiffusionPromptDB bietet",
     "validation": {
       "usernameRequired": "Benutzername ist erforderlich",
       "passwordRequired": "Passwort ist erforderlich"
@@ -79,6 +82,58 @@
       "emailRequired": "E-Mail ist erforderlich",
       "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein",
       "passwordRequired": "Passwort ist erforderlich"
+    }
+  },
+  "info": {
+    "title": "Was du in DiffusionPromptDB tun kannst",
+    "subtitle": "Verwalte Stable-Diffusion-Prompts, Referenzen und Metadaten in einem gemeinsamen, aber kontrollierten Arbeitsbereich.",
+    "audience": "Für Prompt-Katalogisierer",
+    "highlights": [
+      "Sicherer Katalog für Stable-Diffusion-Prompts und PNG-Metadaten",
+      "Durchsuchbares Archiv mit Tags, Filtern und besitzerbezogenen Ansichten",
+      "Geführter Import-Flow mit automatischer Metadatenextraktion"
+    ],
+    "sections": {
+      "catalog": {
+        "title": "Katalogisiere deine kreativen Prompts",
+        "description": "Baue eine verlässliche Historie jeder Iteration ohne Kontextverlust auf.",
+        "bullets": [
+          "Speichere Prompts, Stile, Modelle und wichtige Einstellungen mit Versionskontinuität.",
+          "Füge kuratierte Tags hinzu und behalte den Besitz, um sofort nach Autor zu filtern.",
+          "Konformität inklusive: Alles liegt in einer privaten SQLite-Datenbank."
+        ]
+      },
+      "search": {
+        "title": "Finde schnell den passenden Prompt",
+        "description": "Der Suchbereich ist auf die tägliche Recherche ausgelegt.",
+        "bullets": [
+          "Filtere nach Tags, Besitzern, Metadatenvollständigkeit oder Erstellungsdatum.",
+          "Speichere persönliche Präferenzen, damit Suche, Prompts und Dashboard mit deiner Ansicht starten.",
+          "Vergleiche Prompts nebeneinander, um die richtigen Parameter zu übernehmen."
+        ]
+      },
+      "ingest": {
+        "title": "Importiere PNGs ohne Reibung",
+        "description": "Ziehe bis zu fünf PNGs auf die Oberfläche und lass das System die Metadaten lesen.",
+        "bullets": [
+          "Automatische Extraktion der Stable-Diffusion-Metadaten samt Tag-Vorschlägen.",
+          "Manueller Prüfstep, damit nichts ohne Freigabe hochgeladen wird.",
+          "Originaldateien bleiben lokal; gespeichert werden nur Thumbnails und strukturierte Daten."
+        ]
+      },
+      "workspace": {
+        "title": "Arbeite in einem geführten Bereich",
+        "description": "Jeder authentifizierte Nutzer erlebt einen vorhersehbaren Flow vom Login zum Dashboard.",
+        "bullets": [
+          "Das Dashboard zeigt deine letzten Prompts und schnelle Kennzahlen.",
+          "Die Profilseite steuert Sprache, Standard-Startseite und persönliche Filter.",
+          "Hilfelinks halten den Kontakt zur Administration einen Klick entfernt."
+        ]
+      }
+    },
+    "actions": {
+      "backToLogin": "Zurück zum Login",
+      "requestAccess": "Zugang anfordern"
     }
   },
   "verifyAccount": {

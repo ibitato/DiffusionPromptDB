@@ -9,6 +9,7 @@
     "search": "Búsqueda",
     "settings": "Configuración",
     "profile": "Perfil",
+    "about": "Acerca del sitio",
     "admin": "Admin",
     "ingest": "Ingesta",
     "logout": "Cerrar Sesión"
@@ -34,6 +35,8 @@
     "noAccount": "¿Necesitas una cuenta?",
     "goToRegister": "Solicitar acceso",
     "requestAccessButton": "Solicitar acceso",
+    "learnMorePrompt": "¿Es tu primera vez aquí?",
+    "learnMoreLink": "Descubre lo que ofrece DiffusionPromptDB",
     "validation": {
       "usernameRequired": "El usuario es obligatorio",
       "passwordRequired": "La contraseña es obligatoria"
@@ -79,6 +82,58 @@
       "emailRequired": "El correo es obligatorio",
       "emailInvalid": "Ingresa un correo válido",
       "passwordRequired": "La contraseña es obligatoria"
+    }
+  },
+  "info": {
+    "title": "Qué puedes hacer en DiffusionPromptDB",
+    "subtitle": "Registra prompts, referencias y metadatos de Stable Diffusion en un espacio compartido y controlado.",
+    "audience": "Para quienes catalogan prompts",
+    "highlights": [
+      "Catálogo seguro para prompts y metadatos incrustados en PNG",
+      "Archivo buscable con etiquetas, filtros y vistas por propietario",
+      "Flujo de ingesta guiado con extracción automática de metadatos"
+    ],
+    "sections": {
+      "catalog": {
+        "title": "Cataloga tus prompts creativos",
+        "description": "Construye un historial confiable de cada experimento sin perder contexto.",
+        "bullets": [
+          "Guarda prompts, estilos, modelos y parámetros clave con continuidad de versiones.",
+          "Aplica etiquetas curadas y conserva la autoría para filtrar por creador al instante.",
+          "Cumple con las políticas: todo vive en una base SQLite privada."
+        ]
+      },
+      "search": {
+        "title": "Encuentra el prompt indicado en segundos",
+        "description": "El área de búsqueda está optimizada para la investigación diaria.",
+        "bullets": [
+          "Filtra por etiquetas, propietarios, completitud de metadatos o fecha de creación.",
+          "Guarda preferencias personales para que Búsqueda, Prompts y Dashboard se abran como te gusta.",
+          "Compara prompts en paralelo para reutilizar los parámetros correctos."
+        ]
+      },
+      "ingest": {
+        "title": "Ingiere PNGs sin fricción",
+        "description": "Arrastra hasta cinco PNGs y deja que el sistema analice sus metadatos.",
+        "bullets": [
+          "Extracción automática de metadatos y sugerencias de etiquetas.",
+          "Paso de revisión manual para que nada se suba sin tu visto bueno.",
+          "Los originales permanecen locales; solo guardamos miniaturas y datos estructurados."
+        ]
+      },
+      "workspace": {
+        "title": "Trabaja en un espacio guiado",
+        "description": "Cada persona autenticada tiene un flujo predecible del login al panel.",
+        "bullets": [
+          "El dashboard muestra tus últimos prompts y métricas rápidas.",
+          "El perfil controla idioma, landing por defecto y filtros personales.",
+          "Los accesos de ayuda mantienen el contacto con administración a un clic."
+        ]
+      }
+    },
+    "actions": {
+      "backToLogin": "Volver al login",
+      "requestAccess": "Solicitar acceso"
     }
   },
   "verifyAccount": {

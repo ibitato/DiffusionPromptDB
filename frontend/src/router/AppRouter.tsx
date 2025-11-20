@@ -15,6 +15,7 @@ import { ProfilePage } from '../pages/ProfilePage';
 import { AdminUsersPage } from '../pages/AdminUsersPage';
 import { VerifyAccountPage } from '../pages/VerifyAccountPage';
 import { PromptIngestionPage } from '../pages/PromptIngestionPage';
+import { InfoPage } from '../pages/InfoPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -85,6 +86,7 @@ export const AppRouter = () => {
             </PublicRoute>
           }
         />
+        <Route path="/about" element={<InfoPage />} />
 
         {/* Protected Routes */}
         <Route
