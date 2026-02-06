@@ -7,7 +7,7 @@ Configuration settings for the FastAPI application.
 from pydantic_settings import BaseSettings
 from typing import List, Optional
 from pathlib import Path
-from pydantic import EmailStr, Field, field_validator
+from pydantic import EmailStr, Field, field_validator, model_validator
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -27,10 +27,14 @@ class Settings(BaseSettings):
     port: int = 8000
     reload: bool = False  # Set to True for development, False for production
 
-    # Database (unified - catalog DB with 10,386 prompts, located in api/database/)
-    prompts_db_path: str = str(BASE_DIR / "database/prompts_catalog.db")
-    catalog_db_path: str = str(BASE_DIR / "database/prompts_catalog.db")
-    users_db_path: str = str(BASE_DIR / "data/users.db")
+    # Database
+    prompts_db_url: str = Field(
+        ..., description="PostgreSQL DSN for the prompts/catalog database"
+    )
+    users_db_url: Optional[str] = Field(
+        default=None,
+        description="PostgreSQL DSN for the users/auth database (defaults to prompts DB when omitted)",
+    )
 
     # Security
     api_keys: List[str] = Field(default_factory=list)
@@ -122,15 +126,19 @@ class Settings(BaseSettings):
             raise ValueError("SMTP port must be greater than zero.")
         return value
 
-    @field_validator(
-        "prompts_db_path", "catalog_db_path", "users_db_path", "media_root", mode="before"
-    )
+    @field_validator("media_root", mode="before")
     @classmethod
     def resolve_relative_paths(cls, value: str | Path) -> str:
         path = Path(value)
         if not path.is_absolute():
             path = BASE_DIR / path
         return str(path)
+
+    @model_validator(mode="after")
+    def default_users_db(cls, values: "Settings") -> "Settings":
+        if not values.users_db_url:
+            values.users_db_url = values.prompts_db_url
+        return values
 
     @field_validator("smtp_host", "smtp_username", "smtp_password", mode="before")
     @classmethod
@@ -171,6 +179,24 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         extra = "ignore"  # Ignore extra environment variables
+
+    @property
+    def prompts_db_path(self) -> str:
+        raise RuntimeError(
+            "prompts_db_path is no longer available. Use PROMPTS_DB_URL (PostgreSQL)."
+        )
+
+    @property
+    def catalog_db_path(self) -> str:
+        raise RuntimeError(
+            "catalog_db_path is no longer available. Use PROMPTS_DB_URL (PostgreSQL)."
+        )
+
+    @property
+    def users_db_path(self) -> str:
+        raise RuntimeError(
+            "users_db_path is no longer available. Use USERS_DB_URL (PostgreSQL)."
+        )
 
 
 # Global settings instance

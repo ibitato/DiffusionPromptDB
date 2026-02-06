@@ -2,12 +2,10 @@
 User profile management endpoints.
 """
 
-import sqlite3
-
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..auth import verify_token
-from ..db import get_users_db
+from ..db import DatabaseConnection, get_users_db
 from ..models.profile_models import (
     UserProfileResponse,
     UserProfileUpdate,
@@ -23,7 +21,7 @@ router = APIRouter()
 @router.get("/profile", response_model=UserProfileResponse)
 async def get_profile(
     auth: dict = Depends(verify_token),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     user = user_service.get_user_by_id(db, auth["user_id"])
     if not user:
@@ -35,7 +33,7 @@ async def get_profile(
 async def update_profile(
     payload: UserProfileUpdate,
     auth: dict = Depends(verify_token),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     user = user_service.get_user_by_id(db, auth["user_id"])
     if not user:
@@ -63,7 +61,7 @@ async def update_profile(
 async def change_password(
     payload: PasswordChangeRequest,
     auth: dict = Depends(verify_token),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     user = user_service.get_user_by_id(db, auth["user_id"])
     if not user:
@@ -80,7 +78,7 @@ async def change_password(
 async def update_default_landing(
     payload: DefaultLandingUpdate,
     auth: dict = Depends(verify_token),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     user = user_service.get_user_by_id(db, auth["user_id"])
     if not user:
@@ -98,7 +96,7 @@ async def update_default_landing(
 async def delete_account(
     payload: DeleteAccountRequest,
     auth: dict = Depends(verify_token),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     if not payload.confirm:
         raise HTTPException(status_code=400, detail="Deletion must be confirmed")

@@ -5,8 +5,10 @@ Request/response models for prompt endpoints.
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime
+
+NSFWLevel = Literal["safe", "suggestive", "explicit"]
 
 
 class PromptBase(BaseModel):
@@ -23,6 +25,9 @@ class PromptBase(BaseModel):
     )
     rating: Optional[int] = Field(None, ge=1, le=5, description="Rating 1-5")
     notes: Optional[str] = Field(None, description="Additional notes")
+    nsfw_level: Optional[NSFWLevel] = Field(
+        None, description="NSFW level classification (safe, suggestive, explicit)"
+    )
 
 
 class PromptCreate(PromptBase):
@@ -43,6 +48,9 @@ class PromptUpdate(BaseModel):
     art_style: Optional[str] = None
     rating: Optional[int] = Field(None, ge=1, le=5)
     notes: Optional[str] = None
+    nsfw_level: Optional[NSFWLevel] = Field(
+        None, description="NSFW level classification (safe, suggestive, explicit)"
+    )
 
 
 class PromptResponse(PromptBase):

@@ -8,13 +8,15 @@ import {
   AggregatedIngestionResponse,
   IngestionFilePayload,
 } from '../services/ingestion.service';
-import { ImageIngestionResult } from '../types/api.types';
+import { ImageIngestionResult, NSFWLevel } from '../types/api.types';
 import { statsService } from '../services/stats.service';
 import { logError } from '../utils/logger';
 import { parseStableDiffusionMetadata } from '../utils/pngMetadata';
 import { inferArtStyleFromMetadata, inferTagsFromPrompt } from '../utils/promptSuggestions';
 
 const MAX_FILES = 5;
+const DEFAULT_NSFW_LEVEL: NSFWLevel = 'explicit';
+const DEFAULT_NSFW_LEVELS: NSFWLevel[] = ['explicit', 'suggestive', 'safe'];
 
 type FileEntry = {
   id: string;
@@ -24,6 +26,7 @@ type FileEntry = {
   category: string;
   artStyle: string;
   rating: string;
+   nsfwLevel: NSFWLevel;
   notes: string;
   suggestions: { tags: string[]; artStyle: string };
   isAnalyzing: boolean;
@@ -44,6 +47,8 @@ export const PromptIngestionPage = () => {
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
+  const formatNsfwLabel = (level: string) =>
+    level.charAt(0).toUpperCase() + level.slice(1);
 
   const [entries, setEntries] = useState<FileEntry[]>([]);
   const [batchDefaults, setBatchDefaults] = useState({
@@ -51,6 +56,7 @@ export const PromptIngestionPage = () => {
     category: '',
     artStyle: '',
     rating: '',
+    nsfwLevel: DEFAULT_NSFW_LEVEL,
     notes: '',
   });
   const [results, setResults] = useState<
@@ -59,6 +65,7 @@ export const PromptIngestionPage = () => {
   const [summary, setSummary] = useState<AggregatedIngestionResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [artStyleOptions, setArtStyleOptions] = useState<string[]>([]);
+  const [nsfwLevels, setNsfwLevels] = useState<NSFWLevel[]>(DEFAULT_NSFW_LEVELS);
 
   useEffect(() => {
     const loadFilters = async () => {
@@ -66,6 +73,12 @@ export const PromptIngestionPage = () => {
         const filters = await statsService.getFilters();
         const styles = filters.art_styles?.map((entry) => entry.style) ?? [];
         setArtStyleOptions(Array.from(new Set(styles)));
+        const nsfwFromApi = filters.nsfw_levels?.filter(Boolean) ?? [];
+        setNsfwLevels(
+          nsfwFromApi.length
+            ? (nsfwFromApi as NSFWLevel[])
+            : DEFAULT_NSFW_LEVELS
+        );
       } catch (error) {
         logError('Error loading art styles', error);
       }
@@ -85,6 +98,7 @@ export const PromptIngestionPage = () => {
     category: batchDefaults.category,
     artStyle: batchDefaults.artStyle,
     rating: batchDefaults.rating,
+    nsfwLevel: batchDefaults.nsfwLevel,
     notes: batchDefaults.notes,
     suggestions: { tags: [], artStyle: '' },
     isAnalyzing: false,
@@ -139,6 +153,7 @@ export const PromptIngestionPage = () => {
       category: '',
       artStyle: '',
       rating: '',
+      nsfwLevel: DEFAULT_NSFW_LEVEL,
       notes: '',
     });
   };
@@ -149,11 +164,16 @@ export const PromptIngestionPage = () => {
 
   const handleEntryFieldChange = (
     id: string,
-    field: 'tags' | 'category' | 'artStyle' | 'rating' | 'notes',
+    field: 'tags' | 'category' | 'artStyle' | 'rating' | 'notes' | 'nsfwLevel',
     value: string
   ) => {
     updateEntry(id, (entry) => {
-      const next: FileEntry = { ...entry, [field]: value };
+      const next: FileEntry = { ...entry };
+      if (field === 'nsfwLevel') {
+        next.nsfwLevel = value as NSFWLevel;
+      } else {
+        next[field] = value;
+      }
       if (field === 'tags') {
         next.touched = { ...next.touched, tags: true };
       }
@@ -168,7 +188,10 @@ export const PromptIngestionPage = () => {
     field: keyof typeof batchDefaults,
     value: string
   ) => {
-    setBatchDefaults((prev) => ({ ...prev, [field]: value }));
+    setBatchDefaults((prev) => ({
+      ...prev,
+      [field]: field === 'nsfwLevel' ? (value as NSFWLevel) : value,
+    }));
   };
 
   const applyDefaultsToAllEntries = () => {
@@ -180,6 +203,7 @@ export const PromptIngestionPage = () => {
         category: batchDefaults.category,
         artStyle: batchDefaults.artStyle,
         rating: batchDefaults.rating,
+        nsfwLevel: batchDefaults.nsfwLevel,
         notes: batchDefaults.notes,
         touched: {
           ...entry.touched,
@@ -197,6 +221,7 @@ export const PromptIngestionPage = () => {
       category: batchDefaults.category,
       artStyle: batchDefaults.artStyle,
       rating: batchDefaults.rating,
+      nsfwLevel: batchDefaults.nsfwLevel,
       notes: batchDefaults.notes,
       touched: {
         ...entry.touched,
@@ -275,6 +300,10 @@ export const PromptIngestionPage = () => {
       toast.error(t('ingest.errors.selectFiles'));
       return;
     }
+    if (entries.some((entry) => !entry.nsfwLevel)) {
+      toast.error(t('ingest.errors.nsfwRequired'));
+      return;
+    }
 
     setIsSubmitting(true);
     setResults([]);
@@ -287,6 +316,7 @@ export const PromptIngestionPage = () => {
       category: entry.category.trim() || undefined,
       artStyle: entry.artStyle.trim() || undefined,
       rating: entry.rating ? Number(entry.rating) : undefined,
+      nsfwLevel: entry.nsfwLevel,
       notes: entry.notes.trim() || undefined,
     }));
 
@@ -396,7 +426,7 @@ export const PromptIngestionPage = () => {
         </button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">
             {t('ingest.form.tags')}
@@ -455,6 +485,25 @@ export const PromptIngestionPage = () => {
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            {t('ingest.form.nsfwLevel')}
+          </label>
+          <select
+            value={entry.nsfwLevel}
+            onChange={(e) =>
+              handleEntryFieldChange(entry.id, 'nsfwLevel', e.target.value)
+            }
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+          >
+            {nsfwLevels.map((level) => (
+              <option key={level} value={level}>
+                {formatNsfwLabel(level)}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">{t('ingest.form.nsfwHelp')}</p>
         </div>
       </div>
       <div>
@@ -559,7 +608,7 @@ export const PromptIngestionPage = () => {
                   {t('ingest.defaults.apply')}
                 </button>
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">
                     {t('ingest.form.tags')}
@@ -612,6 +661,25 @@ export const PromptIngestionPage = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                    {t('ingest.form.nsfwLevel')}
+                  </label>
+                  <select
+                    value={batchDefaults.nsfwLevel}
+                    onChange={(e) =>
+                      handleBatchDefaultChange('nsfwLevel', e.target.value)
+                    }
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  >
+                    {nsfwLevels.map((level) => (
+                      <option key={level} value={level}>
+                        {formatNsfwLabel(level)}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">{t('ingest.form.nsfwHelp')}</p>
                 </div>
               </div>
               <div>

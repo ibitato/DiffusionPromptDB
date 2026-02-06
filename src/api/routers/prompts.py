@@ -6,10 +6,10 @@ CRUD operations for original prompts.
 
 from datetime import datetime
 import json
+import logging
 import re
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, status
 from typing import List, Optional, Dict, Any, Sequence
-import sqlite3
 from pathlib import Path
 
 from ..models import (
@@ -33,21 +33,45 @@ from ..services.image_metadata import (
     extract_png_metadata,
 )
 from ..services.image_storage import ImageStorageError, save_image_and_thumbnail
+from ..db import DatabaseConnection, DatabaseError, get_prompts_db
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
+PROMPT_LIST_GROUP_FIELDS = [
+    "fp.id",
+    "fp.text",
+    "fp.model",
+    "fp.created_at",
+    "fp.updated_at",
+    "fp.created_by",
+    "fp.negative_prompt",
+    "fp.parameters",
+    "fp.image_path",
+    "fp.thumbnail_path",
+    "fp.rating",
+    "fp.notes",
+    "a.primary_style",
+    "fp.nsfw_level",
+]
 
-def get_prompts_db():
-    """Get database connection."""
-    db_path = Path(settings.prompts_db_path)
-    if not db_path.exists():
-        db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
+VALID_NSFW_LEVELS = frozenset({"safe", "suggestive", "explicit"})
+
+
+def _normalize_nsfw_level(value: Optional[str]) -> Optional[str]:
+    """Normalize nsfw level and validate against allowed values."""
+
+    if value is None:
+        return None
+    normalized = value.strip().lower()
+    if not normalized:
+        return None
+    if normalized not in VALID_NSFW_LEVELS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid nsfw_level. Allowed values: safe, suggestive, explicit.",
+        )
+    return normalized
 
 
 @router.get("/", response_model=PromptListResponse)
@@ -61,7 +85,7 @@ async def list_prompts(
     my_prompts: Optional[bool] = Query(
         None, description="Filter to only show user's own prompts"
     ),
-    db: sqlite3.Connection = Depends(get_prompts_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth_info: Optional[dict] = Depends(optional_auth),
 ):
     """
@@ -110,6 +134,7 @@ async def list_prompts(
     total = db.execute(count_query, filter_params).fetchone()[0]
 
     # Get results - map catalog fields to expected frontend fields
+    group_clause = ",\n            ".join(PROMPT_LIST_GROUP_FIELDS)
     query = f"""
         WITH filtered_prompts AS (
             SELECT 
@@ -124,8 +149,10 @@ async def list_prompts(
                 p.image_path,
                 p.thumbnail_path,
                 p.rating,
-                p.notes
+                p.notes,
+                nc.level as nsfw_level
             FROM prompts p
+            LEFT JOIN nsfw_content nc ON p.id = nc.prompt_id
             {where_clause}
             ORDER BY p.processed_at DESC
             LIMIT ? OFFSET ?
@@ -145,11 +172,13 @@ async def list_prompts(
             fp.thumbnail_path,
             GROUP_CONCAT(DISTINCT t.tag) as tags,
             fp.rating,
-            fp.notes
+            fp.notes,
+            fp.nsfw_level
         FROM filtered_prompts fp
         LEFT JOIN art_styles a ON fp.id = a.prompt_id
         LEFT JOIN main_tags t ON fp.id = t.prompt_id
-        GROUP BY fp.id
+        GROUP BY
+            {', '.join(PROMPT_LIST_GROUP_FIELDS)}
         ORDER BY fp.created_at DESC
     """
     params = filter_params + [page_size, offset]
@@ -167,7 +196,7 @@ async def list_prompts(
 
 @router.get("/models", response_model=PromptModelListResponse)
 async def list_user_models(
-    db: sqlite3.Connection = Depends(get_prompts_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth: dict = Depends(verify_token),
 ):
     """
@@ -182,7 +211,7 @@ async def list_user_models(
         WHERE created_by = ?
           AND model_used IS NOT NULL
           AND TRIM(model_used) != ''
-        ORDER BY LOWER(model_used)
+        ORDER BY model
         """,
         (user_id,),
     ).fetchall()
@@ -194,7 +223,7 @@ async def list_user_models(
 @router.get("/{prompt_id}", response_model=PromptResponse)
 async def get_prompt(
     prompt_id: int,
-    db: sqlite3.Connection = Depends(get_prompts_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     api_key: str = Depends(verify_api_key),
 ):
     """
@@ -213,7 +242,7 @@ async def get_prompt(
 @router.post("/", response_model=PromptResponse, status_code=201)
 async def create_prompt(
     prompt: PromptCreate,
-    db: sqlite3.Connection = Depends(get_prompts_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth: dict = Depends(verify_token),
 ):
     """
@@ -225,17 +254,15 @@ async def create_prompt(
     user_id = auth["user_id"]
     from datetime import datetime
 
-    next_id = _get_next_prompt_id(db)
-
     # Insert into prompts table (catalog schema) with created_by and new fields
-    db.execute(
+    cursor = db.execute(
         """
-        INSERT INTO prompts (id, original_prompt, processed_at, model_used, input_tokens, output_tokens, created_by, 
+        INSERT INTO prompts (original_prompt, processed_at, model_used, input_tokens, output_tokens, created_by, 
                            negative_prompt, parameters, rating, notes)
-        VALUES (?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, 0, 0, ?, ?, ?, ?, ?)
+        RETURNING id
     """,
         (
-            next_id,
             prompt.text,
             datetime.utcnow().isoformat(),
             prompt.model or "manual-entry",
@@ -246,6 +273,7 @@ async def create_prompt(
             prompt.notes,
         ),
     )
+    next_id = cursor.fetchone()["id"]
 
     # Insert basic categorization
     db.execute(
@@ -253,7 +281,8 @@ async def create_prompt(
         (next_id,),
     )
     db.execute(
-        "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, 'safe')", (next_id,)
+        "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, ?)",
+        (next_id, (prompt.nsfw_level or "safe").lower()),
     )
 
     # Handle art_style (using category field for backward compatibility)
@@ -303,7 +332,10 @@ async def ingest_prompts_from_images(
     notes: Optional[str] = Form(
         None, description="Additional notes stored with each prompt"
     ),
-    db: sqlite3.Connection = Depends(get_prompts_db),
+    nsfw_level: Optional[str] = Form(
+        None, description="NSFW level classification (safe, suggestive, explicit)"
+    ),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth: dict = Depends(verify_token),
 ):
     """
@@ -322,11 +354,13 @@ async def ingest_prompts_from_images(
             detail="Rating must be between 1 and 5.",
         )
 
+    nsfw_value = _normalize_nsfw_level(nsfw_level)
+
     user_id = auth.get("user_id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Authenticated user context required.")
 
-    user_defined_tags = _prepare_tags(db, tags)
+    user_defined_tags = _prepare_tags(tags)
     results: List[ImageIngestionResult] = []
     created = 0
 
@@ -376,9 +410,17 @@ async def ingest_prompts_from_images(
                 user_id=user_id,
                 image_path=image_path,
                 thumbnail_path=thumbnail_path,
+                nsfw_level=nsfw_value,
             )
             db.commit()
             created += 1
+            logger.info(
+                "Ingest success filename=%s prompt_id=%s user_id=%s model=%s",
+                filename,
+                prompt_id,
+                user_id,
+                model_name,
+            )
             results.append(
                 ImageIngestionResult(
                     filename=filename,
@@ -388,6 +430,12 @@ async def ingest_prompts_from_images(
                 )
             )
         except MetadataExtractionError as exc:
+            logger.warning(
+                "Ingest metadata failure filename=%s user_id=%s: %s",
+                filename,
+                user_id,
+                exc,
+            )
             results.append(
                 ImageIngestionResult(
                     filename=filename, status="failed", detail=str(exc), prompt_id=None
@@ -395,14 +443,26 @@ async def ingest_prompts_from_images(
             )
         except ImageStorageError as exc:
             _cleanup_files(saved_paths)
+            logger.warning(
+                "Ingest storage failure filename=%s user_id=%s: %s",
+                filename,
+                user_id,
+                exc,
+            )
             results.append(
                 ImageIngestionResult(
                     filename=filename, status="failed", detail=str(exc), prompt_id=None
                 )
             )
-        except sqlite3.Error as exc:
+        except DatabaseError as exc:
             db.rollback()
             _cleanup_files(saved_paths)
+            logger.warning(
+                "Ingest database failure filename=%s user_id=%s: %s",
+                filename,
+                user_id,
+                exc,
+            )
             results.append(
                 ImageIngestionResult(
                     filename=filename,
@@ -421,7 +481,7 @@ async def ingest_prompts_from_images(
 @router.post("/{prompt_id}/copy", response_model=PromptResponse, status_code=201)
 async def copy_prompt(
     prompt_id: int,
-    db: sqlite3.Connection = Depends(get_prompts_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth: dict = Depends(verify_token),
 ):
     """
@@ -442,11 +502,9 @@ async def copy_prompt(
     if not source:
         raise HTTPException(status_code=404, detail="Prompt not found")
 
-    next_id = _get_next_prompt_id(db)
-    db.execute(
+    cursor = db.execute(
         """
         INSERT INTO prompts (
-            id,
             original_prompt,
             processed_at,
             model_used,
@@ -460,10 +518,10 @@ async def copy_prompt(
             image_path,
             thumbnail_path
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        RETURNING id
     """,
         (
-            next_id,
             source["original_prompt"],
             datetime.utcnow().isoformat(),
             source["model_used"],
@@ -478,6 +536,7 @@ async def copy_prompt(
             source["thumbnail_path"],
         ),
     )
+    next_id = cursor.fetchone()["id"]
 
     _clone_related_rows(db, prompt_id, next_id)
     db.commit()
@@ -492,7 +551,7 @@ async def copy_prompt(
 async def update_prompt(
     prompt_id: int,
     prompt: PromptUpdate,
-    db: sqlite3.Connection = Depends(get_prompts_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth: dict = Depends(verify_token),
 ):
     """
@@ -542,6 +601,18 @@ async def update_prompt(
             "UPDATE prompts SET notes = ? WHERE id = ?",
             (prompt.notes, prompt_id),
         )
+
+    if prompt.nsfw_level is not None:
+        nsfw_value = (prompt.nsfw_level or "safe").lower()
+        cursor = db.execute(
+            "UPDATE nsfw_content SET level = ? WHERE prompt_id = ?",
+            (nsfw_value, prompt_id),
+        )
+        if cursor.rowcount == 0:
+            db.execute(
+                "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, ?)",
+                (prompt_id, nsfw_value),
+            )
 
     # Update art_style (using art_style field primarily, fallback to category)
     if prompt.art_style is not None or prompt.category is not None:
@@ -600,7 +671,19 @@ async def update_prompt(
         LEFT JOIN art_styles a ON p.id = a.prompt_id
         LEFT JOIN main_tags t ON p.id = t.prompt_id
         WHERE p.id = ?
-        GROUP BY p.id
+        GROUP BY
+            p.id,
+            p.original_prompt,
+            p.model_used,
+            p.processed_at,
+            p.created_by,
+            p.negative_prompt,
+            p.parameters,
+            p.image_path,
+            p.thumbnail_path,
+            p.rating,
+            p.notes,
+            a.primary_style
     """,
         (prompt_id,),
     ).fetchone()
@@ -649,7 +732,7 @@ ALLOWED_TABLES = frozenset(
 @router.delete("/{prompt_id}", status_code=204)
 async def delete_prompt(
     prompt_id: int,
-    db: sqlite3.Connection = Depends(get_prompts_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth: dict = Depends(verify_token),
 ):
     """
@@ -689,37 +772,66 @@ PROMPT_DETAILS_QUERY = """
             p.thumbnail_path,
             GROUP_CONCAT(DISTINCT t.tag) as tags,
             p.rating,
-            p.notes
+            p.notes,
+            nc.level as nsfw_level
         FROM prompts p
         LEFT JOIN art_styles a ON p.id = a.prompt_id
         LEFT JOIN main_tags t ON p.id = t.prompt_id
+        LEFT JOIN nsfw_content nc ON p.id = nc.prompt_id
         WHERE p.id = ?
-        GROUP BY p.id
+        GROUP BY
+            p.id,
+            p.original_prompt,
+            p.model_used,
+            p.processed_at,
+            p.created_by,
+            p.negative_prompt,
+            p.parameters,
+            p.image_path,
+            p.thumbnail_path,
+            p.rating,
+            p.notes,
+            a.primary_style,
+            nc.level
     """
 
 
-def _fetch_prompt_details(db: sqlite3.Connection, prompt_id: int) -> Optional[Dict[str, Any]]:
+def _fetch_prompt_details(db: DatabaseConnection, prompt_id: int) -> Optional[Dict[str, Any]]:
     row = db.execute(PROMPT_DETAILS_QUERY, (prompt_id,)).fetchone()
     return dict(row) if row else None
 
 
-def _get_next_prompt_id(db: sqlite3.Connection) -> int:
-    max_id = db.execute("SELECT MAX(id) FROM prompts").fetchone()[0]
-    return (max_id or 0) + 1
-
-
-def _tables_with_prompt_id(db: sqlite3.Connection) -> List[List[str]]:
-    tables = []
-    for (name,) in db.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-    ):
-        columns = [col[1] for col in db.execute(f"PRAGMA table_info('{name}')")]
-        if "prompt_id" in columns and name != "prompts":
-            tables.append((name, columns))
+def _tables_with_prompt_id(db: DatabaseConnection) -> List[List[str]]:
+    tables: List[List[str]] = []
+    rows = db.execute(
+        """
+        SELECT table_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND column_name = 'prompt_id'
+        ORDER BY table_name
+        """
+    ).fetchall()
+    for row in rows:
+        name = row["table_name"]
+        if name == "prompts":
+            continue
+        columns = db.execute(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = ?
+            ORDER BY ordinal_position
+            """,
+            (name,),
+        ).fetchall()
+        column_names = [col["column_name"] for col in columns]
+        tables.append((name, column_names))
     return tables
 
 
-def _clone_related_rows(db: sqlite3.Connection, source_id: int, target_id: int) -> None:
+def _clone_related_rows(db: DatabaseConnection, source_id: int, target_id: int) -> None:
     for table, columns in _tables_with_prompt_id(db):
         rows = db.execute(
             f"SELECT {', '.join(columns)} FROM {table} WHERE prompt_id = ?",
@@ -738,7 +850,7 @@ def _clone_related_rows(db: sqlite3.Connection, source_id: int, target_id: int) 
             )
 
 
-def _prepare_tags(db: sqlite3.Connection, tags_csv: Optional[str]) -> List[str]:
+def _prepare_tags(tags_csv: Optional[str]) -> List[str]:
     """Normalize user-provided tags without enforcing catalog existence."""
 
     raw_tags: List[str] = []
@@ -761,7 +873,7 @@ def _prepare_tags(db: sqlite3.Connection, tags_csv: Optional[str]) -> List[str]:
 
 def _insert_ingested_prompt(
     *,
-    db: sqlite3.Connection,
+    db: DatabaseConnection,
     text: str,
     negative_prompt: Optional[str],
     model: str,
@@ -773,17 +885,16 @@ def _insert_ingested_prompt(
     user_id: int,
     image_path: Optional[str],
     thumbnail_path: str,
+    nsfw_level: Optional[str],
 ) -> int:
     """Persist a prompt and its related rows."""
 
     prompt_text = text.strip() or "Imported prompt"
-    prompt_id = _get_next_prompt_id(db)
     processed_at = datetime.utcnow().isoformat()
 
-    db.execute(
+    cursor = db.execute(
         """
         INSERT INTO prompts (
-            id,
             original_prompt,
             processed_at,
             model_used,
@@ -797,10 +908,10 @@ def _insert_ingested_prompt(
             image_path,
             thumbnail_path
         )
-        VALUES (?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?)
+        RETURNING id
     """,
         (
-            prompt_id,
             prompt_text,
             processed_at,
             model,
@@ -813,14 +924,15 @@ def _insert_ingested_prompt(
             thumbnail_path,
         ),
     )
+    prompt_id = cursor.fetchone()["id"]
 
     db.execute(
         "INSERT INTO characters (prompt_id, number_of_people, breast_size) VALUES (?, 1, 'unspecified')",
         (prompt_id,),
     )
     db.execute(
-        "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, 'safe')",
-        (prompt_id,),
+        "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, ?)",
+        (prompt_id, (nsfw_level or "safe").lower()),
     )
 
     if art_style:
@@ -899,7 +1011,7 @@ ART_STYLE_KEYWORDS = [
 MAX_INFERRED_TAGS = 25
 
 
-def _infer_tags_from_prompt(prompt_text: str, db: sqlite3.Connection) -> List[str]:
+def _infer_tags_from_prompt(prompt_text: str, db: DatabaseConnection) -> List[str]:
     candidates = _extract_candidate_tags(prompt_text or "")
     if not candidates:
         return []
@@ -933,7 +1045,7 @@ def _extract_candidate_tags(prompt_text: str) -> List[str]:
     return candidates[:60]
 
 
-def _match_existing_tags(db: sqlite3.Connection, candidates: List[str]) -> List[str]:
+def _match_existing_tags(db: DatabaseConnection, candidates: List[str]) -> List[str]:
     if not candidates:
         return []
     placeholders = ", ".join("?" * len(candidates))

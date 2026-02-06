@@ -34,6 +34,8 @@ export const PromptDetailModal = ({
 }: PromptDetailModalProps) => {
   const { t } = useTranslation();
   const toast = useToast();
+  const formatNsfwLabel = (level: string) =>
+    level.charAt(0).toUpperCase() + level.slice(1);
   if (!prompt) return null;
   const thumbnailUrl = buildMediaUrl(prompt.thumbnail_path);
 
@@ -111,6 +113,16 @@ export const PromptDetailModal = ({
                   </svg>
                 ))}
               </motion.div>
+            )}
+            {prompt.nsfw_level && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="px-3 py-1 bg-red-600/20 text-red-300 rounded-full text-sm font-medium flex items-center gap-2"
+              >
+                🔞 {t('promptDetail.labels.nsfwLevel')}: {formatNsfwLabel(prompt.nsfw_level)}
+              </motion.span>
             )}
             {canCopy && onCopy && (
               <button

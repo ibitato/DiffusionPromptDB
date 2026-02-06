@@ -5,7 +5,6 @@ Endpoints for managing user preferences.
 """
 
 from fastapi import APIRouter, Depends, HTTPException
-import sqlite3
 import json
 
 from ..auth import verify_token
@@ -13,14 +12,14 @@ from ..models.user_preferences_models import (
     UserPreferencesResponse,
     UserPreferencesUpdate,
 )
-from ..db import get_users_db
+from ..db import DatabaseConnection, get_users_db
 
 router = APIRouter()
 
 
 @router.get("/preferences", response_model=UserPreferencesResponse)
 async def get_preferences(
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
     auth: dict = Depends(verify_token),
 ):
     """
@@ -76,7 +75,7 @@ async def get_preferences(
 @router.put("/preferences", response_model=UserPreferencesResponse)
 async def update_preferences(
     preferences: UserPreferencesUpdate,
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
     auth: dict = Depends(verify_token),
 ):
     """

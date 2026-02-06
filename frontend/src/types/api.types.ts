@@ -24,6 +24,8 @@ export interface ApiError {
   status?: number;
 }
 
+export type NSFWLevel = 'safe' | 'suggestive' | 'explicit';
+
 // Auth Types
 export interface LoginRequest {
   username: string;
@@ -93,6 +95,7 @@ export interface Prompt {
   art_style?: string; // Art style from catalog
   rating?: number;
   notes?: string;
+  nsfw_level?: NSFWLevel;
   created_at: string;
   updated_at: string;
   created_by?: number | null; // NULL = preloaded, number = user_id
@@ -110,6 +113,7 @@ export interface CreatePromptRequest {
   art_style?: string;
   rating?: number;
   notes?: string;
+  nsfw_level?: NSFWLevel;
 }
 
 export interface UpdatePromptRequest extends CreatePromptRequest {

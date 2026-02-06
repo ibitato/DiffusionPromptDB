@@ -233,6 +233,9 @@
       "modelLoading": "Modelle werden geladen…",
       "modelEmpty": "Noch keine Modelle gefunden"
     },
+    "labels": {
+      "nsfw": "NSFW"
+    },
     "thumbnail": {
       "label": "Miniaturansicht",
       "alt": "Miniatur für Prompt #{{id}}"
@@ -257,6 +260,7 @@
       "tagsPlaceholder": "Tag1, Tag2, Tag3",
       "tagsHelp": "Tags mit Kommas trennen",
       "rating": "Bewertung",
+      "nsfwLevel": "NSFW-Stufe",
       "parameters": "Parameter",
       "parametersPlaceholder": "Generierungsparameter (JSON-Format)...",
       "notes": "Notizen",
@@ -264,7 +268,8 @@
     },
     "validation": {
       "artStyleRequired": "Bitte einen Kunststil auswählen",
-      "artStyleInvalid": "Wähle einen der verfügbaren Kunststile"
+      "artStyleInvalid": "Wähle einen der verfügbaren Kunststile",
+      "nsfwRequired": "Wähle eine NSFW-Stufe"
     },
     "actions": {
       "cancel": "Abbrechen",
@@ -288,6 +293,9 @@
       "tags": "Tags",
       "parameters": "Parameter",
       "notes": "Notizen"
+    },
+    "labels": {
+      "nsfwLevel": "NSFW-Stufe"
     },
     "metadata": {
       "created": "Erstellt",
@@ -446,6 +454,8 @@
       "artStylePlaceholder": "z. B. realistisch",
       "rating": "Bewertung",
       "ratingPlaceholder": "Keine Bewertung",
+      "nsfwLevel": "NSFW-Stufe",
+      "nsfwHelp": "Klassifiziere den Inhalt: safe, suggestive oder explicit.",
       "notes": "Notizen",
       "notesPlaceholder": "Optionale Notizen, die beim Prompt gespeichert werden",
       "helper": "Maximal {{max}} PNG-Dateien pro Stapel."
@@ -472,7 +482,8 @@
     "errors": {
       "maxFiles": "Es können höchstens {{max}} Bilder pro Stapel hochgeladen werden.",
       "selectFiles": "Füge mindestens ein PNG hinzu, bevor du startest.",
-      "generic": "Import fehlgeschlagen. Bitte erneut versuchen."
+      "generic": "Import fehlgeschlagen. Bitte erneut versuchen.",
+      "nsfwRequired": "Wähle für jedes Bild eine NSFW-Stufe."
     },
     "messages": {
       "completed": "Import abgeschlossen: {{created}} erstellt, {{failed}} fehlgeschlagen."

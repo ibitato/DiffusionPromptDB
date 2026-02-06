@@ -1,3 +1,2 @@
 # Production dependencies
-# (None currently - SQLite is built into Python)
-# Add dependencies here as needed
+psycopg[binary,pool]>=3.2

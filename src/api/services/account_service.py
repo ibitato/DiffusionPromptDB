@@ -6,18 +6,17 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
-import sqlite3
 
 from fastapi import HTTPException, status
 
-from ..db import get_prompts_db_connection
+from ..db import DatabaseConnection, get_prompts_db_connection
 
 DUMP_DIR = Path(__file__).resolve().parents[2] / "data" / "account_dumps"
 
 
 def dump_user_snapshot(
     user: Dict[str, Any],
-    users_db: sqlite3.Connection,
+    users_db: DatabaseConnection,
 ) -> str:
     """Persist user data prior to deletion."""
     DUMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -49,7 +48,7 @@ def dump_user_snapshot(
 
 def delete_user_account(
     user: Dict[str, Any],
-    users_db: sqlite3.Connection,
+    users_db: DatabaseConnection,
     reason: str = "",
 ):
     """Remove user and related data after dumping snapshot."""

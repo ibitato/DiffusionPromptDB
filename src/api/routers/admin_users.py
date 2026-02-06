@@ -2,13 +2,16 @@
 Administrative endpoints for managing users.
 """
 
-import sqlite3
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from ..auth import verify_admin
-from ..db import get_users_db
+from ..db import (
+    DatabaseConnection,
+    IntegrityConstraintError,
+    get_users_db,
+)
 from ..models.admin_user_models import (
     AdminUserCreate,
     AdminUserListResponse,
@@ -24,7 +27,7 @@ router = APIRouter()
 @router.get("/users", response_model=AdminUserListResponse)
 async def list_users(
     auth: dict = Depends(verify_admin),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     users = user_service.list_users(db)
     return {"users": users}
@@ -34,7 +37,7 @@ async def list_users(
 async def create_user(
     payload: AdminUserCreate,
     auth: dict = Depends(verify_admin),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     user_service.enforce_password_policy(payload.password)
     hashed = user_service.hash_password(payload.password)
@@ -43,6 +46,7 @@ async def create_user(
             """
             INSERT INTO users (username, email, role, full_name, password_hash, password_last_changed)
             VALUES (?, ?, ?, ?, ?, ?)
+            RETURNING id
             """,
             (
                 payload.username,
@@ -53,9 +57,9 @@ async def create_user(
                 datetime.utcnow().isoformat(),
             ),
         )
-    except sqlite3.IntegrityError as exc:
+        user_id = cursor.fetchone()["id"]
+    except IntegrityConstraintError as exc:
         raise HTTPException(status_code=400, detail="Username or email already exists") from exc
-    user_id = cursor.lastrowid
     db.execute(
         "INSERT INTO user_password_history (user_id, password_hash, changed_at) VALUES (?, ?, ?)",
         (user_id, hashed, datetime.utcnow().isoformat()),
@@ -70,7 +74,7 @@ async def update_user(
     user_id: int,
     payload: AdminUserUpdate,
     auth: dict = Depends(verify_admin),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     user = user_service.get_user_by_id(db, user_id)
     if not user:
@@ -105,7 +109,7 @@ async def admin_reset_password(
     user_id: int,
     payload: AdminResetPasswordRequest,
     auth: dict = Depends(verify_admin),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     user = user_service.get_user_by_id(db, user_id)
     if not user:
@@ -118,7 +122,7 @@ async def admin_reset_password(
 async def delete_user_account(
     user_id: int,
     auth: dict = Depends(verify_admin),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     user = user_service.get_user_by_id(db, user_id)
     if not user:

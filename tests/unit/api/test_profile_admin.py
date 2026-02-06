@@ -5,11 +5,13 @@ Tests for profile and admin user endpoints.
 from __future__ import annotations
 
 import json
-import sqlite3
 import sys
+import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import psycopg
+from psycopg import conninfo, sql
 import pytest
 from fastapi.testclient import TestClient
 
@@ -22,138 +24,74 @@ from api.services import user_service, account_service
 from api.auth import create_access_token
 
 
-def _create_users_db(path: Path):
-    conn = sqlite3.connect(path)
-    cursor = conn.cursor()
-    cursor.executescript(
-        """
-        CREATE TABLE users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            role TEXT CHECK(role IN ('admin','user')) DEFAULT 'user',
-            full_name TEXT,
-            avatar_url TEXT,
-            location TEXT,
-            language TEXT DEFAULT 'en',
-            default_landing_page TEXT DEFAULT 'dashboard',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            last_login TIMESTAMP,
-            is_active BOOLEAN DEFAULT 1,
-            must_change_password BOOLEAN DEFAULT 0,
-            password_last_changed TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+def _create_test_database() -> tuple[str, str, str]:
+    """Create a dedicated PostgreSQL database cloned from the empty template."""
+    base = conninfo.conninfo_to_dict(settings.prompts_db_url)
+    admin_params = base.copy()
+    admin_params["dbname"] = "postgres"
+    admin_conn_str = conninfo.make_conninfo(**admin_params)
 
-        CREATE TABLE user_preferences (
-            user_id INTEGER PRIMARY KEY,
-            show_unspecified BOOLEAN DEFAULT 1,
-            my_prompts_only BOOLEAN DEFAULT 0,
-            excluded_tags TEXT DEFAULT '["high quality","masterpiece","best quality"]',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
+    db_name = f"dpdb_test_{uuid.uuid4().hex}"
+    with psycopg.connect(admin_conn_str) as admin_conn:
+        admin_conn.autocommit = True
+        admin_conn.execute(
+            sql.SQL("CREATE DATABASE {} TEMPLATE diffusion_promptdb_test").format(
+                sql.Identifier(db_name)
+            )
+        )
 
-        CREATE TABLE user_password_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            password_hash TEXT NOT NULL,
-            changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-
-        CREATE TABLE account_deletion_audit (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            username TEXT,
-            email TEXT,
-            deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            dump_path TEXT,
-            reason TEXT
-        );
-
-        CREATE TABLE user_verification_tokens (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            token_hash TEXT NOT NULL UNIQUE,
-            expires_at TIMESTAMP NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-        """
-    )
-    conn.commit()
-    conn.close()
+    test_params = base.copy()
+    test_params["dbname"] = db_name
+    test_url = conninfo.make_conninfo(**test_params)
+    return db_name, admin_conn_str, test_url
 
 
-def _create_prompts_db(path: Path):
-    conn = sqlite3.connect(path)
-    cursor = conn.cursor()
-    cursor.executescript(
-        """
-        CREATE TABLE prompts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            original_prompt TEXT,
-            processed_at TIMESTAMP,
-            model_used TEXT,
-            created_by INTEGER,
-            negative_prompt TEXT,
-            parameters TEXT,
-            rating INTEGER,
-            notes TEXT,
-            input_tokens INTEGER DEFAULT 0,
-            output_tokens INTEGER DEFAULT 0
-        );
-
-        CREATE TABLE art_styles (
-            prompt_id INTEGER,
-            primary_style TEXT
-        );
-
-        CREATE TABLE nsfw_content (
-            prompt_id INTEGER,
-            level TEXT
-        );
-
-        CREATE TABLE main_tags (
-            prompt_id INTEGER,
-            tag TEXT
-        );
-
-        CREATE TABLE characters (
-            prompt_id INTEGER,
-            number_of_people INTEGER
-        );
-        """
-    )
-    conn.commit()
-    conn.close()
+def _drop_test_database(db_name: str, admin_conn_str: str) -> None:
+    with psycopg.connect(admin_conn_str) as admin_conn:
+        admin_conn.autocommit = True
+        admin_conn.execute(
+            """
+            SELECT pg_terminate_backend(pid)
+            FROM pg_stat_activity
+            WHERE datname = %s AND pid <> pg_backend_pid()
+            """,
+            (db_name,),
+        )
+        admin_conn.execute(
+            sql.SQL("DROP DATABASE IF EXISTS {}").format(sql.Identifier(db_name))
+        )
 
 
-def _seed_user(db_path: Path, username: str, password: str, role: str = "user") -> int:
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+def _seed_user(db_url: str, username: str, password: str, role: str = "user") -> int:
     hashed = user_service.hash_password(password)
     now = datetime.utcnow().isoformat()
-    cursor.execute(
-        """
-        INSERT INTO users (username, email, password_hash, role, password_last_changed)
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (username, f"{username}@example.com", hashed, role, now),
-    )
-    user_id = cursor.lastrowid
-    cursor.execute(
-        """
-        INSERT INTO user_password_history (user_id, password_hash, changed_at)
-        VALUES (?, ?, ?)
-        """,
-        (user_id, hashed, now),
-    )
-    cursor.execute("INSERT INTO user_preferences (user_id) VALUES (?)", (user_id,))
-    conn.commit()
-    conn.close()
+    with psycopg.connect(db_url) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO users (username, email, password_hash, role, password_last_changed, is_active)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING id
+                """,
+                (username, f"{username}@example.com", hashed, role, now, True),
+            )
+            user_id = cur.fetchone()[0]
+            cur.execute(
+                """
+                INSERT INTO user_password_history (user_id, password_hash, changed_at)
+                VALUES (%s, %s, %s)
+                """,
+                (user_id, hashed, now),
+            )
+            cur.execute(
+                """
+                INSERT INTO user_preferences (user_id)
+                VALUES (%s)
+                ON CONFLICT (user_id) DO NOTHING
+                """,
+                (user_id,),
+            )
+        conn.commit()
     return user_id
 
 
@@ -170,21 +108,21 @@ def _manual_token(username: str, user_id: int, role: str) -> str:
 
 @pytest.fixture()
 def api_client(tmp_path, monkeypatch):
-    users_db = tmp_path / "users.db"
-    prompts_db = tmp_path / "prompts.db"
-    _create_users_db(users_db)
-    _create_prompts_db(prompts_db)
-
-    monkeypatch.setattr(settings, "users_db_path", str(users_db))
-    monkeypatch.setattr(settings, "prompts_db_path", str(prompts_db))
-    monkeypatch.setattr(settings, "catalog_db_path", str(prompts_db))
+    db_name, admin_conn_str, test_url = _create_test_database()
+    monkeypatch.setattr(settings, "users_db_url", test_url)
+    monkeypatch.setattr(settings, "prompts_db_url", test_url)
+    monkeypatch.setattr(settings, "email_debug_mode", True)
     account_service.DUMP_DIR = tmp_path / "account_dumps"
+    account_service.DUMP_DIR.mkdir(parents=True, exist_ok=True)
 
-    admin_id = _seed_user(users_db, "admin", "REDACTED_PASSWORD", role="admin")
-    user_id = _seed_user(users_db, "tester", "testpass", role="user")
+    admin_id = _seed_user(test_url, "admin", "REDACTED_PASSWORD", role="admin")
+    user_id = _seed_user(test_url, "tester", "testpass", role="user")
 
     client = TestClient(app)
-    yield client, users_db, prompts_db, admin_id, user_id
+    try:
+        yield client, test_url, test_url, admin_id, user_id
+    finally:
+        _drop_test_database(db_name, admin_conn_str)
 
 
 def _login(client: TestClient, username: str, password: str) -> str:
@@ -245,16 +183,16 @@ class TestProfileEndpoints:
         client, users_db, prompts_db, _, _ = api_client
 
         victim_id = _seed_user(users_db, "deleteme", "delete123", role="user")
-        conn = sqlite3.connect(prompts_db)
-        conn.execute(
-            """
-            INSERT INTO prompts (original_prompt, processed_at, model_used, created_by)
-            VALUES ('test prompt', ?, 'manual', ?)
-            """,
-            (datetime.utcnow().isoformat(), victim_id),
-        )
-        conn.commit()
-        conn.close()
+        with psycopg.connect(prompts_db) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO prompts (original_prompt, processed_at, model_used, created_by, input_tokens, output_tokens)
+                    VALUES (%s, %s, %s, %s, 0, 0)
+                    """,
+                    ("test prompt", datetime.utcnow().isoformat(), "manual", victim_id),
+                )
+            conn.commit()
 
         token = _manual_token("deleteme", victim_id, "user")
         delete_resp = client.request(
@@ -265,15 +203,14 @@ class TestProfileEndpoints:
         )
         assert delete_resp.status_code == 200, delete_resp.text
 
-        conn = sqlite3.connect(users_db)
-        assert (
-            conn.execute(
-                "SELECT COUNT(*) FROM users WHERE username='deleteme'"
-            ).fetchone()[0]
-            == 0
-        )
-        audit = conn.execute("SELECT dump_path FROM account_deletion_audit").fetchone()
-        conn.close()
+        with psycopg.connect(users_db) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT COUNT(*) FROM users WHERE username=%s", ("deleteme",)
+                )
+                assert cur.fetchone()[0] == 0
+                cur.execute("SELECT dump_path FROM account_deletion_audit")
+                audit = cur.fetchone()
         assert audit is not None
         assert Path(audit[0]).exists()
 
@@ -320,11 +257,12 @@ class TestAdminUsers:
             headers=headers,
         )
 
-        conn = sqlite3.connect(users_db)
-        stored_hash = conn.execute(
-            "SELECT password_hash FROM users WHERE id=?", (user_id,)
-        ).fetchone()[0]
-        conn.close()
+        with psycopg.connect(users_db) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT password_hash FROM users WHERE id=%s", (user_id,)
+                )
+                stored_hash = cur.fetchone()[0]
         assert user_service.verify_password("AnotherPass!9", stored_hash)
 
         delete_resp = client.delete(
@@ -338,10 +276,13 @@ class TestAuthPasswordExpiry:
     def test_expired_password_flow(self, api_client):
         client, users_db, _, _, user_id = api_client
 
-        conn = sqlite3.connect(users_db)
-        conn.execute("UPDATE users SET must_change_password=1 WHERE id=?", (user_id,))
-        conn.commit()
-        conn.close()
+        with psycopg.connect(users_db) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE users SET must_change_password=%s WHERE id=%s",
+                    (True, user_id),
+                )
+            conn.commit()
 
         login_resp = client.post(
             "/api/v1/auth/login", json={"username": "tester", "password": "testpass"}
@@ -375,56 +316,56 @@ class TestDashboardStats:
     def test_my_prompts_statistics_filtered(self, api_client):
         client, _, prompts_db, _, user_id = api_client
 
-        conn = sqlite3.connect(prompts_db)
-        now = datetime.utcnow().isoformat()
-        conn.execute(
-            """
-            INSERT INTO prompts (id, original_prompt, processed_at, model_used, created_by)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (101, "User prompt", now, "sd15", user_id),
-        )
-        conn.execute(
-            """
-            INSERT INTO prompts (id, original_prompt, processed_at, model_used, created_by)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (202, "Global prompt", now, "sdxl", None),
-        )
-        conn.execute(
-            "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, ?)",
-            (101, "safe"),
-        )
-        conn.execute(
-            "INSERT INTO nsfw_content (prompt_id, level) VALUES (?, ?)",
-            (202, "explicit"),
-        )
-        conn.execute(
-            "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
-            (101, "forest"),
-        )
-        conn.execute(
-            "INSERT INTO main_tags (prompt_id, tag) VALUES (?, ?)",
-            (202, "city"),
-        )
-        conn.execute(
-            "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
-            (101, "anime"),
-        )
-        conn.execute(
-            "INSERT INTO art_styles (prompt_id, primary_style) VALUES (?, ?)",
-            (202, "realistic"),
-        )
-        conn.execute(
-            "INSERT INTO characters (prompt_id, number_of_people) VALUES (?, ?)",
-            (101, 1),
-        )
-        conn.execute(
-            "INSERT INTO characters (prompt_id, number_of_people) VALUES (?, ?)",
-            (202, 2),
-        )
-        conn.commit()
-        conn.close()
+        with psycopg.connect(prompts_db) as conn:
+            now = datetime.utcnow().isoformat()
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO prompts (id, original_prompt, processed_at, model_used, created_by, input_tokens, output_tokens)
+                    VALUES (%s, %s, %s, %s, %s, 0, 0)
+                    """,
+                    (101, "User prompt", now, "sd15", user_id),
+                )
+                cur.execute(
+                    """
+                    INSERT INTO prompts (id, original_prompt, processed_at, model_used, created_by, input_tokens, output_tokens)
+                    VALUES (%s, %s, %s, %s, %s, 0, 0)
+                    """,
+                    (202, "Global prompt", now, "sdxl", None),
+                )
+                cur.execute(
+                    "INSERT INTO nsfw_content (prompt_id, level) VALUES (%s, %s)",
+                    (101, "safe"),
+                )
+                cur.execute(
+                    "INSERT INTO nsfw_content (prompt_id, level) VALUES (%s, %s)",
+                    (202, "explicit"),
+                )
+                cur.execute(
+                    "INSERT INTO main_tags (prompt_id, tag) VALUES (%s, %s)",
+                    (101, "forest"),
+                )
+                cur.execute(
+                    "INSERT INTO main_tags (prompt_id, tag) VALUES (%s, %s)",
+                    (202, "city"),
+                )
+                cur.execute(
+                    "INSERT INTO art_styles (prompt_id, primary_style) VALUES (%s, %s)",
+                    (101, "anime"),
+                )
+                cur.execute(
+                    "INSERT INTO art_styles (prompt_id, primary_style) VALUES (%s, %s)",
+                    (202, "realistic"),
+                )
+                cur.execute(
+                    "INSERT INTO characters (prompt_id, number_of_people) VALUES (%s, %s)",
+                    (101, 1),
+                )
+                cur.execute(
+                    "INSERT INTO characters (prompt_id, number_of_people) VALUES (%s, %s)",
+                    (202, 2),
+                )
+            conn.commit()
 
         token = _manual_token("tester", user_id, "user")
         filtered = client.get(

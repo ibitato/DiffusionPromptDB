@@ -56,10 +56,22 @@ source .venv/bin/activate
 python --version  # Should show Python 3.8+
 which python     # Should point to .venv/
 
-# Seed local sqlite databases the first time
-python src/api/init_users_db.py
-python src/api/init_preferences_table.py
+# Bootstrap PostgreSQL the first time (see README for full context)
+sudo apt-get install -y postgresql postgresql-contrib postgresql-client libpq-dev pgloader
+sudo -u postgres psql -c "CREATE ROLE diffusion_app LOGIN PASSWORD '<strong-password>' INHERIT CREATEDB;"
+sudo -u postgres psql -c "CREATE DATABASE diffusion_promptdb OWNER diffusion_app;"
+sudo -u postgres psql -c "CREATE DATABASE diffusion_promptdb_test OWNER diffusion_app;"
+PGPASSWORD='<strong-password>' pgloader \
+  sqlite:///$(pwd)/database/prompts_catalog.db \
+  postgresql://diffusion_app:<strong-password>@127.0.0.1:5432/diffusion_promptdb
+PGPASSWORD='<strong-password>' pgloader \
+  sqlite:///$(pwd)/data/users.db \
+  postgresql://diffusion_app:<strong-password>@127.0.0.1:5432/diffusion_promptdb
+PGPASSWORD='<strong-password>' psql -h 127.0.0.1 -U diffusion_app \
+  -d diffusion_promptdb_test -f database/postgres/schema.sql
 ```
+
+> **Legacy note:** the old SQLite helper scripts remain in `src/api/` for historical reference. Production and development now use PostgreSQL exclusively via the `PROMPTS_DB_URL`/`USERS_DB_URL` environment variables.
 
 ### 2. Dependencies Management
 

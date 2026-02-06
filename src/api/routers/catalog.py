@@ -5,13 +5,11 @@ Read operations for cataloged prompts.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-import sqlite3
-from pathlib import Path
 import json
 
 from ..models import CatalogResponse
 from ..auth import verify_api_key
-from ..config import settings
+from ..db import DatabaseConnection, get_prompts_db
 
 router = APIRouter()
 
@@ -36,23 +34,10 @@ def escape_like_pattern(text: str) -> str:
     return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
-def get_catalog_db():
-    """Get catalog database connection."""
-    db_path = Path(settings.catalog_db_path)
-    if not db_path.exists():
-        raise HTTPException(status_code=503, detail="Catalog database not available")
-    conn = sqlite3.connect(db_path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
-
-
 @router.get("/{prompt_id}")
 async def get_cataloged_prompt(
     prompt_id: int,
-    db: sqlite3.Connection = Depends(get_catalog_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     api_key: str = Depends(verify_api_key),
 ):
     """
@@ -96,7 +81,7 @@ async def get_cataloged_prompt(
 async def search_by_nsfw(
     level: str,
     limit: int = Query(20, ge=1, le=100),
-    db: sqlite3.Connection = Depends(get_catalog_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     api_key: str = Depends(verify_api_key),
 ):
     """
@@ -122,7 +107,7 @@ async def search_by_nsfw(
 async def search_by_style(
     style: str,
     limit: int = Query(20, ge=1, le=100),
-    db: sqlite3.Connection = Depends(get_catalog_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     api_key: str = Depends(verify_api_key),
 ):
     """

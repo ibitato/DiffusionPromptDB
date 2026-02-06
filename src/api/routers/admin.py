@@ -5,11 +5,10 @@ Administrative and statistics endpoints.
 """
 
 from fastapi import APIRouter, Depends, HTTPException
-import sqlite3
 from datetime import datetime
 
 from ..auth import optional_auth, verify_token
-from .catalog import get_catalog_db
+from ..db import DatabaseConnection, get_prompts_db
 
 router = APIRouter()
 
@@ -29,7 +28,7 @@ async def health_check(auth: dict = Depends(optional_auth)):
 @router.get("/stats")
 async def get_statistics(
     my_prompts_only: bool = False,
-    db: sqlite3.Connection = Depends(get_catalog_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth: dict = Depends(verify_token),
 ):
     """
@@ -186,7 +185,7 @@ async def get_statistics(
 
 @router.get("/filters")
 async def get_filters(
-    db: sqlite3.Connection = Depends(get_catalog_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     _auth: dict = Depends(verify_token),
 ):
     """

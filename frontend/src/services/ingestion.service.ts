@@ -2,6 +2,7 @@ import api, { handleApiError } from './api';
 import {
   BatchImageIngestionResponse,
   ImageIngestionResult,
+  NSFWLevel,
 } from '../types/api.types';
 
 export interface IngestionFilePayload {
@@ -11,6 +12,7 @@ export interface IngestionFilePayload {
   category?: string;
   artStyle?: string;
   rating?: number;
+  nsfwLevel?: NSFWLevel;
   notes?: string;
 }
 
@@ -38,6 +40,7 @@ export const ingestionService = {
       if (typeof item.rating === 'number') {
         formData.append('rating', item.rating.toString());
       }
+      if (item.nsfwLevel) formData.append('nsfw_level', item.nsfwLevel);
       if (item.notes) formData.append('notes', item.notes);
 
       try {

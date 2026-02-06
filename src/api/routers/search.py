@@ -4,15 +4,12 @@ Search Router
 Advanced search operations across catalog.
 """
 
-from fastapi import APIRouter, Depends, Query
-import sqlite3
-from pathlib import Path
+from fastapi import APIRouter, Depends, Query, Header
 from typing import Optional
 
 from ..auth import optional_auth, verify_api_key
-from fastapi import Header
 from ..config import settings
-from .catalog import get_catalog_db
+from ..db import DatabaseConnection, get_prompts_db
 
 router = APIRouter()
 
@@ -53,7 +50,7 @@ async def complex_search(
     ),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    db: sqlite3.Connection = Depends(get_catalog_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     auth_info: Optional[dict] = Depends(optional_auth),
 ):
     """
@@ -187,7 +184,7 @@ async def search_by_tag(
     tag: str,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    db: sqlite3.Connection = Depends(get_catalog_db),
+    db: DatabaseConnection = Depends(get_prompts_db),
     api_key: str = Depends(verify_api_key),
 ):
     """

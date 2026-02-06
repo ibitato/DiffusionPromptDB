@@ -14,10 +14,21 @@ import { useToast } from '../hooks/useToast';
 import { useAuthStore } from '../store/authStore';
 import { promptsService } from '../services/prompts.service';
 import { preferencesService } from '../services/preferences.service';
-import { Prompt, CreatePromptRequest } from '../types/api.types';
+import { Prompt, CreatePromptRequest, NSFWLevel } from '../types/api.types';
 import { exportToCSV, exportToJSON, getExportFilename } from '../utils/exportPrompts';
 import { logError, logDebug } from '../utils/logger';
 import { buildMediaUrl } from '../services/api';
+
+const PAGE_SIZE = 20;
+const NSFW_BADGE_STYLES: Record<NSFWLevel, string> = {
+  explicit: 'bg-red-600/20 text-red-300',
+  suggestive: 'bg-yellow-600/20 text-yellow-300',
+  safe: 'bg-emerald-600/20 text-emerald-300',
+};
+const formatNsfwLabel = (level: string) =>
+  level.charAt(0).toUpperCase() + level.slice(1);
+const getNsfwBadgeClass = (level: string) =>
+  NSFW_BADGE_STYLES[(level as NSFWLevel) || 'safe'] ?? 'bg-slate-700 text-gray-200';
 
 export const PromptsPage = () => {
   const { t } = useTranslation();
@@ -31,7 +42,6 @@ export const PromptsPage = () => {
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [isModelsLoading, setIsModelsLoading] = useState(false);
-  const pageSize = 20;
 
   const isAdmin = user?.role === 'admin';
 
@@ -74,7 +84,7 @@ export const PromptsPage = () => {
         myPromptsOnly && selectedModel ? selectedModel : undefined;
       const data = await promptsService.getPrompts(
         currentPage,
-        pageSize,
+        PAGE_SIZE,
         myPromptsOnly,
         modelFilter
       );
@@ -234,7 +244,7 @@ export const PromptsPage = () => {
     }
   };
 
-  const totalPages = Math.ceil(totalPrompts / pageSize);
+  const totalPages = Math.ceil(totalPrompts / PAGE_SIZE);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -459,6 +469,15 @@ export const PromptsPage = () => {
                                 </svg>
                               ))}
                             </div>
+                          )}
+                          {prompt.nsfw_level && (
+                            <span
+                              className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 ${getNsfwBadgeClass(
+                                prompt.nsfw_level
+                              )}`}
+                            >
+                              🔞 {t('prompts.labels.nsfw')}: {formatNsfwLabel(prompt.nsfw_level)}
+                            </span>
                           )}
                         </div>
                         <p className="text-gray-300 leading-relaxed">{truncateText(prompt.text)}</p>

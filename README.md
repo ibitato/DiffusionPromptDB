@@ -1,14 +1,14 @@
 # DiffusionPromptDB
 
-SQLite database for Stability Diffusion Prompts
+PostgreSQL database for Stability Diffusion Prompts
 
 **Author**: ibitato (REDACTED_EMAIL)  
 **License**: Apache 2.0
 
 ## Features
 
-- 🗄️ **SQLite Database**: Lightweight, serverless, portable database
-- 📦 **Self-Contained**: All dependencies included, no external services required
+- 🗄️ **PostgreSQL Database**: Multi-user ready, pooled connections, tuned for 10k+ prompts
+- 📦 **Self-Contained App**: Everything runs locally once PostgreSQL is installed
 - 🐍 **Python 3.8+**: Modern Python with type hints and dataclasses
 - 🔧 **CLI Interface**: Easy-to-use command-line interface
 - 🧪 **Tested**: Unit tests with pytest
@@ -73,16 +73,52 @@ python run_analysis.py --dry-run
 - Result: 10,334 prompts successfully cataloged (99.5% success rate)
 - Recommended for best accuracy and structure compliance
 
-### 2️⃣ SQLite Catalog Database
+### 2️⃣ PostgreSQL Catalog Database
 
-**Unified database with 10,388 pre-cataloged prompts.**
+**Unified PostgreSQL database seeded with 10,388 pre-cataloged prompts.**
 
-- **Location**: `src/api/database/prompts_catalog.db` (centralized in API module)
-- **Normalized Schema**: 20+ tables for efficient querying
-- **10,388 Prompts**: Production database pre-filled and cleaned
+- **Runtime Store**: `diffusion_promptdb` (default DSN exposed via `PROMPTS_DB_URL`)
+- **Schema Source**: `database/postgres/schema.sql` (includes all tables, indexes, and custom aggregates)
+- **Data Source**: Legacy snapshots remain under `database/prompts_catalog.db` (prompts) and `data/users.db` (accounts) for re-imports via `pgloader`
 - **Advanced Search**: Multi-filter queries combining any categories
 - **CLI Tools**: Interactive search and SQL query examples
 - **Data Quality**: Cleaned BREAK patterns, normalized, 100% tested
+
+#### PostgreSQL Setup & Migration (one-time)
+
+```bash
+# 1. Install PostgreSQL + tools
+sudo apt-get update
+sudo apt-get install -y postgresql postgresql-contrib postgresql-client libpq-dev pgloader
+
+# 2. Create app role + databases
+sudo -u postgres psql <<'SQL'
+CREATE ROLE diffusion_app LOGIN PASSWORD '<strong-password>' INHERIT;
+ALTER ROLE diffusion_app SET timezone = 'UTC';
+ALTER ROLE diffusion_app SET standard_conforming_strings = on;
+ALTER ROLE diffusion_app CREATEDB;
+CREATE DATABASE diffusion_promptdb OWNER diffusion_app;
+CREATE DATABASE diffusion_promptdb_test OWNER diffusion_app;
+SQL
+
+# 3. Import existing SQLite data (prompts + users)
+PGPASSWORD='<strong-password>' pgloader \
+  sqlite:///$(pwd)/database/prompts_catalog.db \
+  postgresql://diffusion_app:<strong-password>@127.0.0.1:5432/diffusion_promptdb
+PGPASSWORD='<strong-password>' pgloader \
+  sqlite:///$(pwd)/data/users.db \
+  postgresql://diffusion_app:<strong-password>@127.0.0.1:5432/diffusion_promptdb
+
+# 4. Capture schema for future bootstraps / CI
+PGPASSWORD='<strong-password>' pg_dump --schema-only --no-owner --no-privileges \
+  -h 127.0.0.1 -U diffusion_app diffusion_promptdb > database/postgres/schema.sql
+
+# 5. Provision the test/template database from schema
+PGPASSWORD='<strong-password>' psql -h 127.0.0.1 -U diffusion_app \
+  -d diffusion_promptdb_test -f database/postgres/schema.sql
+```
+
+> **Tip:** The test suite dynamically clones `diffusion_promptdb_test` into isolated databases per test run. Keep that schema current to simplify CI.
 
 ```bash
 cd src/batch_analyzer
@@ -190,12 +226,17 @@ Need to triage thousands of PNGs first? `tools/sd_metadata_dump/export_sd_metada
 # Backend
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-python src/api/init_users_db.py
-python src/api/init_preferences_table.py
-JWT_SECRET_KEY=devsecret \
-API_KEYS='["test_key"]' \
-USERS_DB_PATH="data/users.db" \
-MEDIA_ROOT="media" \
+
+# Configure your .env (values shown here match the local install guide)
+cat <<'EOF' > .env
+PROMPTS_DB_URL="postgresql://diffusion_app:<strong-password>@127.0.0.1:5432/diffusion_promptdb"
+USERS_DB_URL="postgresql://diffusion_app:<strong-password>@127.0.0.1:5432/diffusion_promptdb"
+JWT_SECRET_KEY="devsecret"
+API_KEYS='["test_key"]'
+MEDIA_ROOT="media"
+MEDIA_THUMBNAILS_SUBDIR="thumbnails"
+EOF
+
 uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 
 # Frontend (separate terminal)
@@ -570,7 +611,7 @@ Contributions are welcome! Please ensure:
 
 - **1.5.0** (October 2024)
   - Batch Analyzer with AWS Bedrock integration
-  - SQLite Catalog Database with 10,388 prompts
+  - PostgreSQL catalog seeded with 10,388 prompts (see schema + migration steps)
   - REST API with FastAPI
   - Authentication system
   - Rate limiting

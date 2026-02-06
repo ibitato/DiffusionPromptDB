@@ -293,6 +293,8 @@
       "artStylePlaceholder": "ex: realistic",
       "rating": "Rating",
       "ratingPlaceholder": "No rating",
+      "nsfwLevel": "NSFW Level",
+      "nsfwHelp": "Classify the content: safe, suggestive, or explicit.",
       "notes": "Notes",
       "notesPlaceholder": "Optional notes stored with the prompt",
       "helper": "Maximum {{max}} PNG files per batch."
@@ -319,7 +321,8 @@
     "errors": {
       "maxFiles": "You can only upload up to {{max}} images per batch.",
       "selectFiles": "Add at least one PNG before submitting.",
-      "generic": "Ingestion failed. Try again."
+      "generic": "Ingestion failed. Try again.",
+      "nsfwRequired": "Select an NSFW level for every image."
     },
     "messages": {
       "completed": "Ingestion finished: {{created}} created, {{failed}} failed."
@@ -423,6 +426,9 @@
       "modelLoading": "Loading models…",
       "modelEmpty": "No models detected yet"
     },
+    "labels": {
+      "nsfw": "NSFW"
+    },
     "thumbnail": {
       "label": "Thumbnail preview",
       "alt": "Thumbnail for prompt #{{id}}"
@@ -447,6 +453,7 @@
       "tagsPlaceholder": "tag1, tag2, tag3",
       "tagsHelp": "Separate tags with commas",
       "rating": "Rating",
+      "nsfwLevel": "NSFW Level",
       "parameters": "Parameters",
       "parametersPlaceholder": "Generation parameters (JSON format)...",
       "notes": "Notes",
@@ -454,7 +461,8 @@
     },
     "validation": {
       "artStyleRequired": "Select an art style",
-      "artStyleInvalid": "Choose one of the available art styles"
+      "artStyleInvalid": "Choose one of the available art styles",
+      "nsfwRequired": "Select an NSFW level"
     },
     "actions": {
       "cancel": "Cancel",
@@ -478,6 +486,9 @@
       "tags": "Tags",
       "parameters": "Parameters",
       "notes": "Notes"
+    },
+    "labels": {
+      "nsfwLevel": "NSFW Level"
     },
     "metadata": {
       "created": "Created",

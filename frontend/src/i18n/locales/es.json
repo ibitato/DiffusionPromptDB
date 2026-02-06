@@ -234,6 +234,9 @@
       "modelEmpty": "Aún no hay modelos detectados",
       "modelDisabled": "Activa \"Solo mis prompts\" para elegir un modelo"
     },
+    "labels": {
+      "nsfw": "NSFW"
+    },
     "thumbnail": {
       "label": "Miniatura",
       "alt": "Miniatura del prompt #{{id}}"
@@ -258,6 +261,7 @@
       "tagsPlaceholder": "tag1, tag2, tag3",
       "tagsHelp": "Separar tags con comas",
       "rating": "Rating",
+      "nsfwLevel": "Nivel NSFW",
       "parameters": "Parámetros",
       "parametersPlaceholder": "Parámetros de generación (formato JSON)...",
       "notes": "Notes",
@@ -265,7 +269,8 @@
     },
     "validation": {
       "artStyleRequired": "Selecciona un estilo de arte",
-      "artStyleInvalid": "Elige uno de los estilos disponibles"
+      "artStyleInvalid": "Elige uno de los estilos disponibles",
+      "nsfwRequired": "Selecciona un nivel NSFW"
     },
     "actions": {
       "cancel": "Cancelar",
@@ -289,6 +294,9 @@
       "tags": "Tags",
       "parameters": "Parameters",
       "notes": "Notes"
+    },
+    "labels": {
+      "nsfwLevel": "Nivel NSFW"
     },
     "metadata": {
       "created": "Created",
@@ -532,6 +540,8 @@
       "artStylePlaceholder": "ej: realista",
       "rating": "Valoración",
       "ratingPlaceholder": "Sin valoración",
+      "nsfwLevel": "Nivel NSFW",
+      "nsfwHelp": "Clasifica el contenido: seguro, sugerente o explícito.",
       "notes": "Notas",
       "notesPlaceholder": "Notas opcionales que se guardarán con el prompt",
       "helper": "Máximo {{max}} archivos PNG por lote."
@@ -558,7 +568,8 @@
     "errors": {
       "maxFiles": "Solo puedes subir hasta {{max}} imágenes por lote.",
       "selectFiles": "Agrega al menos un PNG antes de enviar.",
-      "generic": "La ingesta falló. Intenta nuevamente."
+      "generic": "La ingesta falló. Intenta nuevamente.",
+      "nsfwRequired": "Selecciona un nivel NSFW para cada imagen."
     },
     "messages": {
       "completed": "Ingesta finalizada: {{created}} creados, {{failed}} fallidos."

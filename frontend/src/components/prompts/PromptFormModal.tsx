@@ -31,7 +31,7 @@ import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../ui/Modal';
 import { Loading } from '../ui/Loading';
-import { CreatePromptRequest, Prompt } from '../../types/api.types';
+import { CreatePromptRequest, Prompt, NSFWLevel } from '../../types/api.types';
 import { statsService } from '../../services/stats.service';
 import { logDebug, logError } from '../../utils/logger';
 
@@ -56,12 +56,9 @@ interface PromptFormModalProps {
   isLoading?: boolean;
 }
 
-/**
- * PromptFormModal functional component
- *
- * @param {PromptFormModalProps} props - Component props
- * @returns {JSX.Element} Rendered modal with prompt form
- */
+const DEFAULT_NSFW_LEVELS: NSFWLevel[] = ['safe', 'suggestive', 'explicit'];
+const DEFAULT_NSFW_LEVEL: NSFWLevel = 'explicit';
+
 export const PromptFormModal = ({
   isOpen,
   onClose,
@@ -72,6 +69,7 @@ export const PromptFormModal = ({
   const { t } = useTranslation();
   const [artStyles, setArtStyles] = useState<Array<{ style: string; count: number }>>([]);
   const [isLoadingStyles, setIsLoadingStyles] = useState(true);
+  const [nsfwLevels, setNsfwLevels] = useState<NSFWLevel[]>(DEFAULT_NSFW_LEVELS);
 
   /**
    * React Hook Form configuration
@@ -95,6 +93,7 @@ export const PromptFormModal = ({
           rating: prompt.rating || 5,
           notes: prompt.notes || '',
           parameters: prompt.parameters || '',
+          nsfw_level: prompt.nsfw_level || DEFAULT_NSFW_LEVEL,
         }
       : {
           text: '',
@@ -106,6 +105,7 @@ export const PromptFormModal = ({
           rating: 5,
           notes: '',
           parameters: '',
+          nsfw_level: DEFAULT_NSFW_LEVEL,
         },
   });
 
@@ -148,6 +148,11 @@ export const PromptFormModal = ({
       try {
         const filters = await statsService.getFilters();
         setArtStyles(filters.art_styles);
+        setNsfwLevels(
+          filters.nsfw_levels && filters.nsfw_levels.length > 0
+            ? (filters.nsfw_levels as NSFWLevel[])
+            : DEFAULT_NSFW_LEVELS
+        );
       } catch (err) {
         logError('Failed to load art styles', err);
       } finally {
@@ -179,6 +184,7 @@ export const PromptFormModal = ({
         rating: prompt.rating || 5,
         notes: prompt.notes || '',
         parameters: prompt.parameters || '',
+        nsfw_level: prompt.nsfw_level || DEFAULT_NSFW_LEVEL,
       };
 
       reset(formData);
@@ -194,6 +200,7 @@ export const PromptFormModal = ({
         rating: 5,
         notes: '',
         parameters: '',
+        nsfw_level: DEFAULT_NSFW_LEVEL,
       });
     }
   }, [prompt, reset, isOpen]);
@@ -265,6 +272,29 @@ export const PromptFormModal = ({
             placeholder={t('promptForm.fields.categoryPlaceholder')}
             disabled={isLoading}
           />
+        </div>
+
+        {/* NSFW Level */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            {t('promptForm.fields.nsfwLevel')} <span className="text-red-400">*</span>
+          </label>
+          <select
+            {...register('nsfw_level', {
+              required: t('promptForm.validation.nsfwRequired'),
+            })}
+            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-violet-600 focus:border-transparent disabled:opacity-60"
+            disabled={isLoading}
+          >
+            {nsfwLevels.map((level) => (
+              <option key={level} value={level}>
+                {formatNsfwLabel(level)}
+              </option>
+            ))}
+          </select>
+          {errors.nsfw_level && (
+            <p className="mt-1 text-sm text-red-400">{errors.nsfw_level.message}</p>
+          )}
         </div>
 
         {/* Art Style - Dropdown */}
@@ -400,3 +430,5 @@ export const PromptFormModal = ({
     </Modal>
   );
 };
+  const formatNsfwLabel = (level: string) =>
+    level.charAt(0).toUpperCase() + level.slice(1);

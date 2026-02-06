@@ -234,6 +234,9 @@
       "modelEmpty": "Aucun modèle détecté pour le moment",
       "modelDisabled": "Activez « Uniquement mes prompts » pour choisir un modèle"
     },
+    "labels": {
+      "nsfw": "NSFW"
+    },
     "thumbnail": {
       "label": "Miniature",
       "alt": "Miniature du prompt #{{id}}"
@@ -258,6 +261,7 @@
       "tagsPlaceholder": "tag1, tag2, tag3",
       "tagsHelp": "Séparez les étiquettes par des virgules",
       "rating": "Évaluation",
+      "nsfwLevel": "Niveau NSFW",
       "parameters": "Paramètres",
       "parametersPlaceholder": "Paramètres de génération (format JSON)...",
       "notes": "Notes",
@@ -265,7 +269,8 @@
     },
     "validation": {
       "artStyleRequired": "Sélectionne un style artistique",
-      "artStyleInvalid": "Choisis l'un des styles disponibles"
+      "artStyleInvalid": "Choisis l'un des styles disponibles",
+      "nsfwRequired": "Sélectionne un niveau NSFW"
     },
     "actions": {
       "cancel": "Annuler",
@@ -289,6 +294,9 @@
       "tags": "Étiquettes",
       "parameters": "Paramètres",
       "notes": "Notes"
+    },
+    "labels": {
+      "nsfwLevel": "Niveau NSFW"
     },
     "metadata": {
       "created": "Créé",
@@ -447,6 +455,8 @@
       "artStylePlaceholder": "ex: réaliste",
       "rating": "Note",
       "ratingPlaceholder": "Aucune note",
+      "nsfwLevel": "Niveau NSFW",
+      "nsfwHelp": "Classe le contenu : safe, suggestif ou explicite.",
       "notes": "Notes",
       "notesPlaceholder": "Notes optionnelles enregistrées avec le prompt",
       "helper": "Maximum {{max}} fichiers PNG par lot."
@@ -473,7 +483,8 @@
     "errors": {
       "maxFiles": "Tu peux envoyer au plus {{max}} images par lot.",
       "selectFiles": "Ajoute au moins un PNG avant d'envoyer.",
-      "generic": "L'ingestion a échoué. Réessaie."
+      "generic": "L'ingestion a échoué. Réessaie.",
+      "nsfwRequired": "Sélectionne un niveau NSFW pour chaque image."
     },
     "messages": {
       "completed": "Ingestion terminée : {{created}} créés, {{failed}} en échec."

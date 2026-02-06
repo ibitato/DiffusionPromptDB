@@ -6,13 +6,12 @@ Handles login and token validation backed by users.db.
 
 from datetime import datetime, timedelta
 import logging
-import sqlite3
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from ..auth import create_access_token, verify_token
 from ..config import settings
-from ..db import get_users_db
+from ..db import DatabaseConnection, IntegrityConstraintError, get_users_db
 from ..middleware.rate_limiting import limiter
 from ..models.auth_models import (
     ExpiredPasswordChangeRequest,
@@ -32,7 +31,7 @@ logger = logging.getLogger(__name__)
 async def register_account(
     payload: RegistrationRequest,
     request: Request,
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     """Create a new user account pending email verification."""
 
@@ -52,16 +51,27 @@ async def register_account(
 
     password_hash = user_service.hash_password(payload.password)
     now = datetime.utcnow().isoformat()
-    cursor = db.execute(
-        """
-        INSERT INTO users (username, email, password_hash, role, is_active, must_change_password, password_last_changed)
-        VALUES (?, ?, ?, 'user', 0, 0, ?)
-        """,
-        (username, email, password_hash, now),
-    )
-    user_id = cursor.lastrowid
+    try:
+        cursor = db.execute(
+            """
+            INSERT INTO users (username, email, password_hash, role, is_active, must_change_password, password_last_changed)
+            VALUES (?, ?, ?, 'user', ?, ?, ?)
+            RETURNING id
+            """,
+            (username, email, password_hash, False, False, now),
+        )
+    except IntegrityConstraintError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username or email already registered",
+        ) from exc
+    user_id = cursor.fetchone()["id"]
     db.execute(
-        "INSERT OR IGNORE INTO user_preferences (user_id) VALUES (?)",
+        """
+        INSERT INTO user_preferences (user_id)
+        VALUES (?)
+        ON CONFLICT (user_id) DO NOTHING
+        """,
         (user_id,),
     )
     db.commit()
@@ -96,7 +106,7 @@ async def register_account(
 async def verify_account(
     payload: VerificationRequest,
     request: Request,
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     """Complete account verification and enable login."""
 
@@ -108,8 +118,8 @@ async def verify_account(
         )
 
     db.execute(
-        "UPDATE users SET is_active=1 WHERE id=?",
-        (user_id,),
+        "UPDATE users SET is_active=? WHERE id=?",
+        (True, user_id),
     )
     db.commit()
     logger.info("User %s verified their account", user.get("username"))
@@ -121,7 +131,7 @@ async def verify_account(
 async def login(
     request: Request,
     credentials: LoginRequest,
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     """Authenticate user and return JWT."""
     user = user_service.get_user_by_username(db, credentials.username)
@@ -143,7 +153,7 @@ async def login(
         )
 
     if user.get("must_change_password") or user_service.needs_password_rotation(user):
-        db.execute("UPDATE users SET must_change_password=1 WHERE id=?", (user["id"],))
+        db.execute("UPDATE users SET must_change_password=? WHERE id=?", (True, user["id"]))
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -171,7 +181,7 @@ async def login(
 async def reset_expired_password(
     payload: ExpiredPasswordChangeRequest,
     request: Request,
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     """Allow users whose password expired to set a new one without an active session."""
 
@@ -205,7 +215,7 @@ async def reset_expired_password(
 async def get_current_user(
     request: Request,
     token_payload: dict = Depends(verify_token),
-    db: sqlite3.Connection = Depends(get_users_db),
+    db: DatabaseConnection = Depends(get_users_db),
 ):
     """Return user info for the authenticated token."""
     user = user_service.get_user_by_id(db, token_payload["user_id"])
