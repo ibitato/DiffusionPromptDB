@@ -38,11 +38,11 @@ def test_password_hashing():
     print("\n🔍 Testing current hashes in auth.py:")
     print("-" * 50)
 
-    # These are the hashes currently in auth.py
+    # Hashes are dynamically loaded from the database; no hardcoded hashes
     current_hashes = {
-        "test": "REDACTED_HASH",
-        "admin": "REDACTED_HASH",
-        "user": "REDACTED_HASH",
+        "test": None,
+        "admin": None,
+        "user": None,
     }
 
     for username, password in test_passwords.items():

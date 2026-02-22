@@ -53,6 +53,6 @@ systemctl enable diffusionprompt-api
 systemctl start diffusionprompt-api
 
 echo "✅ ¡Deployment completado!"
-echo "Accede a: http://REDACTED_SERVER_IP"
+echo "Accede a: https://$(hostname -f) o tu dominio configurado"
 systemctl status diffusionprompt-api --no-pager
 systemctl status nginx --no-pager
