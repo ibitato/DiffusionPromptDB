@@ -32,6 +32,8 @@ env/
 # SQLite Database
 *.db
 *.db-journal
+*.db.backup*
+*.db-backup*
 *.sqlite
 *.sqlite3
 
