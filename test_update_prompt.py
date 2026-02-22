@@ -9,7 +9,7 @@ from src.api.config import settings
 login_url = "http://localhost:8000/api/v1/auth/login"
 login_data = {
     "username": "admin",
-    "password": "REDACTED_PASSWORD"
+    "password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")
 }
 
 try:

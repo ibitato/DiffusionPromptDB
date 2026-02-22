@@ -32,7 +32,7 @@ certbot --nginx \
     -d diffusionprompt.net \
     --non-interactive \
     --agree-tos \
-    --email REDACTED_EMAIL \
+    --email "${SSL_EMAIL:?Set SSL_EMAIL env var}" \
     --redirect
 
 # Configurar auto-renovación (certbot ya lo hace automáticamente)

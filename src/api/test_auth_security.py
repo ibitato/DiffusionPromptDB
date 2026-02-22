@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 Test script to verify password hashing implementation
@@ -14,9 +15,9 @@ def test_password_hashing():
 
     # Test passwords
     test_passwords = {
-        "test": "REDACTED_PASSWORD",
-        "admin": "REDACTED_PASSWORD",
-        "user": "REDACTED_PASSWORD",
+        "test": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"),
+        "admin": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"),
+        "user": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"),
     }
 
     print("\n📝 Generating secure password hashes:")

@@ -582,7 +582,7 @@ git commit -m "feat: add full-stack feature"
 1. **Backend** – launch FastAPI with live reload and media storage enabled:
    ```bash
    source .venv/bin/activate
-   JWT_SECRET_KEY=devsecret \
+   JWT_SECRET_KEY="$JWT_SECRET_KEY" \
    API_KEYS='["test_key"]' \
    USERS_DB_PATH="data/users.db" \
    MEDIA_ROOT="media" \

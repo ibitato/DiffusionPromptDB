@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 Test script to verify login works with hashed passwords
@@ -55,9 +56,9 @@ def main():
 
     # Test accounts with new passwords
     test_accounts = [
-        ("test", "REDACTED_PASSWORD"),  # Regular user
-        ("admin", "REDACTED_PASSWORD"),  # Admin user
-        ("user", "REDACTED_PASSWORD"),  # Another regular user
+        ("test", os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")),  # Regular user
+        ("admin", os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")),  # Admin user
+        ("user", os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")),  # Another regular user
         ("test", "wrong"),  # Wrong password test
         ("nonexistent", "test"),  # Non-existent user test
     ]
@@ -78,10 +79,8 @@ def main():
         print("  ✓ Passwords are now hashed with bcrypt")
         print("  ✓ Plain text passwords eliminated")
         print("  ✓ Login verification uses secure comparison")
-        print("\n⚠️ Note: Update frontend to use new passwords:")
-        print("  - test / REDACTED_PASSWORD")
-        print("  - admin / REDACTED_PASSWORD")
-        print("  - user / REDACTED_PASSWORD")
+        print("\n⚠️ Note: Demo credentials are configured via environment variables.")
+        print("  Set TEST_DEMO_PASSWORD to override the default test password.")
     else:
         print("⚠️ Some tests failed. Check the implementation.")
 

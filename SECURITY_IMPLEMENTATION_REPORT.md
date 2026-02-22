@@ -22,9 +22,9 @@ Fecha: 14 de Noviembre de 2024
 
 **Credenciales de producción:**
 ```
-Usuario: admin / Contraseña: REDACTED_PASSWORD
-Usuario: test  / Contraseña: REDACTED_PASSWORD
-Usuario: user  / Contraseña: REDACTED_PASSWORD
+Usuario: admin / Contraseña: <your-password>
+Usuario: test  / Contraseña: <your-password>
+Usuario: user  / Contraseña: <your-password>
 ```
 
 ### 2. **Frontend Seguro** ✅

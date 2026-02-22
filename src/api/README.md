@@ -139,7 +139,7 @@ POST   /api/v1/prompts/ingest       # Ingestar PNGs de SD en prompts (JWT)
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"REDACTED_PASSWORD"}' | jq -r '.access_token')
+  -d '{"username":"test","password":"<your-password>"}' | jq -r '.access_token')
 
 curl -X POST http://localhost:8000/api/v1/prompts/ingest \
   -H "Authorization: Bearer $TOKEN" \

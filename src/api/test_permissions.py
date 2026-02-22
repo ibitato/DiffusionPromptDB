@@ -1,3 +1,4 @@
+import os
 """Test permissions system"""
 
 import requests
@@ -12,7 +13,7 @@ print("=" * 70)
 # 1. Login as test user
 print("\n1. Login as test user...")
 response = requests.post(
-    f"{BASE_URL}/auth/login", json={"username": "test", "password": "test"}
+    f"{BASE_URL}/auth/login", json={"username": "test", "password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")}
 )
 if response.status_code == 200:
     test_token = response.json()["access_token"]

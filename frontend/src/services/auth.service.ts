@@ -13,10 +13,8 @@
  * - Session persistence
  * - No mocking - always uses real authentication
  *
- * Demo credentials (shared strong pass for HTTPS testing):
- * - test / REDACTED_PASSWORD
- * - admin / REDACTED_PASSWORD
- * - user / REDACTED_PASSWORD
+ * Demo credentials are configured via environment variables.
+ * See .env.example for setup instructions.
  */
 
 import axios from 'axios';
@@ -60,7 +58,7 @@ export const authService = {
    * try {
    *   const response = await authService.login({
    *     username: 'admin',
-   *     password: 'REDACTED_PASSWORD'
+   *     password: '<your-password>'
    *   });
    *   // Store token securely
    *   localStorage.setItem('auth_token', response.access_token);

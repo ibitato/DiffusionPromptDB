@@ -1,3 +1,4 @@
+import os
 """
 Unit Tests for API
 
@@ -20,7 +21,7 @@ client = TestClient(app)
 # Test API key
 TEST_API_KEY = settings.api_keys[0]
 TEST_USER = "test"
-TEST_PASSWORD = "REDACTED_PASSWORD"
+TEST_PASSWORD = os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")
 
 
 def _login_and_get_token() -> str:

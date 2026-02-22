@@ -1,3 +1,4 @@
+import os
 """
 Tests for profile and admin user endpoints.
 """
@@ -115,8 +116,8 @@ def api_client(tmp_path, monkeypatch):
     account_service.DUMP_DIR = tmp_path / "account_dumps"
     account_service.DUMP_DIR.mkdir(parents=True, exist_ok=True)
 
-    admin_id = _seed_user(test_url, "admin", "REDACTED_PASSWORD", role="admin")
-    user_id = _seed_user(test_url, "tester", "testpass", role="user")
+    admin_id = _seed_user(test_url, "admin", os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"), role="admin")
+    user_id = _seed_user(test_url, "tester", os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"), role="user")
 
     client = TestClient(app)
     try:
@@ -136,7 +137,7 @@ def _login(client: TestClient, username: str, password: str) -> str:
 class TestProfileEndpoints:
     def test_profile_flow(self, api_client):
         client, _, _, _, _ = api_client
-        token = _login(client, "tester", "testpass")
+        token = _login(client, "tester", os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"))
 
         resp = client.get("/api/v1/user/profile", headers=_auth_headers(token))
         assert resp.status_code == 200
@@ -159,7 +160,7 @@ class TestProfileEndpoints:
 
         resp = client.put(
             "/api/v1/user/profile/password",
-            json={"current_password": "testpass", "new_password": "NewPassword!123"},
+            json={"current_password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"), "new_password": "NewPassword!123"},
             headers=_auth_headers(token),
         )
         assert resp.status_code == 200, resp.text
@@ -182,7 +183,7 @@ class TestProfileEndpoints:
     def test_account_deletion_dumps_data(self, api_client):
         client, users_db, prompts_db, _, _ = api_client
 
-        victim_id = _seed_user(users_db, "deleteme", "delete123", role="user")
+        victim_id = _seed_user(users_db, "deleteme", os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"), role="user")
         with psycopg.connect(prompts_db) as conn:
             with conn.cursor() as cur:
                 cur.execute(
@@ -198,7 +199,7 @@ class TestProfileEndpoints:
         delete_resp = client.request(
             "DELETE",
             "/api/v1/user/account",
-            json={"password": "delete123", "confirm": True},
+            json={"password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"), "confirm": True},
             headers=_auth_headers(token),
         )
         assert delete_resp.status_code == 200, delete_resp.text
@@ -285,7 +286,7 @@ class TestAuthPasswordExpiry:
             conn.commit()
 
         login_resp = client.post(
-            "/api/v1/auth/login", json={"username": "tester", "password": "testpass"}
+            "/api/v1/auth/login", json={"username": "tester", "password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")}
         )
         assert login_resp.status_code == 403
         assert login_resp.headers.get("X-Password-Expired") == "true"
@@ -294,7 +295,7 @@ class TestAuthPasswordExpiry:
             "/api/v1/auth/password/expired",
             json={
                 "username": "tester",
-                "current_password": "testpass",
+                "current_password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456"),
                 "new_password": "NewPassword!123",
             },
         )

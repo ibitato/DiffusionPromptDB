@@ -126,9 +126,9 @@ Application will be available at: http://localhost:5173
 
 ### Demo Credentials
 
-- **Admin**: `admin` / `REDACTED_PASSWORD` (full access)
-- **User**: `user` / `REDACTED_PASSWORD` (read/write)
-- **Test**: `test` / `REDACTED_PASSWORD` (limited access)
+- **Admin**: `admin` / `<your-password>` (full access)
+- **User**: `user` / `<your-password>` (read/write)
+- **Test**: `test` / `<your-password>` (limited access)
 
 ### Authentication & onboarding flow
 

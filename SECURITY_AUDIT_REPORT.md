@@ -20,7 +20,7 @@ This security audit identified **critical vulnerabilities** that MUST be address
 **Severity: CRITICAL**
 - **Location**: `src/api/config.py`
 - **Issues**:
-  - JWT secret: `"your-secret-key-change-this-in-production"`
+  - JWT secret: a placeholder value that must be changed
   - API keys: now sourced from environment variable `API_KEYS`
 - **Risk**: Anyone with source code access can forge tokens
 - **Fix Required**: Use environment variables with strong, random secrets

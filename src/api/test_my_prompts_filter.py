@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 Debug script for my_prompts filter
@@ -6,10 +7,10 @@ Debug script for my_prompts filter
 import requests
 
 BASE_URL = "http://localhost:8000"
-API_KEY = "REDACTED_TEST_KEY"
+API_KEY = os.environ.get("TEST_API_KEY", "test-key-for-ci")
 
 # Test user credentials
-TEST_USER = {"username": "test", "password": "REDACTED_PASSWORD"}
+TEST_USER = {"username": "test", "password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")}
 
 print("=" * 60)
 print("  Testing my_prompts Filter Debug")

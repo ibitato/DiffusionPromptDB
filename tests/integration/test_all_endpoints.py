@@ -1,3 +1,4 @@
+import os
 """
 Complete API Endpoint Tests
 
@@ -27,7 +28,7 @@ app = main_module.app
 client = TestClient(app)
 
 # Test credentials
-DEMO_PASSWORD = "REDACTED_PASSWORD"
+DEMO_PASSWORD = os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")
 TEST_USER = "test"
 TEST_PASS = DEMO_PASSWORD
 API_KEY = settings.api_keys[0]

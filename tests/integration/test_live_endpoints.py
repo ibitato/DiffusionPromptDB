@@ -97,7 +97,7 @@ class APITester:
         # Valid login
         response = requests.post(
             f"{self.base_url}/api/v1/auth/login",
-            json={"username": "test", "password": "REDACTED_PASSWORD"},
+            json={"username": "test", "password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")},
         )
         self.test("POST /auth/login (valid)", response.status_code == 200)
 

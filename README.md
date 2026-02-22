@@ -181,7 +181,7 @@ python start_server.py
 # Login to obtain JWT
 TOKEN=$(curl -s -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"test"}' | jq -r '.access_token')
+  -d '{"username":"<user>","password":"<your-password>"}' | jq -r '.access_token')
 
 # Get stats (requires Authorization header)
 curl -H "Authorization: Bearer $TOKEN" \
@@ -231,7 +231,7 @@ pip install -e ".[dev]"
 cat <<'EOF' > .env
 PROMPTS_DB_URL="postgresql://diffusion_app:<strong-password>@127.0.0.1:5432/diffusion_promptdb"
 USERS_DB_URL="postgresql://diffusion_app:<strong-password>@127.0.0.1:5432/diffusion_promptdb"
-JWT_SECRET_KEY="devsecret"
+JWT_SECRET_KEY="$JWT_SECRET_KEY"
 API_KEYS='["test_key"]'
 MEDIA_ROOT="media"
 MEDIA_THUMBNAILS_SUBDIR="thumbnails"
@@ -245,7 +245,7 @@ npm install
 VITE_API_KEY=test_key npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-Visit `http://localhost:5173/ingest` and sign in as `test / REDACTED_PASSWORD` to exercise the ingestion flow end-to-end; prompts appear under “My Prompts” instantly.
+Visit `http://localhost:5173/ingest` and sign in as `test / <your-password>` to exercise the ingestion flow end-to-end; prompts appear under “My Prompts” instantly.
 
 ### Account & User Management
 
@@ -298,7 +298,7 @@ curl -X POST https://www.diffusionprompt.net/api/v1/auth/password/expired \
   -H "Content-Type: application/json" \
   -d '{
         "username": "test",
-        "current_password": "REDACTED_PASSWORD",
+        "current_password": "<your-password>",
         "new_password": "NewPassword!123"
       }'
 
@@ -336,9 +336,9 @@ npm run dev
 
 # Frontend: http://localhost:5173
 # Demo Login accounts (JWT):
-# - test / REDACTED_PASSWORD
-# - admin / REDACTED_PASSWORD
-# - user / REDACTED_PASSWORD (seed account, disabled by default)
+# - test / <your-password>
+# - admin / <your-password>
+# - user / <your-password> (seed account, disabled by default)
 ```
 
 **Features:**

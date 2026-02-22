@@ -44,7 +44,7 @@ curl -X POST https://www.diffusionprompt.net/api/v1/auth/verify \
 ```bash
 curl -X POST https://www.diffusionprompt.net/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"REDACTED_PASSWORD"}'
+  -d '{"username":"test","password":"<your-password>"}'
 ```
 
 ### Configuración de correo saliente
@@ -76,9 +76,9 @@ El backend incluye 3 usuarios de demo (almacenados en `data/users.db`):
 
 | Usuario | Contraseña     | Rol   | Email              |
 |---------|----------------|-------|--------------------|
-| test    | REDACTED_PASSWORD   | user  | test@example.com   |
-| admin   | REDACTED_PASSWORD   | admin | admin@example.com  |
-| user    | REDACTED_PASSWORD   | user  | user@example.com   |
+| test    | `<your-password>`   | user  | test@example.com   |
+| admin   | `<your-password>`   | admin | admin@example.com  |
+| user    | `<your-password>`   | user  | user@example.com   |
 
 ⚠️ **IMPORTANTE:** En producción, usar una base de datos real y contraseñas hasheadas (bcrypt/argon2).
 
@@ -87,7 +87,7 @@ El backend incluye 3 usuarios de demo (almacenados en `data/users.db`):
 Los tokens JWT se configuran en `src/api/config.py`:
 
 ```python
-JWT_SECRET_KEY: str = "your-secret-key-here-change-in-production"
+JWT_SECRET_KEY: str  # Set via environment variable
 JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRE_MINUTES: int = 60  # Token expira en 60 minutos
 ```
@@ -185,7 +185,7 @@ Frontend disponible en: **http://localhost:5173**
 2. Serás redirigido automáticamente a `/login`
 3. Ingresa credenciales:
    - Usuario: `test`
-   - Contraseña: `REDACTED_PASSWORD`
+   - Contraseña: `<your-password>`
 4. Click en "Iniciar Sesión"
 5. Serás redirigido al Dashboard con stats reales
 
@@ -197,7 +197,7 @@ Frontend disponible en: **http://localhost:5173**
 # Login
 curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"REDACTED_PASSWORD"}'
+  -d '{"username":"test","password":"<your-password>"}'
 
 # Respuesta esperada:
 {
@@ -221,7 +221,7 @@ curl -X POST http://localhost:8000/api/v1/auth/password/expired \
   -H "Content-Type: application/json" \
   -d '{
         "username": "test",
-        "current_password": "REDACTED_PASSWORD",
+        "current_password": "`<your-password>`",
         "new_password": "NewPassword!456"
       }'
 ```

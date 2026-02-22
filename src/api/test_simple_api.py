@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 Simple API test - Direct endpoint testing
@@ -6,7 +7,7 @@ Simple API test - Direct endpoint testing
 import requests
 
 BASE_URL = "http://localhost:8000/api/v1"
-API_KEY = "REDACTED_TEST_KEY"
+API_KEY = os.environ.get("TEST_API_KEY", "test-key-for-ci")
 
 print("=" * 70)
 print("  SIMPLE API TEST - Direct Endpoint Testing")
@@ -17,7 +18,7 @@ print("\n1. Login as 'test' user")
 print("-" * 70)
 response = requests.post(
     f"{BASE_URL}/auth/login",
-    json={"username": "test", "password": "REDACTED_PASSWORD"},
+    json={"username": "test", "password": os.environ.get("TEST_DEMO_PASSWORD", "TestPass!@#456")},
     headers={"X-API-Key": API_KEY},
 )
 print(f"Status: {response.status_code}")

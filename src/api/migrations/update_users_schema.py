@@ -1,3 +1,4 @@
+import os
 """
 Utility script to upgrade users.db with profile + security fields.
 
@@ -106,7 +107,7 @@ def upgrade():
             continue  # Already bcrypt
         plain = None
         if username in {"test", "admin", "user"}:
-            plain = "REDACTED_PASSWORD"
+            plain = os.environ.get("DEMO_PASSWORD", "ChangeMeNow!1")
         if plain:
             new_hash = pwd_context.hash(plain)
             cursor.execute(

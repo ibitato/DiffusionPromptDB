@@ -25,7 +25,7 @@ async def login(credentials: LoginRequest):
 - Frontend usa authService.login()
 - Backend devuelve JWT token + user info
 - Registro/verificación expuestos en `/auth/register` y `/auth/verify`
-- Cuentas demo: `admin / REDACTED_PASSWORD`, `test / REDACTED_PASSWORD`
+- Cuentas demo: `admin / <your-password>`, `test / <your-password>`
 
 ---
 
@@ -226,7 +226,7 @@ python main.py
 # Login (guarda el token de la respuesta)
 curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"test"}'
+  -d '{"username":"<user>","password":"<your-password>"}'
 
 # Stats (requiere JWT del paso anterior)
 curl -H "Authorization: Bearer <ACCESS_TOKEN>" \

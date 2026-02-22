@@ -231,7 +231,7 @@ npm run dev
 POST /api/v1/auth/login
 {
   "username": "admin",
-  "password": "REDACTED_PASSWORD"
+  "password": "<your-password>"
 }
 
 // Response

@@ -63,7 +63,7 @@ JWT_SECRET_KEY="LNIXRFKo69-Tsw42cUUJP5VoxF5bIp7DIEeS-Pc86t0"
 ## 🔒 SEGURIDAD MEJORADA
 
 ### Antes:
-- ❌ SECRET_KEY hardcodeado: `"your-secret-key-change-this-in-production"`
+- ❌ SECRET_KEY hardcodeado: a placeholder value that must be changed
 - ❌ Visible en el código fuente
 - ❌ Mismo SECRET_KEY para todos
 

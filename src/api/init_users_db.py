@@ -1,3 +1,4 @@
+import os
 """Initialize users database"""
 
 import sqlite3
@@ -79,7 +80,7 @@ CREATE TABLE IF NOT EXISTS user_verification_tokens (
 )
 
 # Create demo users with bcrypt passwords
-DEMO_PASSWORD = "REDACTED_PASSWORD"
+DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "ChangeMeNow!1")
 demo_users = [
     ("test", "test@example.com", DEMO_PASSWORD, "user"),
     ("admin", "admin@example.com", DEMO_PASSWORD, "admin"),
